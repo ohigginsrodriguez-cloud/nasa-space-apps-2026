@@ -1,4 +1,4 @@
-import type { DataConfiguration, TimeRange } from '../types'
+import type { DataConfiguration, GeographicBounds, TimeRange } from '../types'
 
 export function validateTimeRange(range: TimeRange): string | null {
   if (!range.startDate || !range.endDate) return 'Indica una fecha inicial y una fecha final.'
@@ -15,6 +15,16 @@ export function validateConfiguration(configuration: DataConfiguration): string 
   const timeError = validateTimeRange(configuration.timeRange)
   if (timeError) return timeError
   if (!configuration.variableIds.length) return 'Selecciona al menos una variable para continuar.'
+  return null
+}
+
+export function validateGeographicSelection(sourceId: string, bounds: GeographicBounds | null): string | null {
+  if (sourceId === 'nasa-power' && bounds && (
+    bounds.north - bounds.south < 2
+    || bounds.east - bounds.west < 2
+  )) {
+    return 'NASA POWER necesita un rectángulo de al menos 2° de alto y 2° de ancho. Selecciona un punto o amplía el área.'
+  }
   return null
 }
 

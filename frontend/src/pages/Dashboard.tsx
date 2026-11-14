@@ -9,6 +9,7 @@ import { TimeRangeSelector } from '../components/temporal/TimeRangeSelector'
 import { VariableSelector } from '../components/variables/VariableSelector'
 import { useResearch } from '../context/ResearchContext'
 import { demoExamples, regions, variables } from '../data/mockData'
+import { validateGeographicSelection } from '../utils/configuration'
 
 // El usuario sigue exactamente el flujo del challenge. El proveedor es una
 // opción técnica interna y se muestra en los resultados, no como requisito.
@@ -37,13 +38,18 @@ export function Dashboard() {
   const region = regions.find((item) => item.id === draft.regionId) ?? regions[0]
   const selectedVariableNames = draft.variableIds.map((id) => variables.find((variable) => variable.id === id)?.name).filter(Boolean)
   const isDemo = draft.sourceId === 'local-demo'
+  const geographicError = validateGeographicSelection(draft.sourceId, geographicBounds)
 
   async function generate() {
     if (await applyConfiguration()) navigate('/trends')
   }
 
   const isLoading = dataLoadState === 'loading'
-  const canContinue = step === 0 ? draft.variableIds.length > 0 : true
+  const canContinue = step === 0
+    ? draft.variableIds.length > 0
+    : step === 1
+      ? !geographicError
+      : true
 
   return (
     <div className="space-y-5">
@@ -80,6 +86,7 @@ export function Dashboard() {
         {step === 1 && <>
           <RegionSelector value={draft.regionId} onChange={(regionId) => updateDraft({ ...draft, regionId })} onUseSuggestion={(variableIds) => updateDraft({ ...draft, variableIds })} />
           <MapSelector center={region.center} value={geographicBounds} point={selectedPoint} onChange={setGeographicBounds} onPointChange={setSelectedPoint} />
+          {geographicError && <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">{geographicError}</p>}
         </>}
         {step === 2 && <>
           <TimeRangeSelector value={draft.timeRange} onChange={(timeRange) => updateDraft({ ...draft, timeRange })} error={timeError} />
@@ -97,6 +104,7 @@ export function Dashboard() {
               <div><dt className="text-muted">Periodo mensual</dt><dd className="mt-1 font-medium">{draft.timeRange.startDate || '—'} a {draft.timeRange.endDate || '—'}</dd></div>
             </dl>
           </section>
+          {geographicError && <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">{geographicError}</p>}
         </>}
       </div>
 
@@ -109,7 +117,7 @@ export function Dashboard() {
         <Button variant="quiet" disabled={step === 0 || isLoading} onClick={() => setStep((current) => Math.max(0, current - 1))}><ArrowLeft size={15} aria-hidden="true" />Anterior</Button>
         {step < steps.length - 1
           ? <Button variant="primary" disabled={!canContinue || isLoading} onClick={() => setStep((current) => Math.min(steps.length - 1, current + 1))}>Siguiente<ArrowRight size={15} aria-hidden="true" /></Button>
-          : <Button variant="primary" disabled={isLoading} onClick={() => { void generate() }}>{isLoading ? <><LoaderCircle size={15} className="animate-spin" aria-hidden="true" />Cargando serie…</> : <>Generar serie y analizar<ArrowRight size={15} aria-hidden="true" /></>}</Button>}
+          : <Button variant="primary" disabled={isLoading || Boolean(geographicError)} onClick={() => { void generate() }}>{isLoading ? <><LoaderCircle size={15} className="animate-spin" aria-hidden="true" />Cargando serie…</> : <>Generar serie y analizar<ArrowRight size={15} aria-hidden="true" /></>}</Button>}
       </div>
     </div>
   )

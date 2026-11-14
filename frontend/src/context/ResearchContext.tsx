@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 import { defaultConfiguration, demoExamples } from '../data/mockData'
 import type { DataConfiguration, GeographicBounds, GeographicPoint, TimeSeriesDataset, VariableId } from '../types'
 import { runAnalysis } from '../services/api'
-import { sameConfiguration, validateConfiguration, validateTimeRange } from '../utils/configuration'
+import { sameConfiguration, validateConfiguration, validateGeographicSelection, validateTimeRange } from '../utils/configuration'
 
 type DataLoadState = 'idle' | 'loading' | 'success' | 'error'
 
@@ -83,18 +83,11 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
       setNotice({ text: error, error: true })
       return false
     }
-    if (
-      draft.sourceId === 'nasa-power'
-      && geographicBounds
-      && (geographicBounds.north - geographicBounds.south < 2
-        || geographicBounds.east - geographicBounds.west < 2)
-    ) {
+    const geographicError = validateGeographicSelection(draft.sourceId, geographicBounds)
+    if (geographicError) {
       setDataLoadState('idle')
       setDataLoadError(null)
-      setNotice({
-        text: 'NASA POWER necesita un rectángulo de al menos 2° de alto y 2° de ancho. Selecciona un punto o amplía el área.',
-        error: true,
-      })
+      setNotice({ text: geographicError, error: true })
       return false
     }
 

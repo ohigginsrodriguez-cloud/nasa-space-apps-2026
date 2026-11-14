@@ -30,16 +30,21 @@ function TrendSummary({ result }: { result: BackendResult | undefined }) {
   if (!result) return null
   const { variable, trend } = result
   const direction = trend.direction === 'increasing' ? 'aumento' : trend.direction === 'decreasing' ? 'disminución' : trend.direction === 'no_linear_change' ? 'sin cambio lineal' : 'indeterminada'
+  const trendStatus = trend.significant === null
+    ? 'Tendencia no calculable'
+    : trend.significant
+      ? 'Significativa · α = 0,05'
+      : 'No significativa · α = 0,05'
 
   return <article className="rounded-lg border border-line bg-canvas/60 p-4">
     <div className="flex flex-wrap items-start justify-between gap-2">
       <h3 className="text-sm font-semibold">{variable.name}</h3>
-      <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${trend.significant ? 'bg-accent-soft text-accent' : 'border border-line bg-surface text-muted'}`}>{trend.significant ? 'Significativa · α = 0,05' : 'Evidencia insuficiente'}</span>
+      <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${trend.significant ? 'bg-accent-soft text-accent' : 'border border-line bg-surface text-muted'}`}>{trendStatus}</span>
     </div>
     <p className="mt-3 text-xl font-semibold tabular-nums">{trend.change_per_decade === null ? '—' : formatValue(trend.change_per_decade)} <span className="text-sm font-normal text-muted">{variable.unit} / década</span></p>
     <p className="mt-2 text-xs text-muted">Pendiente anual: {trend.slope_per_year === null ? '—' : formatValue(trend.slope_per_year)} {variable.unit}/año</p>
     <p className="mt-3 text-xs leading-relaxed text-muted">Cambio estimado: {direction}. {trend.confidence_interval_per_decade ? `IC 95%: [${formatValue(trend.confidence_interval_per_decade[0])}, ${formatValue(trend.confidence_interval_per_decade[1])}] ${variable.unit}/década.` : 'No hay intervalo suficiente.'}</p>
-    <p className="mt-2 text-xs leading-relaxed text-muted">p = {trend.p_value === null ? '—' : trend.p_value < 0.001 ? '< 0,001' : formatValue(trend.p_value, 3)}. {trend.message}</p>
+    <p className="mt-2 text-xs leading-relaxed text-muted">Años completos usados: {trend.n_observations}. p = {trend.p_value === null ? '—' : trend.p_value < 0.001 ? '< 0,001' : formatValue(trend.p_value, 3)}. {trend.message}</p>
   </article>
 }
 

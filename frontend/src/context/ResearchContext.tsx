@@ -32,6 +32,16 @@ interface ResearchContextValue {
 
 const ResearchContext = createContext<ResearchContextValue | null>(null)
 
+function sameGeography(
+  boundsA: GeographicBounds | null,
+  pointA: GeographicPoint | null,
+  boundsB: GeographicBounds | null,
+  pointB: GeographicPoint | null,
+): boolean {
+  return JSON.stringify(boundsA) === JSON.stringify(boundsB)
+    && JSON.stringify(pointA) === JSON.stringify(pointB)
+}
+
 export function ResearchProvider({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState<DataConfiguration>(defaultConfiguration)
   const [visualization, setVisualization] = useState<DataConfiguration | null>(null)
@@ -113,11 +123,9 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
     setNotice({ text: `Ejemplo cargado: ${example.title}`, error: false })
   }
 
-  const sameGeography = (left: GeographicBounds | null, right: GeographicBounds | null) => JSON.stringify(left) === JSON.stringify(right)
-    && JSON.stringify(selectedPoint) === JSON.stringify(visualizationPoint)
   const isPending = visualization !== null
     && (!sameConfiguration(draft, visualization)
-      || !sameGeography(geographicBounds, visualizationBounds))
+      || !sameGeography(geographicBounds, selectedPoint, visualizationBounds, visualizationPoint))
   const value = useMemo(() => ({
     draft, visualization, dataset, dataLoadState, dataLoadError, geographicBounds, selectedPoint, notice, timeError, isPending,
     updateDraft, toggleVariable, setGeographicBounds, setSelectedPoint, applyConfiguration, loadExample,

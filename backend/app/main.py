@@ -109,7 +109,7 @@ def create_analysis(request: AnalysisRequest) -> AnalysisResponse:
                         **variable_public_dict(variable, request.provider)
                     ),
                     series=series,
-                    trend=analyze_trend(series, variable),
+                    trend=analyze_trend(series, variable, data_source=request.provider),
                 )
             )
     except ValueError as error:

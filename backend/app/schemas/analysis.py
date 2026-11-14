@@ -92,6 +92,15 @@ class TrendResult(BaseModel):
     n_observations: int
     message: str
     warnings: list[str] = Field(default_factory=list)
+    ols: dict | None = None
+    mann_kendall: dict | None = None
+    seasonal_mann_kendall: dict | None = None
+    sen: dict | None = None
+    trend_line: list[dict] = Field(default_factory=list)
+    trend_band: list[dict] = Field(default_factory=list)
+    alpha: float = 0.05
+    data_source: str = "nasa_power"
+    analysis_method: str = "annual_anomalies"
 
 
 class VariableSeries(BaseModel):

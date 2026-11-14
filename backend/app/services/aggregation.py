@@ -1,21 +1,32 @@
 """Temporal aggregation and statistical trend analysis."""
 
+from __future__ import annotations
+
 from collections import defaultdict
 from datetime import date
 from math import isfinite
 
 import numpy as np
-from scipy.stats import linregress, t
 
 from app.catalog import Variable
 from app.schemas.analysis import Observation, TrendResult
+from app.services.trend_stats import (
+    calculate_ols,
+    compute_climatology_and_anomalies,
+    compute_lag1_autocorrelation,
+    compute_trend_line_and_bands,
+    mann_kendall,
+    seasonal_mann_kendall,
+    sen_slope,
+)
 
 
 def aggregate_annual(
     series: list[Observation],
     variable: Variable,
+    min_months_per_year: int = 9,
 ) -> list[tuple[int, float]]:
-    """Aggregate monthly values into complete calendar years per variable."""
+    """Aggregate monthly values into annual values, requiring >= min_months_per_year."""
     grouped: dict[int, dict[int, float]] = defaultdict(dict)
     for item in series:
         if item.value is not None and isfinite(item.value):
@@ -23,22 +34,36 @@ def aggregate_annual(
 
     annual: list[tuple[int, float]] = []
     for year, months in sorted(grouped.items()):
-        # Require each calendar month exactly once; do not treat duplicates or
-        # twelve arbitrary observations as a complete annual record.
-        if set(months) != set(range(1, 13)):
+        if len(months) < min_months_per_year:
             continue
         values = list(months.values())
         if variable.aggregation == "sum":
-            annual_value = sum(values)
+            # Scale sum to 12-month annual equivalent if some months are missing
+            annual_value = sum(values) * (12.0 / len(values))
         else:
             annual_value = sum(values) / len(values)
         annual.append((year, annual_value))
     return annual
 
 
-def analyze_trend(series: list[Observation], variable: Variable) -> TrendResult:
-    """Calculate a linear trend on complete annual aggregates when possible."""
-    annual = aggregate_annual(series, variable)
+def analyze_trend(
+    series: list[Observation],
+    variable: Variable,
+    data_source: str = "nasa_power",
+) -> TrendResult:
+    """Calculate comprehensive trend analysis (OLS, Mann-Kendall, Sen's slope, Seasonal MK)."""
+    annual = aggregate_annual(series, variable, min_months_per_year=9)
+
+    monthly_tuples = [
+        (obs.date.year, obs.date.month, obs.value if obs.value is not None else float("nan"))
+        for obs in series
+    ]
+    dates_str = [obs.date.isoformat() for obs in series]
+    t_monthly = np.array([obs.date.year + (obs.date.month - 0.5) / 12.0 for obs in series], dtype=float)
+
+    # Seasonal Mann-Kendall on monthly observations
+    smk_res = seasonal_mann_kendall(monthly_tuples)
+
     if len(annual) < 3:
         return TrendResult(
             method="linear_regression_on_complete_annual_values",
@@ -50,15 +75,31 @@ def analyze_trend(series: list[Observation], variable: Variable) -> TrendResult:
             confidence_interval_per_decade=None,
             significant=None,
             n_observations=len(annual),
-            warnings=["Se necesitan al menos 3 años completos para estimar una tendencia."],
+            warnings=["Se necesitan al menos 3 años con ≥9 meses de datos para estimar una tendencia."],
             message="Se necesitan al menos 3 años completos para estimar una tendencia.",
+            ols=None,
+            mann_kendall=None,
+            seasonal_mann_kendall=smk_res,
+            sen=None,
+            trend_line=[],
+            trend_band=[],
+            alpha=0.05,
+            data_source=data_source,
+            analysis_method="annual_anomalies",
         )
 
-    years = [float(year) for year, _ in annual]
-    values = [value for _, value in annual]
+    years = np.array([float(year) for year, _ in annual], dtype=float)
+    values = np.array([float(value) for _, value in annual], dtype=float)
 
-    val_variance = float(np.var(values)) if len(values) > 0 else 0.0
-    if val_variance == 0.0 or abs(val_variance) < 1e-12:
+    # OLS, Mann-Kendall, Sen's slope
+    ols_res = calculate_ols(years, values, alpha=0.05)
+    mk_res = mann_kendall(values, alpha=0.05)
+    sen_res = sen_slope(values, years, alpha=0.95)
+
+    warnings: list[str] = []
+
+    # Check for constant series
+    if ols_res.get("status") == "constant_series" or mk_res.get("status") == "constant_series":
         return TrendResult(
             method="linear_regression_on_complete_annual_values",
             direction="no_linear_change",
@@ -71,52 +112,120 @@ def analyze_trend(series: list[Observation], variable: Variable) -> TrendResult:
             n_observations=len(annual),
             warnings=["La serie es constante: todos los valores observados son idénticos."],
             message="La serie es constante: no hay tendencia que evaluar.",
+            ols=ols_res,
+            mann_kendall=mk_res,
+            seasonal_mann_kendall=smk_res,
+            sen=sen_res,
+            trend_line=[{"date": d, "value": round(float(np.mean(values)), 4)} for d in dates_str],
+            trend_band=[],
+            alpha=0.05,
+            data_source=data_source,
+            analysis_method="annual_anomalies",
         )
 
-    result = linregress(years, values)
+    slope = ols_res.get("slope_per_year")
+    intercept = ols_res.get("intercept")
+    p_value = ols_res.get("p_value")
+    ci_decade = ols_res.get("ci95_per_decade")
     alpha = 0.05
-    critical = float(t.ppf(1 - alpha / 2, len(annual) - 2))
 
-    slope = float(result.slope) if np.isfinite(result.slope) else None
-    stderr = float(result.stderr) if (result.stderr is not None and np.isfinite(result.stderr)) else None
-    p_value = float(result.pvalue) if (result.pvalue is not None and np.isfinite(result.pvalue)) else None
-
-    if slope is None or stderr is None or p_value is None:
+    if slope is None or p_value is None or intercept is None:
         return TrendResult(
             method="linear_regression_on_complete_annual_values",
             direction="undetermined",
             status="calculation_error",
             slope_per_year=slope,
-            change_per_decade=float(slope * 10) if slope is not None else None,
+            change_per_decade=slope * 10.0 if slope is not None else None,
             p_value=None,
             confidence_interval_per_decade=None,
             significant=None,
             n_observations=len(annual),
             warnings=["No fue posible calcular el error estándar o la significancia."],
             message="Error numérico al calcular la tendencia.",
+            ols=ols_res,
+            mann_kendall=mk_res,
+            seasonal_mann_kendall=smk_res,
+            sen=sen_res,
+            trend_line=[],
+            trend_band=[],
+            alpha=0.05,
+            data_source=data_source,
+            analysis_method="annual_anomalies",
         )
 
-    margin = critical * stderr
+    # 1. Statistical warning: Small sample size
+    if len(annual) < 10:
+        warnings.append(
+            f"Pocos años analizados (n={len(annual)}): la prueba estadística tiene baja potencia; "
+            "se recomienda ampliar el periodo a ≥ 20 años."
+        )
+
+    # 2. Residual lag-1 autocorrelation
+    y_pred = intercept + slope * years
+    residuals = values - y_pred
+    r1 = compute_lag1_autocorrelation(residuals)
+    if r1 is not None and abs(r1) > 0.30:
+        warnings.append(
+            f"Autocorrelación residual moderada/alta (|r1| = {abs(r1):.2f} > 0.30). "
+            "El p-value de OLS puede estar sobreestimado (falsa significancia)."
+        )
+
+    # 3. Discrepancy between OLS and Mann-Kendall
+    ols_sig = bool(p_value < alpha)
+    mk_p = mk_res.get("p_value")
+    mk_sig = bool(mk_p is not None and mk_p < alpha)
+    if ols_sig != mk_sig and mk_p is not None:
+        warnings.append(
+            f"Discrepancia entre métodos: OLS ({'significativo' if ols_sig else 'no significativo'}, p={p_value:.4f}) "
+            f"y Mann-Kendall ({'significativo' if mk_sig else 'no significativo'}, p={mk_p:.4f}) difieren en significancia (α=0.05)."
+        )
+
+    # Compute trend line and confidence bands over monthly dates
+    n = len(years)
+    df = n - 2
+    sum_res_sq = float(np.sum(residuals**2))
+    stderr_res = float(np.sqrt(sum_res_sq / df)) if df > 0 else 0.0
+    t_mean = float(np.mean(years))
+    sum_t_diff_sq = float(np.sum((years - t_mean) ** 2))
+
+    trend_line, trend_band = compute_trend_line_and_bands(
+        dates=dates_str,
+        t_vals=t_monthly,
+        slope=slope,
+        intercept=intercept,
+        stderr_res=stderr_res,
+        t_mean=t_mean,
+        sum_t_diff_sq=sum_t_diff_sq,
+        n=n,
+        alpha=alpha,
+    )
+
     direction = "increasing" if slope > 0 else "decreasing" if slope < 0 else "no_linear_change"
-    significant = bool(p_value < alpha)
-    ci_low = float((slope - margin) * 10)
-    ci_high = float((slope + margin) * 10)
-    ci = [ci_low, ci_high] if (np.isfinite(ci_low) and np.isfinite(ci_high)) else None
+    significant = ols_sig
 
     return TrendResult(
         method="linear_regression_on_complete_annual_values",
         direction=direction,
         status="ok",
         slope_per_year=slope,
-        change_per_decade=float(slope * 10),
+        change_per_decade=float(slope * 10.0),
         p_value=p_value,
-        confidence_interval_per_decade=ci,
+        confidence_interval_per_decade=ci_decade,
         significant=significant,
         n_observations=len(annual),
-        warnings=[],
+        warnings=warnings,
         message=(
             "La tendencia es estadísticamente significativa con α=0.05."
             if significant
             else "No hay evidencia suficiente para declarar una tendencia significativa con α=0.05."
         ),
+        ols=ols_res,
+        mann_kendall=mk_res,
+        seasonal_mann_kendall=smk_res,
+        sen=sen_res,
+        trend_line=trend_line,
+        trend_band=trend_band,
+        alpha=alpha,
+        data_source=data_source,
+        analysis_method="annual_anomalies",
     )

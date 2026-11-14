@@ -7,6 +7,8 @@ investigación, serie temporal con análisis estadístico y comparación regiona
 En `/dashboard` se eligen variable, región, fuente y periodo paso a paso. En
 `/trends` se visualizan la serie y su tendencia; `/comparison` permite
 contrastar regiones. La configuración se conserva entre estas pantallas.
+Al generar una serie se indican los estados de carga y error; la gráfica
+reutiliza los datos cargados para no solicitar la misma serie dos veces.
 Las rutas previas de configuración redirigen a `/dashboard`; `/results`
 redirige a `/trends`.
 

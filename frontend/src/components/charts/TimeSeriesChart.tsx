@@ -1,13 +1,13 @@
 import { Minus } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from 'recharts'
 import { dataSources, regions, variables } from '../../data/mockData'
-import { getDataSourceAdapter } from '../../services/dataSources/registry'
-import type { DataConfiguration, TimeSeriesPoint, VariableId } from '../../types'
+import type { DataConfiguration, TimeSeriesDataset, TimeSeriesPoint, VariableId } from '../../types'
 import { analyzeTrend, type TrendAnalysis } from '../../utils/trendAnalysis'
 import { SectionTitle } from '../common/SectionTitle'
 
 interface TimeSeriesChartProps {
   configuration: DataConfiguration | null
+  dataset: TimeSeriesDataset | null
   pendingChanges: boolean
 }
 
@@ -51,11 +51,10 @@ function TrendSummary({ variableId, analysis }: { variableId: VariableId; analys
   </article>
 }
 
-export function TimeSeriesChart({ configuration, pendingChanges }: TimeSeriesChartProps) {
+export function TimeSeriesChart({ configuration, dataset, pendingChanges }: TimeSeriesChartProps) {
   const selectedVariables = variables.filter((variable) => configuration?.variableIds.includes(variable.id))
   const region = regions.find((item) => item.id === configuration?.regionId)
   const source = dataSources.find((item) => item.id === configuration?.sourceId)
-  const dataset = configuration ? getDataSourceAdapter(configuration.sourceId)?.load(configuration) : undefined
   const points = dataset?.points ?? []
   const analyses = new Map<VariableId, TrendAnalysis | null>()
   selectedVariables.forEach((variable) => analyses.set(variable.id, analyzeTrend(points, variable.id)))

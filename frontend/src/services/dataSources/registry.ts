@@ -3,12 +3,12 @@ import type { DataConfiguration, TimeSeriesDataset } from '../../types'
 
 export interface DataSourceAdapter {
   id: string
-  load(configuration: DataConfiguration): TimeSeriesDataset
+  load(configuration: DataConfiguration): Promise<TimeSeriesDataset>
 }
 
 const demoAdapter: DataSourceAdapter = {
   id: 'local-demo',
-  load(configuration) {
+  async load(configuration) {
     const points = createDemoTimeSeries(configuration.regionId)
       .filter((point) => point.date >= configuration.timeRange.startDate && point.date <= configuration.timeRange.endDate)
     return {

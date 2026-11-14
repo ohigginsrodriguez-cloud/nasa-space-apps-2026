@@ -36,6 +36,7 @@ export function Dashboard() {
   const navigate = useNavigate()
   const region = regions.find((item) => item.id === draft.regionId) ?? regions[0]
   const selectedVariableNames = draft.variableIds.map((id) => variables.find((variable) => variable.id === id)?.name).filter(Boolean)
+  const isDemo = draft.sourceId === 'local-demo'
 
   async function generate() {
     if (await applyConfiguration()) navigate('/trends')
@@ -50,7 +51,7 @@ export function Dashboard() {
 
       <div className="flex items-start gap-3 rounded-lg border border-accent/15 bg-accent-soft/60 px-4 py-3.5">
         <FlaskConical size={18} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
-        <p className="text-xs leading-relaxed text-muted"><strong className="font-semibold text-ink">Demo educativa.</strong> Las series y los resultados son sintéticos; no son observaciones NASA/NOAA ni consultas en vivo.</p>
+         <p className="text-xs leading-relaxed text-muted"><strong className="font-semibold text-ink">{isDemo ? 'Demo educativa.' : 'Fuente seleccionada: NASA POWER.'}</strong> {isDemo ? 'Las series y los resultados son sintéticos; no son observaciones NASA/NOAA.' : 'Los datos se consultan desde NASA POWER y el análisis estadístico se calcula en el backend.'}</p>
       </div>
 
       <div inert={isLoading} aria-busy={isLoading}>

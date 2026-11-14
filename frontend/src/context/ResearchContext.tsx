@@ -95,7 +95,7 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
   function loadExample(exampleId: string) {
     const example = demoExamples.find((item) => item.id === exampleId)
     if (!example) return
-    const configuration = { ...defaultConfiguration, regionId: example.regionId, variableIds: example.variableIds }
+    const configuration = { ...defaultConfiguration, regionId: example.regionId, variableIds: example.variableIds, sourceId: 'local-demo' }
     setDraft(configuration)
     setVisualization(null)
     setDataset(null)

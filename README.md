@@ -40,4 +40,5 @@ docs/          Contexto científico, técnico y de colaboración
 - [Flujo de GitHub](docs/github-workflow.md)
 - [Fuentes de datos](docs/data-sources.md)
 - [Metodología estadística](docs/statistical-methodology.md)
+- [Tecnología y orden de construcción](docs/technology-and-order.md)
 - [Contexto para IA](docs/ai-context.md)

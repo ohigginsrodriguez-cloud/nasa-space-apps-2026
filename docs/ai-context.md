@@ -13,6 +13,11 @@ El repositorio comenzó con solo `main` y `dev`. La estructura de carpetas y
 las reglas de colaboración están siendo preparadas antes de implementar el
 producto. No asumir que ya existe un backend, frontend o API funcional.
 
+La tecnología recomendada es React + Vite + TypeScript para frontend y Python
++ FastAPI + pandas/SciPy para backend y análisis. Antes de programar se debe
+investigar y validar la fuente de datos. Consultar
+`docs/technology-and-order.md`.
+
 ## Alcance actual
 
 El MVP prioriza datos mensuales, pocas variables, regiones sencillas, una
@@ -47,3 +52,4 @@ muchos datasets.
 - `docs/statistical-methodology.md`
 - `docs/team-and-branches.md`
 - `docs/github-workflow.md`
+- `docs/technology-and-order.md`

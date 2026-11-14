@@ -48,7 +48,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange }: M
   useEffect(() => {
     if (point) {
       setSelectionMode('point')
-      setMessage(`Punto seleccionado: ${point.latitude.toFixed(4)}, ${point.longitude.toFixed(4)}. No se consultan datos para este punto en la demo.`)
+       setMessage(`Punto seleccionado: ${point.latitude.toFixed(4)}, ${point.longitude.toFixed(4)}.`)
     }
   }, [point])
 
@@ -56,7 +56,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange }: M
     if (selectionMode === 'point') {
       onChange(null)
       onPointChange({ latitude, longitude })
-      setMessage(`Punto seleccionado: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}. No se consultan datos para este punto en la demo.`)
+       setMessage(`Punto seleccionado: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}.`)
       return
     }
     if (!firstCorner) {
@@ -74,7 +74,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange }: M
     setDraft(bounds)
     onPointChange(null)
     onChange(bounds)
-    setMessage('Área rectangular definida. La demo no usa esta geometría para extraer datos.')
+     setMessage('Área rectangular definida. Se enviará al backend para extraer datos.')
   }
 
   function updateCoordinate(key: keyof GeographicBounds, rawValue: string) {
@@ -96,7 +96,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange }: M
     }
     onPointChange(null)
     onChange({ south: next.south!, north: next.north!, west: next.west!, east: next.east! })
-    setMessage('Coordenadas aplicadas. La demo no usa esta geometría para extraer datos.')
+     setMessage('Coordenadas aplicadas. Se enviarán al backend para extraer datos.')
   }
 
   function clearSelection() {
@@ -134,7 +134,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange }: M
       {point && <p className="mt-1 text-xs text-muted">Punto: {point.latitude.toFixed(4)}° lat, {point.longitude.toFixed(4)}° lon.</p>}
       {value && <p className="mt-1 text-xs text-muted">Área: {value.south.toFixed(3)}° a {value.north.toFixed(3)}° lat; {value.west.toFixed(3)}° a {value.east.toFixed(3)}° lon.</p>}
       {tilesUnavailable && <p role="status" className="mt-2 text-xs text-muted">No se pudieron cargar las teselas del mapa. Puedes continuar con la selección manual de coordenadas.</p>}
-      <p className="mt-2 flex items-start gap-2 text-xs leading-relaxed text-muted"><CircleHelp size={14} className="mt-0.5 shrink-0" aria-hidden="true" />El rectángulo se conserva como configuración para futuras consultas. La serie sintética de esta demo solo representa regiones predefinidas y no se recorta espacialmente.</p>
+       <p className="mt-2 flex items-start gap-2 text-xs leading-relaxed text-muted"><CircleHelp size={14} className="mt-0.5 shrink-0" aria-hidden="true" />La geometría seleccionada se envía al backend. NASA POWER admite puntos y rectángulos válidos; los rectángulos menores de 2° por lado pueden requerir un punto.</p>
     </section>
   )
 }

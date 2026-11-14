@@ -1,4 +1,3 @@
-import { dataSources } from '../data/mockData'
 import type { DataConfiguration, TimeRange } from '../types'
 
 export function validateTimeRange(range: TimeRange): string | null {
@@ -8,7 +7,6 @@ export function validateTimeRange(range: TimeRange): string | null {
     return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
   }
   if (!isValidDate(range.startDate) || !isValidDate(range.endDate)) return 'Introduce fechas válidas.'
-  if (range.startDate < '2001-01-01' || range.endDate > '2025-12-01') return 'La demo solo tiene datos entre enero de 2001 y diciembre de 2025.'
   if (range.startDate > range.endDate) return 'La fecha final debe ser igual o posterior a la inicial.'
   return null
 }
@@ -17,7 +15,6 @@ export function validateConfiguration(configuration: DataConfiguration): string 
   const timeError = validateTimeRange(configuration.timeRange)
   if (timeError) return timeError
   if (!configuration.variableIds.length) return 'Selecciona al menos una variable para continuar.'
-  if (!dataSources.some((source) => source.id === configuration.sourceId && source.available)) return 'Selecciona el dataset de demostración para continuar.'
   return null
 }
 

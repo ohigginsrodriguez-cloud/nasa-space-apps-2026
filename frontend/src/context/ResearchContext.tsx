@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
 import { defaultConfiguration, demoExamples } from '../data/mockData'
 import type { DataConfiguration, GeographicBounds, GeographicPoint, TimeSeriesDataset, VariableId } from '../types'
-import { getDataSourceAdapter } from '../services/dataSources/registry'
+import { runAnalysis } from '../services/api'
 import { sameConfiguration, validateConfiguration, validateTimeRange } from '../utils/configuration'
 
 type DataLoadState = 'idle' | 'loading' | 'success' | 'error'
@@ -76,11 +76,8 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
     setDataLoadError(null)
     setNotice(null)
     try {
-      await new Promise<void>((resolve) => window.setTimeout(resolve, 0))
-      const adapter = getDataSourceAdapter(draft.sourceId)
-      if (!adapter) throw new Error('No hay un servicio configurado para la fuente seleccionada.')
       const configuration = { ...draft, variableIds: [...draft.variableIds], timeRange: { ...draft.timeRange } }
-      const loadedDataset = await adapter.load(configuration)
+      const loadedDataset = await runAnalysis(configuration, geographicBounds, selectedPoint)
       if (!loadedDataset.points.length) throw new Error('No hay datos dentro del periodo seleccionado.')
       setDataset(loadedDataset)
       setVisualization(configuration)

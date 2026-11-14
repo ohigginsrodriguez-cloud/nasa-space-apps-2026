@@ -1,7 +1,7 @@
 export type VariableId = 'temperature' | 'precipitation'
 export type RegionId = 'sonoran-desert' | 'amazon-basin' | 'chesapeake-estuary' | 'new-york-city'
 export type TemporalInterval = 'monthly'
-export type SectionId = 'investigation' | 'analysis' | 'comparison'
+export type SectionId = 'investigation' | 'analysis'
 export type VariableCategory = 'Atmósfera' | 'Hidrología' | 'Océanos' | 'Superficie terrestre'
 export type IntegrationStatus = 'demo' | 'requires-configuration' | 'pending'
 
@@ -26,6 +26,7 @@ export interface EnvironmentalVariable {
   temporalResolution: string | null
   geographicCoverage: string | null
   integrationStatus: IntegrationStatus
+  available?: boolean
 }
 
 export interface TimeRange {
@@ -36,8 +37,7 @@ export interface TimeRange {
 
 export interface TimeSeriesPoint {
   date: string
-  temperature: number
-  precipitation: number
+  [variableId: string]: string | number | null
 }
 
 export interface Region {
@@ -55,21 +55,6 @@ export interface DemoExample {
   description: string
   regionId: RegionId
   variableIds: VariableId[]
-}
-
-export interface DataSource {
-  id: string
-  name: string
-  organization: string
-  description: string
-  available: boolean
-  status: IntegrationStatus
-  variables: string[]
-  dataType: string
-  coverage: string | null
-  temporalResolution: string | null
-  accessMethod: string
-  url?: string
 }
 
 export interface GeographicBounds {
@@ -91,10 +76,41 @@ export interface DataConfiguration {
   sourceId: string
 }
 
+export interface BackendVariable {
+  id: VariableId
+  name: string
+  description: string
+  unit: string
+  aggregation: string
+  product: string | null
+  status: string
+  available: boolean
+  providers: string[]
+}
+
+export interface BackendTrend {
+  method: string
+  direction: 'increasing' | 'decreasing' | 'no_linear_change' | 'undetermined'
+  slope_per_year: number | null
+  change_per_decade: number | null
+  p_value: number | null
+  confidence_interval_per_decade: number[] | null
+  significant: boolean | null
+  n_observations: number
+  message: string
+}
+
+export interface BackendResult {
+  variable: BackendVariable
+  series: Array<{ date: string; value: number | null }>
+  trend: BackendTrend
+}
+
 export interface TimeSeriesDataset {
   points: TimeSeriesPoint[]
   sourceId: string
   isDemonstration: boolean
   missingValueCount: number
+  results: BackendResult[]
+  sourceUrl: string | null
 }
-

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Search, X } from 'lucide-react'
-import { variableCatalog } from '../../data/mockData'
-import type { VariableCategory, VariableId } from '../../types'
+import { variables } from '../../data/mockData'
+import { getVariables } from '../../services/api'
+import type { BackendVariable, EnvironmentalVariable, VariableCategory, VariableId } from '../../types'
 import { SectionTitle } from '../common/SectionTitle'
 import { VariableCard } from './VariableCard'
 
@@ -12,7 +13,40 @@ interface VariableSelectorProps {
 
 const categories: Array<'Todas' | VariableCategory> = ['Todas', 'Atmósfera', 'Hidrología', 'Océanos', 'Superficie terrestre']
 
+function toEnvironmentalVariable(variable: BackendVariable): EnvironmentalVariable {
+  const category: VariableCategory = variable.id === 'precipitation' ? 'Hidrología' : 'Atmósfera'
+  return {
+    id: variable.id,
+    demoId: variable.id,
+    name: variable.name,
+    description: variable.description,
+    category,
+    unit: variable.unit,
+    measurement: variable.unit,
+    dataType: 'Continua',
+    potentialSources: [variable.product ?? 'Proveedor configurado'],
+    temporalResolution: 'Mensual',
+    geographicCoverage: 'Según cobertura del proveedor',
+    integrationStatus: variable.available ? 'demo' : 'pending',
+    available: variable.available,
+  }
+}
+
 export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProps) {
+  const fallbackCatalog: EnvironmentalVariable[] = variables.map((variable) => ({
+    ...variable,
+    id: variable.id,
+    demoId: variable.id,
+    category: variable.id === 'precipitation' ? 'Hidrología' : 'Atmósfera',
+    dataType: 'Continua',
+    potentialSources: ['NASA POWER'],
+    temporalResolution: 'Mensual',
+    geographicCoverage: 'Según cobertura del proveedor',
+    integrationStatus: 'demo',
+    available: true,
+  }))
+  const [catalog, setCatalog] = useState<EnvironmentalVariable[]>(fallbackCatalog)
+  const [catalogError, setCatalogError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<'Todas' | VariableCategory>('Todas')
   const [showResults, setShowResults] = useState(false)
@@ -20,12 +54,18 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
   const searchInput = useRef<HTMLInputElement>(null)
   const results = useRef<HTMLDivElement>(null)
   const normalizedQuery = query.trim().toLocaleLowerCase('es')
-  const visibleVariables = variableCatalog.filter((variable) => {
+  const visibleVariables = catalog.filter((variable) => {
     const matchesCategory = category === 'Todas' || variable.category === category
     const matchesQuery = !normalizedQuery || `${variable.name} ${variable.description} ${variable.category}`.toLocaleLowerCase('es').includes(normalizedQuery)
     return matchesCategory && matchesQuery
   })
-  const selectedVariables = variableCatalog.filter((variable) => variable.demoId && selectedIds.includes(variable.demoId))
+  const selectedVariables = catalog.filter((variable) => variable.demoId && selectedIds.includes(variable.demoId))
+
+  useEffect(() => {
+    getVariables('nasa-power')
+      .then((backendVariables) => setCatalog(backendVariables.filter((variable) => variable.available).map(toEnvironmentalVariable)))
+      .catch(() => setCatalogError('No se pudo cargar el catálogo del backend; se muestran las variables del MVP.'))
+  }, [])
 
   useEffect(() => {
     if (searchVersion > 0) results.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -68,10 +108,11 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
         </div>
         <div tabIndex={0} aria-label="Lista desplazable de variables encontradas" className="mt-4 max-h-64 overflow-y-auto overscroll-contain rounded-lg border border-line p-1 focus-visible:outline-2 focus-visible:outline-accent">
           {visibleVariables.length > 0
-            ? <div className="grid grid-cols-1 gap-2 p-1">{visibleVariables.map((variable) => <VariableCard key={variable.id} variable={variable} selected={variable.demoId ? selectedIds.includes(variable.demoId) : false} onToggle={() => { if (variable.demoId) onToggle(variable.demoId) }} compact />)}</div>
+            ? <div className="grid grid-cols-1 gap-2 p-1">{visibleVariables.map((variable) => <VariableCard key={variable.id} variable={variable} selected={variable.demoId ? selectedIds.includes(variable.demoId) : false} onToggle={() => { if (variable.demoId && variable.available !== false) onToggle(variable.demoId) }} compact />)}</div>
             : <p className="m-2 rounded-lg border border-dashed border-line p-4 text-sm text-muted">No se encontraron variables para esta búsqueda. Prueba otro término.</p>}
         </div>
-        <p className="mt-3 text-xs leading-relaxed text-muted">La resolución y cobertura de fuentes reales se muestran como “por validar” hasta seleccionar un producto de datos concreto. Solo temperatura y precipitación tienen series sintéticas de demostración.</p>
+        {catalogError && <p role="status" className="mt-3 text-xs text-muted">{catalogError}</p>}
+        <p className="mt-3 text-xs leading-relaxed text-muted">El catálogo procede del backend. El MVP habilita temperatura y precipitación; las demás variables se incorporarán cuando se valide su proveedor.</p>
       </div>}
     </section>
   )

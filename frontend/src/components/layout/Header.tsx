@@ -11,7 +11,7 @@ export function Header() {
         <p className="text-sm font-semibold">{section.label}</p>
         <p className="mt-1 text-xs leading-relaxed text-muted sm:text-sm">{section.description}</p>
       </div>
-      <span className="flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-xs text-muted"><span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />Demo · sin fuentes en vivo</span>
+      <span className="flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-xs text-muted"><span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />NASA POWER · MVP</span>
     </header>
   )
 }

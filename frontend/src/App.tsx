@@ -3,7 +3,6 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { MainLayout } from './components/layout/MainLayout'
 import { ResearchProvider } from './context/ResearchContext'
 
-const ComparisonPage = lazy(() => import('./pages/ComparisonPage').then((module) => ({ default: module.ComparisonPage })))
 const Dashboard = lazy(() => import('./pages/Dashboard').then((module) => ({ default: module.Dashboard })))
 const TrendsPage = lazy(() => import('./pages/TrendsPage').then((module) => ({ default: module.TrendsPage })))
 
@@ -21,7 +20,6 @@ export default function App() {
               <Route path="/sources" element={<Navigate to="/dashboard" replace />} />
               <Route path="/time-series" element={<Navigate to="/dashboard" replace />} />
               <Route path="/trends" element={<TrendsPage />} />
-              <Route path="/comparison" element={<ComparisonPage />} />
               <Route path="/results" element={<Navigate to="/trends" replace />} />
               <Route path="/history" element={<Navigate to="/dashboard" replace />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />

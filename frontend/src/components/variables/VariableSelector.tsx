@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Search, X } from 'lucide-react'
 import { variables } from '../../data/mockData'
 import { getVariables } from '../../services/api'
@@ -49,7 +49,7 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
   const [catalogError, setCatalogError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<'Todas' | VariableCategory>('Todas')
-  const [showResults, setShowResults] = useState(false)
+  const [showResults, setShowResults] = useState(true)
   const [searchVersion, setSearchVersion] = useState(0)
   const searchInput = useRef<HTMLInputElement>(null)
   const results = useRef<HTMLDivElement>(null)
@@ -60,6 +60,16 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
     return matchesCategory && matchesQuery
   })
   const selectedVariables = catalog.filter((variable) => variable.demoId && selectedIds.includes(variable.demoId))
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { Todas: catalog.length }
+    for (const cat of categories) {
+      if (cat !== 'Todas') {
+        counts[cat] = catalog.filter((v) => v.category === cat).length
+      }
+    }
+    return counts
+  }, [catalog])
 
   useEffect(() => {
     getVariables('nasa-power')
@@ -104,7 +114,28 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
           <button type="button" onClick={() => { setShowResults(false); searchInput.current?.focus() }} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-line px-3 text-xs text-muted hover:text-ink"><X size={14} aria-hidden="true" />Ocultar resultados</button>
         </div>
         <div className="mt-3 flex flex-wrap gap-2" aria-label="Filtrar por categoría">
-          {categories.map((item) => <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)} className={`min-h-9 rounded-full border px-3 text-xs ${category === item ? 'border-accent bg-accent-soft text-accent' : 'border-line text-muted hover:border-muted'}`}>{item}</button>)}
+          {categories.map((item) => {
+            const count = categoryCounts[item] ?? 0
+            const isDisabled = item !== 'Todas' && count === 0
+            return (
+              <button
+                key={item}
+                type="button"
+                disabled={isDisabled}
+                aria-pressed={category === item}
+                onClick={() => { if (!isDisabled) setCategory(item) }}
+                className={`min-h-9 rounded-full border px-3 text-xs ${
+                  category === item
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : isDisabled
+                    ? 'cursor-not-allowed border-line/40 bg-canvas text-muted/60'
+                    : 'border-line text-muted hover:border-muted'
+                }`}
+              >
+                {item} {isDisabled ? '· Próximamente' : `(${count})`}
+              </button>
+            )
+          })}
         </div>
         <div tabIndex={0} aria-label="Lista desplazable de variables encontradas" className="mt-4 max-h-64 overflow-y-auto overscroll-contain rounded-lg border border-line p-1 focus-visible:outline-2 focus-visible:outline-accent">
           {visibleVariables.length > 0

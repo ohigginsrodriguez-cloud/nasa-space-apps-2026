@@ -91,6 +91,7 @@ export interface BackendVariable {
 export interface BackendTrend {
   method: string
   direction: 'increasing' | 'decreasing' | 'no_linear_change' | 'undetermined'
+  status?: string
   slope_per_year: number | null
   change_per_decade: number | null
   p_value: number | null
@@ -98,6 +99,7 @@ export interface BackendTrend {
   significant: boolean | null
   n_observations: number
   message: string
+  warnings?: string[]
 }
 
 export interface BackendResult {

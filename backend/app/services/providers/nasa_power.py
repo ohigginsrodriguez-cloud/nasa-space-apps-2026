@@ -132,18 +132,18 @@ class NasaPowerProvider:
                 monthly_values[key].append((value, weight))
 
         output: list[Observation] = []
+        start_m = date(start_date.year, start_date.month, 1)
+        end_m = date(end_date.year, end_date.month, 1)
         for yyyymm, weighted_values in sorted(monthly_values.items()):
             try:
                 observation_date = date(int(yyyymm[:4]), int(yyyymm[4:6]), 1)
-            except (ValueError, IndexError) as error:
+            except (ValueError, IndexError):
                 continue
             if int(yyyymm[4:6]) == 13:
                 # POWER regional payloads may include YYYY13 for annual
                 # summaries; it is not a calendar month in the time series.
                 continue
-            if observation_date < date(start_date.year, start_date.month, 1):
-                continue
-            if observation_date > date(end_date.year, end_date.month, 1):
+            if observation_date < start_m or observation_date > end_m:
                 continue
 
             total_weight = sum(weight for _, weight in weighted_values)

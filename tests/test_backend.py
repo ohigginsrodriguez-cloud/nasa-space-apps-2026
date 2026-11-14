@@ -256,3 +256,59 @@ def test_nasa_power_rejects_bbox_smaller_than_regional_service_limit():
         else:
             raise AssertionError("Expected small NASA POWER bbox to be rejected")
     get.assert_not_called()
+
+
+def test_demo_provider_includes_first_month_when_start_date_not_first_day():
+    from app.services.providers.demo_provider import DemoProvider
+    from app.regions import PREDEFINED_REGIONS
+
+    provider = DemoProvider()
+    region = PREDEFINED_REGIONS["sonoran-desert"]
+    # 2001-01-15 must include 2001-01-01
+    series = provider.get_series(
+        variable=VARIABLES["temperature"],
+        region=region,
+        start_date=date(2001, 1, 15),
+        end_date=date(2001, 3, 20),
+    )
+    assert len(series) == 3
+    assert series[0].date == date(2001, 1, 1)
+    assert series[1].date == date(2001, 2, 1)
+    assert series[2].date == date(2001, 3, 1)
+
+
+def test_analyze_trend_constant_series_returns_clean_none_without_nan():
+    from app.schemas.analysis import Observation
+    from app.services.aggregation import analyze_trend
+
+    # 3 years of constant values
+    obs = [
+        Observation(date=date(y, m, 1), value=20.0)
+        for y in range(2020, 2023)
+        for m in range(1, 13)
+    ]
+    trend = analyze_trend(obs, VARIABLES["temperature"])
+    assert trend.status == "constant_series"
+    assert trend.slope_per_year == 0.0
+    assert trend.change_per_decade == 0.0
+    assert trend.p_value is None
+    assert trend.confidence_interval_per_decade is None
+    assert trend.significant is False
+    assert len(trend.warnings) > 0
+
+
+def test_analyze_trend_insufficient_data_when_n_less_than_3():
+    from app.schemas.analysis import Observation
+    from app.services.aggregation import analyze_trend
+
+    # 2 years
+    obs = [
+        Observation(date=date(y, m, 1), value=float(y))
+        for y in range(2020, 2022)
+        for m in range(1, 13)
+    ]
+    trend = analyze_trend(obs, VARIABLES["temperature"])
+    assert trend.status == "insufficient_data"
+    assert trend.slope_per_year is None
+    assert trend.n_observations == 2
+

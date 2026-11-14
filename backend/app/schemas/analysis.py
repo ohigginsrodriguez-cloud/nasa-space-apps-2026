@@ -83,13 +83,15 @@ class Observation(BaseModel):
 class TrendResult(BaseModel):
     method: str
     direction: str
-    slope_per_year: float | None
-    change_per_decade: float | None
-    p_value: float | None
-    confidence_interval_per_decade: list[float] | None
-    significant: bool | None
+    status: str = "ok"
+    slope_per_year: float | None = None
+    change_per_decade: float | None = None
+    p_value: float | None = None
+    confidence_interval_per_decade: list[float] | None = None
+    significant: bool | None = None
     n_observations: int
     message: str
+    warnings: list[str] = Field(default_factory=list)
 
 
 class VariableSeries(BaseModel):

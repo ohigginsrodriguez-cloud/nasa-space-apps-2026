@@ -29,12 +29,23 @@ function ChartTooltip({ active, payload, label }: TooltipContentProps<TooltipVal
 function TrendSummary({ result }: { result: BackendResult | undefined }) {
   if (!result) return null
   const { variable, trend } = result
-  const direction = trend.direction === 'increasing' ? 'aumento' : trend.direction === 'decreasing' ? 'disminución' : trend.direction === 'no_linear_change' ? 'sin cambio lineal' : 'indeterminada'
-  const trendStatus = trend.significant === null
+  const isConstant = trend.status === 'constant_series'
+  const direction = isConstant
+    ? 'serie constante (sin cambio)'
+    : trend.direction === 'increasing'
+    ? 'aumento'
+    : trend.direction === 'decreasing'
+    ? 'disminución'
+    : trend.direction === 'no_linear_change'
+    ? 'sin cambio lineal'
+    : 'indeterminada'
+  const trendStatus = isConstant
+    ? 'Serie constante'
+    : trend.significant === null
     ? 'Tendencia no calculable'
     : trend.significant
-      ? 'Significativa · α = 0,05'
-      : 'No significativa · α = 0,05'
+    ? 'Significativa · α = 0,05'
+    : 'No significativa · α = 0,05'
 
   return <article className="rounded-lg border border-line bg-canvas/60 p-4">
     <div className="flex flex-wrap items-start justify-between gap-2">
@@ -45,6 +56,11 @@ function TrendSummary({ result }: { result: BackendResult | undefined }) {
     <p className="mt-2 text-xs text-muted">Pendiente anual: {trend.slope_per_year === null ? '—' : formatValue(trend.slope_per_year)} {variable.unit}/año</p>
     <p className="mt-3 text-xs leading-relaxed text-muted">Cambio estimado: {direction}. {trend.confidence_interval_per_decade ? `IC 95%: [${formatValue(trend.confidence_interval_per_decade[0])}, ${formatValue(trend.confidence_interval_per_decade[1])}] ${variable.unit}/década.` : 'No hay intervalo suficiente.'}</p>
     <p className="mt-2 text-xs leading-relaxed text-muted">Años completos usados: {trend.n_observations}. p = {trend.p_value === null ? '—' : trend.p_value < 0.001 ? '< 0,001' : formatValue(trend.p_value, 3)}. {trend.message}</p>
+    {trend.warnings && trend.warnings.length > 0 && (
+      <div className="mt-2 rounded border border-amber-200 bg-amber-50/70 p-2 text-[11px] text-amber-800">
+        {trend.warnings.map((w, idx) => <p key={idx}>⚠️ {w}</p>)}
+      </div>
+    )}
   </article>
 }
 

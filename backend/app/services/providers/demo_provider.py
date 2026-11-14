@@ -22,11 +22,12 @@ class DemoProvider:
         end_date: date,
     ) -> list[Observation]:
         output: list[Observation] = []
-        current = date(start_date.year, start_date.month, 1)
-        final = date(end_date.year, end_date.month, 1)
+        start_m = date(start_date.year, start_date.month, 1)
+        end_m = date(end_date.year, end_date.month, 1)
+        current = start_m
         # Avoid Python's process-randomized hash so demo examples are reproducible.
         region_factor = sum(ord(char) for char in region.id) % 97 / 97
-        while current <= final:
+        while current <= end_m:
             year_offset = current.year - 2001
             seasonal = sin(tau * (current.month - 1) / 12)
             noise = sin((current.year * 12 + current.month) * 1.37 + region_factor) * 0.17
@@ -40,10 +41,9 @@ class DemoProvider:
             else:
                 raise ValueError(f"Demo provider does not support {variable.id}")
 
-            if start_date <= current <= end_date:
-                output.append(
-                    Observation(date=current, value=round(value, 4))
-                )
+            output.append(
+                Observation(date=current, value=round(value, 4))
+            )
             current = (
                 date(current.year + 1, 1, 1)
                 if current.month == 12

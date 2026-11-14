@@ -60,7 +60,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
         <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
           {selectedVariables.map((variable) => <span key={variable.id} className="flex items-center gap-2 text-xs text-muted"><Minus size={20} strokeWidth={3} className={variable.id === 'temperature' ? 'text-chart-temperature' : 'text-chart-precipitation'} aria-hidden="true" />{variable.name} ({variable.unit})</span>)}
         </div>
-        <div className="h-72 min-w-0 w-full sm:h-80" role="img" aria-label={`Gráfica de serie temporal mensual sintética de ${region?.name ?? 'la región seleccionada'}; la línea discontinua muestra la tendencia lineal estimada.`}>
+        <div className="h-72 min-w-0 w-full sm:h-80" role="img" aria-label={`Gráfica de serie temporal mensual de ${region?.name ?? 'la región seleccionada'}; el resumen inferior muestra la tendencia lineal estimada.`}>
           <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 600, height: 320 }}>
             <LineChart data={chartPoints} margin={{ top: 12, right: 4, bottom: 8, left: 0 }} accessibilityLayer>
               <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
@@ -71,7 +71,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <p className="mt-2 text-center text-xs text-muted">Línea continua: datos mensuales · línea discontinua: tendencia lineal</p>
+        <p className="mt-2 text-center text-xs text-muted">La gráfica muestra datos mensuales; el resumen inferior muestra la tendencia lineal estimada.</p>
 
         <section aria-labelledby="trend-summary-title" className="mt-6 border-t border-line pt-5">
           <h2 id="trend-summary-title" className="text-sm font-semibold">¿Cuánto cambia y es significativo?</h2>

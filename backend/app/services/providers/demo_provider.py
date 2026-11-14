@@ -9,8 +9,11 @@ from app.services.providers.base import CsvDataProvider
 class DemoProvider(CsvDataProvider):
     """Sirve datos sintéticos hasta elegir una fuente científica real."""
 
-    def __init__(self, data_file: Path) -> None:
+    def __init__(self, data_file: Path, precipitation_file: Path) -> None:
         super().__init__(
             variables=DEMO_VARIABLES,
-            files_by_variable={"surface_temperature": data_file},
+            files_by_variable={
+                "temperature": data_file,
+                "precipitation": precipitation_file,
+            },
         )

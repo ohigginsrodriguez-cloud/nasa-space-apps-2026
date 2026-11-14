@@ -49,6 +49,7 @@ muchos datasets.
 
 - `docs/challenge-requirements.md`
 - `docs/data-sources.md`
+- `docs/variable-catalog.md`
 - `docs/statistical-methodology.md`
 - `docs/team-and-branches.md`
 - `docs/github-workflow.md`

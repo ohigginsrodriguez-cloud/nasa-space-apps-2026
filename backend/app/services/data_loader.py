@@ -19,10 +19,22 @@ class RawRow(TypedDict):
 
 DEMO_VARIABLES = [
     {
-        "id": "surface_temperature",
-        "name": "Temperatura superficial",
+        "id": "temperature",
+        "name": "Temperatura del aire",
         "unit": "degC",
-        "description": "Temperatura superficial media mensual de demostración.",
+        "description": "Temperatura media mensual de demostración.",
+        "source": "demo",
+        "product_id": None,
+        "aggregation": "mean",
+    },
+    {
+        "id": "precipitation",
+        "name": "Precipitación",
+        "unit": "mm",
+        "description": "Precipitación mensual acumulada de demostración.",
+        "source": "demo",
+        "product_id": None,
+        "aggregation": "sum",
     }
 ]
 

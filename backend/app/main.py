@@ -14,7 +14,9 @@ from app.services.normalizer import filter_series_by_date, normalize_rows
 # La ruta se calcula a partir de este archivo para que la API funcione
 # independientemente del directorio desde el que se ejecute Uvicorn.
 # `parents[1]` corresponde a la carpeta `backend/`, donde está `data/`.
-DEMO_FILE = Path(__file__).resolve().parents[1] / "data" / "demo-series.csv"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+DEMO_TEMPERATURE_FILE = DATA_DIR / "demo-temperature.csv"
+DEMO_PRECIPITATION_FILE = DATA_DIR / "demo-precipitation.csv"
 
 app = FastAPI(
     title="Earth System Trend Detective API",
@@ -38,7 +40,10 @@ app.add_middleware(
 # El endpoint trabaja contra una abstracción de proveedor, no directamente
 # contra un archivo. Más adelante se podrá reemplazar por NASA POWER, Giovanni,
 # AppEEARS u otra fuente.
-DATA_PROVIDER = DemoProvider(DEMO_FILE)
+DATA_PROVIDER = DemoProvider(
+    DEMO_TEMPERATURE_FILE,
+    DEMO_PRECIPITATION_FILE,
+)
 
 
 @app.get("/health")
@@ -61,7 +66,7 @@ def list_variables() -> list[VariableInfo]:
 @app.get("/series", response_model=SeriesResponse)
 def get_series(
     variable: str = Query(
-        default="surface_temperature",
+        default="temperature",
         description="Identificador interno de la variable.",
     ),
     start: date | None = Query(
@@ -124,7 +129,7 @@ def get_series(
         variable=VariableInfo(**variable_info),
         region={
             "name": region,
-            "type": "demo",
+            "type": "predefined",
         },
         period={
             "start": filtered_rows[0].date,

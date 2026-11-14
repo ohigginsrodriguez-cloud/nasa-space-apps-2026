@@ -24,7 +24,7 @@ def test_series_endpoint_returns_normalized_data() -> None:
 
     assert response.status_code == 200
     body = response.json()
-    assert body["variable"]["id"] == "surface_temperature"
+    assert body["variable"]["id"] == "temperature"
     assert len(body["series"]) == 3
     assert body["series"][0]["date"] == "2020-01-01"
 
@@ -49,7 +49,17 @@ def test_variables_endpoint_returns_available_variables() -> None:
     response = client.get("/variables")
 
     assert response.status_code == 200
-    assert response.json()[0]["id"] == "surface_temperature"
+    assert response.json()[0]["id"] == "temperature"
+
+
+def test_series_endpoint_supports_multiple_catalog_variables() -> None:
+    response = client.get(
+        "/series",
+        params={"variable": "precipitation", "start": "2020-01-01"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["variable"]["id"] == "precipitation"
 
 
 def test_series_returns_404_when_period_has_no_data() -> None:

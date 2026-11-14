@@ -12,13 +12,21 @@ class VariableInfo(BaseModel):
     name: str
     unit: str
     description: str
+    # Separa el ID interno del producto remoto que se validará después.
+    source: str | None = None
+    product_id: str | None = None
+    aggregation: str = "mean"
 
 
 class RegionInfo(BaseModel):
     """Representa la región usada para obtener la serie."""
 
     name: str
-    type: str
+    type: str = "predefined"
+    south: float | None = None
+    west: float | None = None
+    north: float | None = None
+    east: float | None = None
 
 
 class PeriodInfo(BaseModel):

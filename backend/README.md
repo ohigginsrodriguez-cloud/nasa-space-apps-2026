@@ -1,7 +1,7 @@
 # Backend
 
-API inicial para consultar series temporales mensuales. Actualmente utiliza un
-CSV local de demostración; todavía no representa una fuente NASA en vivo.
+API inicial para consultar series temporales mensuales. Actualmente utiliza
+CSVs locales de demostración; todavía no representa una fuente NASA en vivo.
 
 La región recibida por `/series` es informativa en esta etapa: todos los
 usuarios reciben el mismo dataset demo. No debe interpretarse como un promedio
@@ -42,7 +42,7 @@ http://127.0.0.1:8000/docs
 Desde la raíz del repositorio:
 
 ```bash
-PYTHONPATH=backend python -m pytest tests/test_backend.py -q
+python -m pytest tests/test_backend.py -q
 ```
 
 ## Endpoints iniciales
@@ -75,7 +75,7 @@ Las fechas son inclusivas y usan el formato `YYYY-MM-DD`.
 - `app/services/data_loader.py`: lectura del formato CSV demo.
 - `app/services/normalizer.py`: conversión, ordenamiento y filtrado.
 - `app/services/providers/`: abstracción y proveedores de fuentes de datos.
-- `data/demo-series.csv`: datos locales temporales para desarrollo.
+- `data/demo-*.csv`: datos locales temporales para desarrollo.
 
 El proveedor demo está separado de la API para que más adelante se pueda añadir
 un proveedor NASA sin cambiar el formato que consume el frontend.

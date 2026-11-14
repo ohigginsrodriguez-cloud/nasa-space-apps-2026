@@ -17,6 +17,7 @@ interface ResearchContextValue {
   timeError: string | null
   updateDraft: (configuration: DataConfiguration) => void
   toggleVariable: (id: VariableId) => void
+  setVariableSelection: (ids: VariableId[]) => void
   setGeographicBounds: (bounds: GeographicBounds | null) => void
   setSelectedPoint: (point: GeographicPoint | null) => void
   applyConfiguration: () => boolean
@@ -49,6 +50,12 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  // Actualiza toda la selección en una sola operación para evitar estados
+  // intermedios al seleccionar o limpiar varias variables.
+  function setVariableSelection(ids: VariableId[]) {
+    updateDraft({ ...draft, variableIds: ids })
+  }
+
   function applyConfiguration(): boolean {
     const error = validateConfiguration(draft)
     setTimeError(validateTimeRange(draft.timeRange))
@@ -76,7 +83,7 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
   const isPending = visualization !== null && !sameConfiguration(draft, visualization)
   const value = useMemo(() => ({
     draft, visualization, geographicBounds, selectedPoint, notice, timeError, isPending,
-    updateDraft, toggleVariable, setGeographicBounds, setSelectedPoint, applyConfiguration, loadExample,
+    updateDraft, toggleVariable, setVariableSelection, setGeographicBounds, setSelectedPoint, applyConfiguration, loadExample,
   }), [draft, visualization, geographicBounds, selectedPoint, notice, timeError, isPending])
 
   return <ResearchContext.Provider value={value}>{children}</ResearchContext.Provider>

@@ -8,11 +8,12 @@ import { VariableCard } from './VariableCard'
 interface VariableSelectorProps {
   selectedIds: VariableId[]
   onToggle: (id: VariableId) => void
+  onSetSelection: (ids: VariableId[]) => void
 }
 
 const categories: Array<'Todas' | VariableCategory> = ['Todas', 'Atmósfera', 'Hidrología', 'Océanos', 'Superficie terrestre']
 
-export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProps) {
+export function VariableSelector({ selectedIds, onToggle, onSetSelection }: VariableSelectorProps) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<'Todas' | VariableCategory>('Todas')
   const [showResults, setShowResults] = useState(false)
@@ -26,6 +27,18 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
     return matchesCategory && matchesQuery
   })
   const selectedVariables = variableCatalog.filter((variable) => variable.demoId && selectedIds.includes(variable.demoId))
+  const availableVariables = variableCatalog.filter((variable) => variable.demoId)
+  const allAvailableSelected = availableVariables.every((variable) => variable.demoId && selectedIds.includes(variable.demoId))
+
+  // La selección múltiple se mantiene como IDs, no como objetos completos.
+  // Esto permite añadir variables al catálogo sin cambiar el estado global.
+  function selectAllAvailable() {
+    onSetSelection(availableVariables.flatMap((variable) => variable.demoId ? [variable.demoId] : []))
+  }
+
+  function clearSelection() {
+    onSetSelection([])
+  }
 
   useEffect(() => {
     if (searchVersion > 0) results.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -53,10 +66,18 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
         </button>
       </form>
 
-      {selectedVariables.length > 0 && <div className="mt-4 rounded-lg bg-accent-soft/50 p-3">
-        <p className="text-xs font-medium text-ink">En tu investigación:</p>
-        <ul className="mt-2 flex flex-wrap gap-2">{selectedVariables.map((variable) => <li key={variable.id} className="rounded-full border border-accent/20 bg-surface px-3 py-1 text-xs text-accent">{variable.name}</li>)}</ul>
-      </div>}
+      <div className="mt-4 rounded-lg bg-accent-soft/50 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-medium text-ink">En tu investigación:</p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={selectAllAvailable} disabled={allAvailableSelected} className="min-h-9 rounded-lg border border-accent/30 px-3 text-xs text-accent disabled:opacity-50">Seleccionar disponibles</button>
+            <button type="button" onClick={clearSelection} disabled={selectedIds.length === 0} className="min-h-9 rounded-lg border border-line px-3 text-xs text-muted hover:text-ink disabled:opacity-50">Limpiar selección</button>
+          </div>
+        </div>
+        {selectedVariables.length > 0
+          ? <ul className="mt-2 flex flex-wrap gap-2">{selectedVariables.map((variable) => <li key={variable.id} className="rounded-full border border-accent/20 bg-surface px-3 py-1 text-xs text-accent">{variable.name}</li>)}</ul>
+          : <p className="mt-2 text-xs text-muted">Todavía no has seleccionado una variable.</p>}
+      </div>
 
       {showResults && <div ref={results} className="mt-5 scroll-mt-6" aria-label="Resultados de búsqueda de variables">
         <div className="flex flex-wrap items-center justify-between gap-3">

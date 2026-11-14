@@ -71,7 +71,7 @@ export const demoExamples: DemoExample[] = [
 ]
 
 export const defaultConfiguration: DataConfiguration = {
-  variableIds: ['temperature', 'precipitation'],
+  variableIds: [],
   regionId: 'sonoran-desert',
   timeRange: { startDate: '2001-01-01', endDate: '2025-12-01', interval: 'monthly' },
   // NASA POWER es el camino real del MVP; se puede cambiar a local-demo para

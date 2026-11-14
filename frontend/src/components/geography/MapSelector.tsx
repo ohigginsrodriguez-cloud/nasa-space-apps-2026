@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CircleHelp, MapPin, RotateCcw } from 'lucide-react'
-import { CircleMarker, MapContainer, Rectangle, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { CircleMarker, MapContainer, Marker, Rectangle, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import type { GeographicBounds, GeographicPoint } from '../../types'
 
 interface MapSelectorProps {
@@ -28,6 +28,38 @@ function ClickToBounds({ onCorner }: { onCorner: (latitude: number, longitude: n
     click(event) { onCorner(event.latlng.lat, event.latlng.lng) },
   })
   return null
+}
+
+function ResizeHandles({ bounds, onChange }: { bounds: GeographicBounds; onChange: (bounds: GeographicBounds) => void }) {
+  const handles = [
+    { key: 'south-west', latitude: bounds.south, longitude: bounds.west },
+    { key: 'south-east', latitude: bounds.south, longitude: bounds.east },
+    { key: 'north-west', latitude: bounds.north, longitude: bounds.west },
+    { key: 'north-east', latitude: bounds.north, longitude: bounds.east },
+  ]
+
+  function moveHandle(key: string, latitude: number, longitude: number) {
+    const next = { ...bounds }
+    if (key.includes('south')) next.south = Math.min(latitude, bounds.north - 0.01)
+    if (key.includes('north')) next.north = Math.max(latitude, bounds.south + 0.01)
+    if (key.includes('west')) next.west = Math.min(longitude, bounds.east - 0.01)
+    if (key.includes('east')) next.east = Math.max(longitude, bounds.west + 0.01)
+    onChange(next)
+  }
+
+  return <>
+    {handles.map((handle) => <Marker
+      key={handle.key}
+      position={[handle.latitude, handle.longitude]}
+      draggable
+      eventHandlers={{
+        dragend: (event) => {
+          const position = event.target.getLatLng()
+          moveHandle(handle.key, position.lat, position.lng)
+        },
+      }}
+    />)}
+  </>
 }
 
 const coordinateFields: Array<{ key: keyof GeographicBounds; label: string }> = [
@@ -74,7 +106,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange }: M
     setDraft(bounds)
     onPointChange(null)
     onChange(bounds)
-     setMessage('Área rectangular definida. Se enviará al backend para extraer datos.')
+     setMessage('Área definida. Arrastra las esquinas azules o edita las coordenadas para ajustar el tamaño.')
   }
 
   function updateCoordinate(key: keyof GeographicBounds, rawValue: string) {
@@ -96,7 +128,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange }: M
     }
     onPointChange(null)
     onChange({ south: next.south!, north: next.north!, west: next.west!, east: next.east! })
-     setMessage('Coordenadas aplicadas. Se enviarán al backend para extraer datos.')
+     setMessage('Coordenadas aplicadas. Arrastra las esquinas azules o edítalas para ajustar el tamaño.')
   }
 
   function clearSelection() {
@@ -124,17 +156,17 @@ export function MapSelector({ center, value, point, onChange, onPointChange }: M
           <ClickToBounds onCorner={setCorner} />
           {firstCorner && <CircleMarker center={firstCorner} radius={6} pathOptions={{ color: '#1d4ed8' }} />}
           {point && <CircleMarker center={[point.latitude, point.longitude]} radius={7} pathOptions={{ color: '#0f766e', fillColor: '#0f766e', fillOpacity: 0.9 }} />}
-          {value && <Rectangle bounds={[[value.south, value.west], [value.north, value.east]]} pathOptions={{ color: '#1d4ed8', fillOpacity: 0.12 }} />}
+           {value && <><Rectangle bounds={[[value.south, value.west], [value.north, value.east]]} pathOptions={{ color: '#1d4ed8', fillOpacity: 0.12 }} /><ResizeHandles bounds={value} onChange={(bounds) => { onPointChange(null); onChange(bounds); setDraft(bounds); setMessage('Área redimensionada. Se enviará al backend al generar el análisis.') }} /></>}
         </MapContainer>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {coordinateFields.map(({ key, label }) => <label key={key} className="text-xs font-medium">{label}<input type="number" step="any" min={key === 'south' || key === 'north' ? -90 : -180} max={key === 'south' || key === 'north' ? 90 : 180} value={draft[key] ?? ''} onChange={(event) => updateCoordinate(key, event.target.value)} className="mt-1 block min-h-10 w-full rounded-lg border border-line bg-surface px-2 text-sm" /></label>)}
       </div>
-      <p role="status" aria-live="polite" className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-muted"><MapPin size={14} className="mt-0.5 shrink-0" aria-hidden="true" />{message}</p>
+       <p role="status" aria-live="polite" className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-muted"><MapPin size={14} className="mt-0.5 shrink-0" aria-hidden="true" />{message}</p>
       {point && <p className="mt-1 text-xs text-muted">Punto: {point.latitude.toFixed(4)}° lat, {point.longitude.toFixed(4)}° lon.</p>}
       {value && <p className="mt-1 text-xs text-muted">Área: {value.south.toFixed(3)}° a {value.north.toFixed(3)}° lat; {value.west.toFixed(3)}° a {value.east.toFixed(3)}° lon.</p>}
       {tilesUnavailable && <p role="status" className="mt-2 text-xs text-muted">No se pudieron cargar las teselas del mapa. Puedes continuar con la selección manual de coordenadas.</p>}
-       <p className="mt-2 flex items-start gap-2 text-xs leading-relaxed text-muted"><CircleHelp size={14} className="mt-0.5 shrink-0" aria-hidden="true" />La geometría seleccionada se envía al backend. NASA POWER admite puntos y rectángulos válidos; los rectángulos menores de 2° por lado pueden requerir un punto.</p>
+       <p className="mt-2 flex items-start gap-2 text-xs leading-relaxed text-muted"><CircleHelp size={14} className="mt-0.5 shrink-0" aria-hidden="true" />Puedes dibujar el área, arrastrar cualquiera de sus cuatro esquinas o editar sus coordenadas. NASA POWER admite rectángulos de al menos 2° por lado; para áreas menores usa un punto.</p>
     </section>
   )
 }

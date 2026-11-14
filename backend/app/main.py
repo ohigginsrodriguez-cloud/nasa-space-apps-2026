@@ -138,7 +138,9 @@ def get_series(
         },
         source={
             "provider": "demo",
-            "dataset": "demo-series",
+            # El nombre permite distinguir el dataset cuando haya múltiples
+            # variables y proveedores conectados.
+            "dataset": f"demo-{variable}-series",
         },
         series=filtered_rows,
     )

@@ -40,6 +40,8 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
   const [dataLoadError, setDataLoadError] = useState<string | null>(null)
   const [geographicBounds, setGeographicBounds] = useState<GeographicBounds | null>(null)
   const [selectedPoint, setSelectedPoint] = useState<GeographicPoint | null>(null)
+  const [visualizationBounds, setVisualizationBounds] = useState<GeographicBounds | null>(null)
+  const [visualizationPoint, setVisualizationPoint] = useState<GeographicPoint | null>(null)
   const [notice, setNotice] = useState<Notice | null>(null)
   const [timeError, setTimeError] = useState<string | null>(null)
 
@@ -81,6 +83,8 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
       if (!loadedDataset.points.length) throw new Error('No hay datos dentro del periodo seleccionado.')
       setDataset(loadedDataset)
       setVisualization(configuration)
+      setVisualizationBounds(geographicBounds)
+      setVisualizationPoint(selectedPoint)
       setDataLoadState('success')
       setNotice({ text: 'Serie cargada. Revisa la gráfica y el análisis de tendencia.', error: false })
       return true
@@ -99,6 +103,8 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
     setDraft(configuration)
     setVisualization(null)
     setDataset(null)
+    setVisualizationBounds(null)
+    setVisualizationPoint(null)
     setDataLoadState('idle')
     setDataLoadError(null)
     setGeographicBounds(null)
@@ -107,7 +113,11 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
     setNotice({ text: `Ejemplo cargado: ${example.title}`, error: false })
   }
 
-  const isPending = visualization !== null && !sameConfiguration(draft, visualization)
+  const sameGeography = (left: GeographicBounds | null, right: GeographicBounds | null) => JSON.stringify(left) === JSON.stringify(right)
+    && JSON.stringify(selectedPoint) === JSON.stringify(visualizationPoint)
+  const isPending = visualization !== null
+    && (!sameConfiguration(draft, visualization)
+      || !sameGeography(geographicBounds, visualizationBounds))
   const value = useMemo(() => ({
     draft, visualization, dataset, dataLoadState, dataLoadError, geographicBounds, selectedPoint, notice, timeError, isPending,
     updateDraft, toggleVariable, setGeographicBounds, setSelectedPoint, applyConfiguration, loadExample,

@@ -74,6 +74,9 @@ def analyze_trend(series: list[Observation], variable: Variable) -> TrendResult:
         message=(
             "La tendencia es estadísticamente significativa con α=0.05."
             if p_value < alpha
-            else "No hay evidencia suficiente para declarar una tendencia significativa con α=0.05."
+            else (
+                "La tendencia estimada no alcanza significancia estadística "
+                "con α=0.05; esto no demuestra ausencia de cambio."
+            )
         ),
     )

@@ -50,7 +50,7 @@ Backend y análisis deben acordar un formato, por ejemplo:
 
 ```json
 {
-  "variable": "surface_temperature",
+  "variable": "temperature",
   "unit": "degC",
   "region": {"name": "Demo region"},
   "series": [{"date": "2010-01-01", "value": 20.4}]

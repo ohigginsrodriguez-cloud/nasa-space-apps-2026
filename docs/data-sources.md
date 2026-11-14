@@ -1,11 +1,19 @@
 # Fuentes de datos
 
+## Diferencia entre plataforma y dataset
+
+Giovanni, AppEEARS y Earthdata son plataformas o servicios de acceso; GPM,
+MERRA-2, GLDAS y MODIS son misiones, modelos o familias de productos. La
+aplicación debe registrar el producto concreto, no solo la plataforma usada
+para encontrarlo.
+
 ## Orden de evaluación
 
-1. Giovanni: referencia principal para explorar variables y validar series.
-2. NASA POWER o una API NASA sencilla: candidata para el primer prototipo.
-3. AppEEARS: alternativa para datos geoespaciales por área.
-4. Hydrology Time Series: opción si el equipo se enfoca en hidrología.
+1. Giovanni: exploración y comparación de series.
+2. GPM, MERRA-2, GLDAS o MODIS: seleccionar el producto que corresponda a
+   cada variable.
+3. NASA Earthdata/AppEEARS: acceso programático o extracción espacial.
+4. Hydrology Time Series: alternativa para datos hidrológicos.
 5. CDO, KNMI, SWOT o RADARSAT: fuentes de apoyo o futuras extensiones.
 
 La fuente definitiva se elegirá después de comprobar API, autenticación,

@@ -71,7 +71,13 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
               <XAxis dataKey="date" tickFormatter={(value: string) => formatDate(value)} axisLine={false} tickLine={false} minTickGap={30} tick={{ fill: 'var(--color-muted)', fontSize: 11 }} dy={10} />
               {selectedVariables.map((variable, index) => <YAxis key={variable.id} yAxisId={variable.id} orientation={index === 0 ? 'left' : 'right'} width={42} axisLine={false} tickLine={false} tickCount={5} tick={{ fill: 'var(--color-muted)', fontSize: 11 }} domain={['auto', 'auto']} />)}
-              <Tooltip content={ChartTooltip} cursor={{ stroke: 'var(--color-line)', strokeDasharray: '4 4' }} />
+              <Tooltip
+                content={ChartTooltip}
+                shared={false}
+                trigger="hover"
+                isAnimationActive={false}
+                cursor={{ stroke: 'var(--color-line)', strokeDasharray: '4 4' }}
+              />
               {selectedVariables.map((variable) => <Line key={variable.id} yAxisId={variable.id} dataKey={variable.id} name={variable.name} unit={variable.unit} type="linear" stroke={variable.id === 'temperature' ? 'var(--color-chart-temperature)' : 'var(--color-chart-precipitation)'} strokeWidth={1.7} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />)}
             </LineChart>
           </ResponsiveContainer>

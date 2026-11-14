@@ -1,139 +1,130 @@
-"""Punto de entrada de la API del proyecto."""
-
-from datetime import date
-from pathlib import Path
+"""HTTP API: validate requests, orchestrate providers, and format responses."""
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.schemas.series import SeriesResponse, VariableInfo
-from app.services.providers.demo_provider import DemoProvider
-from app.services.normalizer import filter_series_by_date, normalize_rows
-
-
-# La ruta se calcula a partir de este archivo para que la API funcione
-# independientemente del directorio desde el que se ejecute Uvicorn.
-# `parents[1]` corresponde a la carpeta `backend/`, donde está `data/`.
-DEMO_FILE = Path(__file__).resolve().parents[1] / "data" / "demo-series.csv"
+from app.catalog import VARIABLES, variable_public_dict
+from app.regions import PREDEFINED_REGIONS, resolve_region
+from app.schemas.analysis import (
+    AnalysisRequest,
+    AnalysisResponse,
+    RegionInfo,
+    VariableInfo,
+    VariableSeries,
+)
+from app.services.aggregation import analyze_trend
+from app.services.providers.registry import get_provider
 
 app = FastAPI(
     title="Earth System Trend Detective API",
-    description="API inicial para consultar series temporales de demostración.",
-    version="0.1.0",
+    description=(
+        "Versioned API for environmental time series. NASA POWER provides "
+        "monthly point and bounding-box data; the demo provider is synthetic."
+    ),
+    version="1.0.0",
 )
 
-# Durante el desarrollo, el frontend y el backend se ejecutan en puertos
-# distintos. Esta configuración permite las peticiones desde Vite.
+# Local frontend origins only. Add the deployed site explicitly before release.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
-    allow_credentials=True,
-    allow_methods=["GET"],
-    allow_headers=["*"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
-
-# El endpoint trabaja contra una abstracción de proveedor, no directamente
-# contra un archivo. Más adelante se podrá reemplazar por NASA POWER, Giovanni,
-# AppEEARS u otra fuente.
-DATA_PROVIDER = DemoProvider(DEMO_FILE)
 
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
-    """Permite comprobar rápidamente si la API está funcionando."""
-
+    """Simple liveness endpoint for local development and deployment checks."""
     return {"status": "ok"}
 
 
-@app.get("/variables", response_model=list[VariableInfo])
-def list_variables() -> list[VariableInfo]:
-    """Devuelve las variables que el backend conoce actualmente."""
-
+@app.get("/api/v1/variables", response_model=list[VariableInfo])
+def list_variables(
+    provider: str | None = Query(
+        default=None,
+        description="Optional provider filter: demo or nasa-power.",
+    ),
+) -> list[VariableInfo]:
+    """Return the single application catalog with per-provider availability."""
+    if provider not in (None, "demo", "nasa-power"):
+        raise HTTPException(status_code=400, detail="Unknown provider")
     return [
-        VariableInfo(**variable)
-        for variable in DATA_PROVIDER.available_variables()
+        VariableInfo(**variable_public_dict(variable, provider))
+        for variable in VARIABLES.values()
     ]
 
 
-@app.get("/series", response_model=SeriesResponse)
-def get_series(
-    variable: str = Query(
-        default="surface_temperature",
-        description="Identificador interno de la variable.",
-    ),
-    start: date | None = Query(
-        default=None,
-        description="Fecha inicial inclusiva en formato YYYY-MM-DD.",
-    ),
-    end: date | None = Query(
-        default=None,
-        description="Fecha final inclusiva en formato YYYY-MM-DD.",
-    ),
-    region: str = Query(
-        default="Demo region",
-        description="Nombre de la región de demostración.",
-    ),
-) -> SeriesResponse:
-    """Devuelve una serie temporal normalizada desde el CSV demo."""
+@app.get("/api/v1/regions", response_model=list[RegionInfo])
+def list_regions() -> list[RegionInfo]:
+    """Return reproducible predefined bounding-box regions."""
+    return list(PREDEFINED_REGIONS.values())
 
-    # Validamos primero la variable para devolver un error claro al cliente.
-    variable_info = next(
-        (
-            item
-            for item in DATA_PROVIDER.available_variables()
-            if item["id"] == variable
-        ),
-        None,
-    )
-    if variable_info is None:
+
+@app.post("/api/v1/analysis", response_model=AnalysisResponse)
+def create_analysis(request: AnalysisRequest) -> AnalysisResponse:
+    """Fetch multiple variables and analyze their monthly time series."""
+    unknown_ids = [item for item in request.variable_ids if item not in VARIABLES]
+    if unknown_ids:
         raise HTTPException(
-            status_code=400,
-            detail=f"Unknown variable: {variable}",
+            status_code=422,
+            detail={"message": "Unknown variable ID(s)", "ids": unknown_ids},
         )
 
-    if start is not None and end is not None and start > end:
+    variables = [VARIABLES[item] for item in request.variable_ids]
+    unavailable = [
+        item.id
+        for item in variables
+        if not getattr(item, f"{request.provider.replace('-', '_')}_available")
+    ]
+    if unavailable:
         raise HTTPException(
-            status_code=400,
-            detail="Start date must be before or equal to end date",
+            status_code=422,
+            detail={
+                "message": f"Variables unavailable from {request.provider}",
+                "ids": unavailable,
+            },
         )
 
     try:
-        # El proveedor se ocupa de conocer el formato de su fuente.
-        raw_rows = DATA_PROVIDER.get_series(variable)
+        region = resolve_region(request.region)
+        provider = get_provider(request.provider)
+        results: list[VariableSeries] = []
+        for variable in variables:
+            series = provider.get_series(
+                variable,
+                region,
+                request.start_date,
+                request.end_date,
+            )
+            if not series:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No data for variable {variable.id} in the requested period",
+                )
+            results.append(
+                VariableSeries(
+                    variable=VariableInfo(
+                        **variable_public_dict(variable, request.provider)
+                    ),
+                    series=series,
+                    trend=analyze_trend(series, variable),
+                )
+            )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except RuntimeError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
 
-        # El normalizador convierte los datos a la estructura común de la API.
-        normalized_rows = normalize_rows(raw_rows)
-        filtered_rows = filter_series_by_date(normalized_rows, start, end)
-    except (OSError, ValueError) as error:
-        # No exponemos detalles internos del sistema al consumidor de la API.
-        raise HTTPException(
-            status_code=500,
-            detail="Could not load or normalize the demo dataset",
-        ) from error
-
-    if not filtered_rows:
-        raise HTTPException(
-            status_code=404,
-            detail="No data available for the selected period",
-        )
-
-    return SeriesResponse(
-        variable=VariableInfo(**variable_info),
-        region={
-            "name": region,
-            "type": "demo",
-        },
+    return AnalysisResponse(
+        provider=provider.id,
+        source_url=provider.source_url,
+        region=region,
         period={
-            "start": filtered_rows[0].date,
-            "end": filtered_rows[-1].date,
+            "start": request.start_date,
+            "end": request.end_date,
             "frequency": "monthly",
         },
-        source={
-            "provider": "demo",
-            "dataset": "demo-series",
-        },
-        series=filtered_rows,
+        results=results,
     )

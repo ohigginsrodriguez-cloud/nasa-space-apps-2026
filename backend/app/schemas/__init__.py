@@ -1,1 +1,1 @@
-"""Modelos de datos de la API."""
+"""Pydantic request/response models for the public API."""

@@ -12,8 +12,8 @@ sin convertir el MVP en una plataforma de todos los datos de NASA.
 
 | ID interno | Nombre para el usuario | Qué mide | Fuente/producto candidato | Unidad de salida | Agregación | Estado |
 |---|---|---|---|---|---|---|
-| `temperature` | Temperatura del aire | Temperatura del aire cerca de la superficie | MERRA-2, campo T2M | °C o K | Promedio | Demo |
-| `precipitation` | Precipitación | Agua precipitada acumulada durante el periodo | GPM IMERG | mm | Suma | Demo |
+| `temperature` | Temperatura del aire | Temperatura del aire a 2 m | NASA POWER `T2M` (basado en MERRA-2) | °C | Promedio | Demo; POWER disponible |
+| `precipitation` | Precipitación | Precipitación corregida cerca de la superficie | NASA POWER `PRECTOTCORR` (MERRA-2); GPM como opción futura | mm/mes | Suma | Demo; POWER disponible |
 | `soil_moisture` | Humedad del suelo | Agua contenida en una capa definida del suelo | GLDAS, 0–10 cm | m³/m³ | Promedio | Pendiente |
 | `ndvi` | Índice de vegetación (NDVI) | Verdor o actividad relativa de la vegetación | MODIS MOD13C2 | Adimensional | Promedio | Pendiente |
 | `evapotranspiration` | Evapotranspiración | Pérdida de agua por evaporación y transpiración | GLDAS, campo por validar | mm | Suma | Pendiente |
@@ -78,6 +78,7 @@ Antes de cambiar el estado a `Validada`, completar:
 
 ## Fuentes de referencia
 
+- [NASA POWER Monthly API](https://power.larc.nasa.gov/docs/services/api/temporal/monthly)
 - [GPM Data](https://gpm.nasa.gov/data)
 - [MERRA-2](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/)
 - [GLDAS](https://ldas.gsfc.nasa.gov/gldas)

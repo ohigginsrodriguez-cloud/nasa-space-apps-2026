@@ -41,6 +41,7 @@ docs/          Contexto científico, técnico y de colaboración
 - [Flujo de GitHub](docs/github-workflow.md)
 - [Fuentes de datos](docs/data-sources.md)
 - [Catálogo de variables](docs/variable-catalog.md)
+- [Estrategia de adquisición de datos](docs/data-source-strategy.md)
 - [Metodología científica](docs/science-methodology.md)
 - [Flujo de investigación](docs/investigation-workflow.md)
 - [Metodología estadística](docs/statistical-methodology.md)

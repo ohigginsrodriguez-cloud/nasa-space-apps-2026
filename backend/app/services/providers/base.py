@@ -1,41 +1,21 @@
-"""Contrato común para las fuentes de datos."""
+"""Provider contract: implementations return normalized monthly observations."""
 
-from pathlib import Path
+from datetime import date
 from typing import Protocol
 
-from app.services.data_loader import RawRow
+from app.catalog import Variable
+from app.schemas.analysis import Observation, RegionInfo
 
 
 class DataProvider(Protocol):
-    """Interfaz mínima que debe cumplir cualquier proveedor de datos."""
+    id: str
+    source_url: str | None
 
-    def available_variables(self) -> list[dict[str, str]]:
-        """Devuelve las variables que el proveedor puede consultar."""
-
-    def get_series(self, variable_id: str) -> list[RawRow]:
-        """Obtiene filas en el formato original del proveedor."""
-
-
-class CsvDataProvider:
-    """Implementación reutilizable para datasets CSV locales."""
-
-    def __init__(
+    def get_series(
         self,
-        variables: list[dict[str, str]],
-        files_by_variable: dict[str, Path],
-    ) -> None:
-        self._variables = variables
-        self._files_by_variable = files_by_variable
-
-    def available_variables(self) -> list[dict[str, str]]:
-        return self._variables
-
-    def get_series(self, variable_id: str) -> list[RawRow]:
-        file_path = self._files_by_variable.get(variable_id)
-        if file_path is None:
-            raise KeyError(variable_id)
-
-        # La lectura del formato CSV queda encapsulada en el proveedor.
-        from app.services.data_loader import load_demo_series
-
-        return load_demo_series(file_path)
+        variable: Variable,
+        region: RegionInfo,
+        start_date: date,
+        end_date: date,
+    ) -> list[Observation]:
+        """Fetch one variable for a region and inclusive date range."""

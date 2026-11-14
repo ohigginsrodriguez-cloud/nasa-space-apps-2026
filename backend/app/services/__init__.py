@@ -1,1 +1,1 @@
-"""Servicios de lectura y normalización de datos."""
+"""Provider orchestration, normalization, and scientific analysis."""

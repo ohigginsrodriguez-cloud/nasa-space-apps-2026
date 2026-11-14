@@ -83,6 +83,20 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
       setNotice({ text: error, error: true })
       return false
     }
+    if (
+      draft.sourceId === 'nasa-power'
+      && geographicBounds
+      && (geographicBounds.north - geographicBounds.south < 2
+        || geographicBounds.east - geographicBounds.west < 2)
+    ) {
+      setDataLoadState('idle')
+      setDataLoadError(null)
+      setNotice({
+        text: 'NASA POWER necesita un rectángulo de al menos 2° de alto y 2° de ancho. Selecciona un punto o amplía el área.',
+        error: true,
+      })
+      return false
+    }
 
     setDataLoadState('loading')
     setDataLoadError(null)

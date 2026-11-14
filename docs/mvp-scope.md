@@ -4,9 +4,11 @@
 
 - Datos mensuales.
 - Una fuente de datos principal y un dataset local de demostración.
-- Variables iniciales: temperatura y precipitación; se podrá añadir una tercera
-  variable después de validar el flujo.
-- Región rectangular o región predefinida.
+- Variables iniciales: `temperature` y `precipitation`.
+- `soil_moisture`, `ndvi` y `evapotranspiration` se mantienen en el catálogo,
+  pero no se habilitan hasta validar sus productos.
+- Región predefinida o rectangular; el punto se conserva como opción de
+  exploración y se integra con datos reales después.
 - Periodo seleccionable.
 - Gráfico de puntos/serie temporal y línea de tendencia.
 - Pendiente, cambio por década, p-value y etiqueta de significancia.
@@ -21,8 +23,9 @@ variable analizó, ver cómo cambió y distinguir entre “tendencia observada�
 
 ## Orden de prioridad
 
-1. Flujo completo con datos de prueba.
-2. Análisis correcto y verificable.
-3. Conexión a datos NASA.
-4. Visualización y accesibilidad.
-5. Variables y regiones adicionales.
+1. Definiciones y contrato científico claros.
+2. Flujo completo con datos de prueba.
+3. Análisis correcto y verificable.
+4. Conexión a una fuente NASA real.
+5. Visualización y accesibilidad.
+6. Variables y regiones adicionales.

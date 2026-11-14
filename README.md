@@ -34,11 +34,15 @@ docs/          Contexto científico, técnico y de colaboración
 
 ## Documentación principal
 
+- [Índice de documentación](docs/README.md)
 - [Contexto del challenge](docs/challenge-requirements.md)
 - [Alcance del MVP](docs/mvp-scope.md)
 - [Equipo y ramas](docs/team-and-branches.md)
 - [Flujo de GitHub](docs/github-workflow.md)
 - [Fuentes de datos](docs/data-sources.md)
+- [Catálogo de variables](docs/variable-catalog.md)
+- [Metodología científica](docs/science-methodology.md)
+- [Flujo de investigación](docs/investigation-workflow.md)
 - [Metodología estadística](docs/statistical-methodology.md)
 - [Tecnología y orden de construcción](docs/technology-and-order.md)
 - [Contexto para IA](docs/ai-context.md)

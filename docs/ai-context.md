@@ -49,6 +49,7 @@ muchos datasets.
 
 - `docs/challenge-requirements.md`
 - `docs/data-sources.md`
+- `docs/data-source-strategy.md`
 - `docs/variable-catalog.md`
 - `docs/investigation-workflow.md`
 - `docs/science-methodology.md`

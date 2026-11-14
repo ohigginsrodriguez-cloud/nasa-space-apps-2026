@@ -12,6 +12,8 @@ from app.schemas.analysis import Observation, RegionInfo
 
 NASA_POWER_BASE_URL = "https://power.larc.nasa.gov/api/temporal/monthly"
 NASA_POWER_DOCS_URL = "https://power.larc.nasa.gov/docs/services/api/temporal/monthly"
+NASA_POWER_MIN_REGIONAL_SPAN = 2
+NASA_POWER_MAX_REGIONAL_SPAN = 10
 
 
 class NasaPowerProvider:
@@ -38,14 +40,19 @@ class NasaPowerProvider:
         route = "point" if region.type == "point" else "regional"
         # NASA POWER's regional service rejects rectangles narrower than 2°
         # in either dimension. Do not silently expand user-selected regions.
-        if route == "regional" and (
-            region.north - region.south < 2
-            or region.east - region.west < 2
-        ):
-            raise ValueError(
-                "NASA POWER regional queries require a bounding box at least "
-                "2 degrees wide and 2 degrees tall; use a point for smaller areas."
-            )
+        if route == "regional":
+            latitude_span = region.north - region.south
+            longitude_span = region.east - region.west
+            if latitude_span < NASA_POWER_MIN_REGIONAL_SPAN or longitude_span < NASA_POWER_MIN_REGIONAL_SPAN:
+                raise ValueError(
+                    "NASA POWER regional queries require a bounding box at least "
+                    "2 degrees wide and 2 degrees tall; use a point for smaller areas."
+                )
+            if latitude_span > NASA_POWER_MAX_REGIONAL_SPAN or longitude_span > NASA_POWER_MAX_REGIONAL_SPAN:
+                raise ValueError(
+                    "NASA POWER regional queries allow a maximum bounding box of "
+                    "10 degrees wide and 10 degrees tall; split the area or use a point."
+                )
         params: dict[str, str | float] = {
             "parameters": variable.remote_parameter,
             "community": "RE",

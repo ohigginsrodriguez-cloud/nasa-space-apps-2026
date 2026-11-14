@@ -19,11 +19,14 @@ export function validateConfiguration(configuration: DataConfiguration): string 
 }
 
 export function validateGeographicSelection(sourceId: string, bounds: GeographicBounds | null): string | null {
-  if (sourceId === 'nasa-power' && bounds && (
-    bounds.north - bounds.south < 2
-    || bounds.east - bounds.west < 2
-  )) {
+  if (sourceId !== 'nasa-power' || !bounds) return null
+  const latitudeSpan = bounds.north - bounds.south
+  const longitudeSpan = bounds.east - bounds.west
+  if (latitudeSpan < 2 || longitudeSpan < 2) {
     return 'NASA POWER necesita un rectángulo de al menos 2° de alto y 2° de ancho. Selecciona un punto o amplía el área.'
+  }
+  if (latitudeSpan > 10 || longitudeSpan > 10) {
+    return 'NASA POWER permite rectángulos de hasta 10° de alto y 10° de ancho. Divide el área o selecciona un punto.'
   }
   return null
 }

@@ -256,3 +256,28 @@ def test_nasa_power_rejects_bbox_smaller_than_regional_service_limit():
         else:
             raise AssertionError("Expected small NASA POWER bbox to be rejected")
     get.assert_not_called()
+
+
+def test_nasa_power_rejects_bbox_larger_than_regional_service_limit():
+    large_region = RegionInfo(
+        id="large",
+        name="large",
+        type="bbox",
+        south=10,
+        west=-100,
+        north=21,
+        east=-89,
+    )
+    with patch("app.services.providers.nasa_power.httpx.get") as get:
+        try:
+            NasaPowerProvider().get_series(
+                variable=VARIABLES["temperature"],
+                region=large_region,
+                start_date=date(2020, 1, 1),
+                end_date=date(2020, 12, 31),
+            )
+        except ValueError as error:
+            assert "maximum bounding box of 10 degrees" in str(error)
+        else:
+            raise AssertionError("Expected large NASA POWER bbox to be rejected")
+    get.assert_not_called()

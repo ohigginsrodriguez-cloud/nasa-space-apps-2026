@@ -166,7 +166,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange }: M
       {point && <p className="mt-1 text-xs text-muted">Punto: {point.latitude.toFixed(4)}° lat, {point.longitude.toFixed(4)}° lon.</p>}
       {value && <p className="mt-1 text-xs text-muted">Área: {value.south.toFixed(3)}° a {value.north.toFixed(3)}° lat; {value.west.toFixed(3)}° a {value.east.toFixed(3)}° lon.</p>}
       {tilesUnavailable && <p role="status" className="mt-2 text-xs text-muted">No se pudieron cargar las teselas del mapa. Puedes continuar con la selección manual de coordenadas.</p>}
-       <p className="mt-2 flex items-start gap-2 text-xs leading-relaxed text-muted"><CircleHelp size={14} className="mt-0.5 shrink-0" aria-hidden="true" />Puedes dibujar el área, arrastrar cualquiera de sus cuatro esquinas o editar sus coordenadas. NASA POWER admite rectángulos de al menos 2° por lado; para áreas menores usa un punto.</p>
+       <p className="mt-2 flex items-start gap-2 text-xs leading-relaxed text-muted"><CircleHelp size={14} className="mt-0.5 shrink-0" aria-hidden="true" />Puedes dibujar el área, arrastrar cualquiera de sus cuatro esquinas o editar sus coordenadas. NASA POWER admite rectángulos entre 2° y 10° por lado; para áreas menores o mayores usa un punto o divide el área.</p>
     </section>
   )
 }

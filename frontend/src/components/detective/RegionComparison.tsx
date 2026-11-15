@@ -1,0 +1,266 @@
+import { useState } from 'react'
+import { GitCompare, LoaderCircle, TrendingDown, TrendingUp } from 'lucide-react'
+import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { regions, variables } from '../../data/mockData'
+import { runAnalysis } from '../../services/api'
+import type { RegionId, TimeSeriesDataset, VariableId } from '../../types'
+
+const shortDate = new Intl.DateTimeFormat('es', { month: 'short', year: '2-digit', timeZone: 'UTC' })
+const formatDate = (date: string) => shortDate.format(new Date(`${date}T00:00:00Z`))
+const formatValue = (value: number | null | undefined, digits = 2) => (value === null || value === undefined ? '—' : new Intl.NumberFormat('es', { maximumFractionDigits: digits }).format(value))
+
+export function RegionComparison() {
+  const [variableId, setVariableId] = useState<VariableId>('precipitation')
+  const [regionAId, setRegionAId] = useState<RegionId>('new-york-city')
+  const [regionBId, setRegionBId] = useState<RegionId>('amazon-basin')
+  const [startDate, setStartDate] = useState('1995-01-01')
+  const [endDate, setEndDate] = useState('2023-12-01')
+  const [sourceId, setSourceId] = useState('nasa-power')
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [datasetA, setDatasetA] = useState<TimeSeriesDataset | null>(null)
+  const [datasetB, setDatasetB] = useState<TimeSeriesDataset | null>(null)
+
+  const selectedVar = variables.find((v) => v.id === variableId) ?? variables[0]
+  const regionA = regions.find((r) => r.id === regionAId) ?? regions[0]
+  const regionB = regions.find((r) => r.id === regionBId) ?? regions[1]
+
+  async function handleCompare() {
+    setLoading(true)
+    setError(null)
+    try {
+      const [resA, resB] = await Promise.all([
+        runAnalysis(
+          { variableIds: [variableId], regionId: regionAId, timeRange: { startDate, endDate, interval: 'monthly' }, sourceId },
+          null,
+          null
+        ),
+        runAnalysis(
+          { variableIds: [variableId], regionId: regionBId, timeRange: { startDate, endDate, interval: 'monthly' }, sourceId },
+          null,
+          null
+        ),
+      ])
+      setDatasetA(resA)
+      setDatasetB(resB)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const resultA = datasetA?.results.find((r) => r.variable.id === variableId)
+  const resultB = datasetB?.results.find((r) => r.variable.id === variableId)
+
+  const slopeA = resultA?.trend.change_per_decade
+  const slopeB = resultB?.trend.change_per_decade
+  const isOpposing = slopeA !== undefined && slopeA !== null && slopeB !== undefined && slopeB !== null && ((slopeA > 0 && slopeB < 0) || (slopeA < 0 && slopeB > 0))
+
+  return (
+    <div className="rounded-2xl border border-line bg-surface p-5 sm:p-6 shadow-sm space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+        <div className="flex items-center gap-2.5">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-purple-600 text-white">
+            <GitCompare size={20} />
+          </span>
+          <div>
+            <h2 className="text-sm font-bold text-ink flex items-center gap-2">
+              Modo Comparación Bi-Regional
+              <span className="rounded-full bg-purple-50 text-purple-700 px-2 py-0.5 text-[10px] font-semibold border border-purple-200">
+                Reto NASA: Respuestas Contrastantes
+              </span>
+            </h2>
+            <p className="text-xs text-muted">Contrasta una misma variable en dos ecosistemas bajo el mismo periodo temporal.</p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          disabled={loading}
+          onClick={() => void handleCompare()}
+          className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
+        >
+          {loading ? <LoaderCircle size={14} className="animate-spin" /> : <GitCompare size={14} />}
+          <span>{loading ? 'Consultando datos…' : 'Ejecutar Comparación'}</span>
+        </button>
+      </div>
+
+      {/* Selectores de comparación */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-xs">
+        <div>
+          <label className="block font-medium text-muted mb-1">Variable</label>
+          <select
+            value={variableId}
+            onChange={(e) => setVariableId(e.target.value as VariableId)}
+            className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink font-medium focus:border-accent"
+          >
+            {variables.map((v) => (
+              <option key={v.id} value={v.id}>{v.name} ({v.unit})</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block font-medium text-muted mb-1">Región A</label>
+          <select
+            value={regionAId}
+            onChange={(e) => setRegionAId(e.target.value as RegionId)}
+            className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink font-medium focus:border-accent"
+          >
+            {regions.map((r) => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block font-medium text-muted mb-1">Región B</label>
+          <select
+            value={regionBId}
+            onChange={(e) => setRegionBId(e.target.value as RegionId)}
+            className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink font-medium focus:border-accent"
+          >
+            {regions.map((r) => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block font-medium text-muted mb-1">Periodo (Inicio / Fin)</label>
+          <div className="flex items-center gap-1">
+            <input
+              type="text"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              placeholder="YYYY-MM-DD"
+              className="w-1/2 rounded border border-line bg-surface px-1.5 py-1.5 text-[11px] font-mono text-ink"
+            />
+            <span className="text-muted">-</span>
+            <input
+              type="text"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              placeholder="YYYY-MM-DD"
+              className="w-1/2 rounded border border-line bg-surface px-1.5 py-1.5 text-[11px] font-mono text-ink"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block font-medium text-muted mb-1">Fuente de datos</label>
+          <select
+            value={sourceId}
+            onChange={(e) => setSourceId(e.target.value)}
+            className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink font-medium focus:border-accent"
+          >
+            <option value="nasa-power">NASA POWER (Real)</option>
+            <option value="local-demo">Demo Sintético</option>
+          </select>
+        </div>
+      </div>
+
+      {error && (
+        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+          {error}
+        </p>
+      )}
+
+      {/* Banner de Tendencias Opuestas Detectadas */}
+      {isOpposing && (
+        <div className="rounded-xl border border-purple-300 bg-purple-50/90 p-4 text-purple-950 shadow-xs">
+          <div className="flex items-start gap-2.5">
+            <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-purple-600 text-white font-bold text-xs">
+              ⚡
+            </span>
+            <div>
+              <h3 className="text-sm font-bold text-purple-900">
+                ¡Tendencias opuestas detectadas en el sistema Tierra!
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-purple-900">
+                Mientras que en <strong>{regionA.name}</strong> la {selectedVar.name} {slopeA! > 0 ? 'aumentó' : 'disminuyó'}{' '}
+                (<strong>{slopeA! > 0 ? `+${formatValue(slopeA)}` : formatValue(slopeA)} {selectedVar.unit}/década</strong>), en{' '}
+                <strong>{regionB.name}</strong> se comportó en sentido opuesto:{' '}
+                <strong>{slopeB! > 0 ? `+${formatValue(slopeB)}` : formatValue(slopeB)} {selectedVar.unit}/década</strong>.
+              </p>
+              <p className="mt-2 text-[11px] text-purple-800 italic">
+                📌 <strong>Evidencia del Challenge:</strong> Un mismo motor del sistema climático global (como la intensificación del ciclo hidrológico) redistribuye la humedad provocando sequías en cuencas continentales mientras incrementa precipitaciones en zonas marítimas o costeras.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Gráficas comparativas lado a lado */}
+      {datasetA && datasetB && (
+        <div className="grid gap-5 lg:grid-cols-2 pt-2">
+          {/* Tarjeta Región A */}
+          <div className="rounded-xl border border-line bg-canvas/40 p-4">
+            <div className="flex items-center justify-between border-b border-line pb-2 mb-3">
+              <h3 className="text-xs font-bold text-ink">{regionA.name}</h3>
+              <span className="flex items-center gap-1 text-xs font-semibold">
+                {slopeA !== undefined && slopeA !== null && slopeA > 0 ? (
+                  <TrendingUp size={14} className="text-rose-600" />
+                ) : (
+                  <TrendingDown size={14} className="text-blue-600" />
+                )}
+                {formatValue(slopeA)} {selectedVar.unit}/década
+              </span>
+            </div>
+            <div className="h-56 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={datasetA.points} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
+                  <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
+                  <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} />
+                  <Tooltip labelFormatter={(l) => formatDate(String(l))} />
+                  <Area dataKey={`band_${variableId}`} stroke="none" fill="#0284c7" fillOpacity={0.12} isAnimationActive={false} />
+                  <Line dataKey={variableId} stroke="#0284c7" strokeWidth={1.3} dot={false} isAnimationActive={false} name="Observado" />
+                  <Line dataKey={`trend_${variableId}`} stroke="#0284c7" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name="Tendencia" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
+              <span>Mann-Kendall p = {formatValue(resultA?.trend.mann_kendall?.p_value ?? resultA?.trend.p_value, 4)}</span>
+              <span>{resultA?.trend.significant ? '✅ Significativo (α=0.05)' : '❌ No significativo'}</span>
+            </div>
+          </div>
+
+          {/* Tarjeta Región B */}
+          <div className="rounded-xl border border-line bg-canvas/40 p-4">
+            <div className="flex items-center justify-between border-b border-line pb-2 mb-3">
+              <h3 className="text-xs font-bold text-ink">{regionB.name}</h3>
+              <span className="flex items-center gap-1 text-xs font-semibold">
+                {slopeB !== undefined && slopeB !== null && slopeB > 0 ? (
+                  <TrendingUp size={14} className="text-rose-600" />
+                ) : (
+                  <TrendingDown size={14} className="text-blue-600" />
+                )}
+                {formatValue(slopeB)} {selectedVar.unit}/década
+              </span>
+            </div>
+            <div className="h-56 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={datasetB.points} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
+                  <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
+                  <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} />
+                  <Tooltip labelFormatter={(l) => formatDate(String(l))} />
+                  <Area dataKey={`band_${variableId}`} stroke="none" fill="#e11d48" fillOpacity={0.12} isAnimationActive={false} />
+                  <Line dataKey={variableId} stroke="#e11d48" strokeWidth={1.3} dot={false} isAnimationActive={false} name="Observado" />
+                  <Line dataKey={`trend_${variableId}`} stroke="#e11d48" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name="Tendencia" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
+              <span>Mann-Kendall p = {formatValue(resultB?.trend.mann_kendall?.p_value ?? resultB?.trend.p_value, 4)}</span>
+              <span>{resultB?.trend.significant ? '✅ Significativo (α=0.05)' : '❌ No significativo'}</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

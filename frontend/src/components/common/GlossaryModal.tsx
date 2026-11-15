@@ -1,0 +1,114 @@
+import { BookOpen, X } from 'lucide-react'
+
+interface GlossaryModalProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+const terms = [
+  {
+    term: 'Tendencia (Trend)',
+    definition:
+      'Dirección consistente en la que evoluciona una variable a lo largo del tiempo (ascendente, descendente o estable), más allá de las fluctuaciones aleatorias o estacionales.',
+    relevance: 'Permite identificar si el sistema climático está experimentando un cambio sostenido.',
+  },
+  {
+    term: 'Significancia estadística (α = 0,05)',
+    definition:
+      'Criterio cuantitativo que indica si el cambio observado es improbable que se deba únicamente al azar. Con α = 0,05, exigimos un 95% de confianza antes de declarar una tendencia.',
+    relevance: 'Una tendencia visual en pocos años puede no ser estadísticamente significativa hasta contar con un registro más largo.',
+  },
+  {
+    term: 'Valor p (p-value)',
+    definition:
+      'Probabilidad de observar una tendencia igual o más extrema que la calculada bajo la hipótesis de que en realidad no hay cambio (hipótesis nula).',
+    relevance: 'Si p < 0,05, consideramos que existe evidencia estadística suficiente para rechazar que el cambio sea simple ruido.',
+  },
+  {
+    term: 'Intervalo de Confianza del 95% (IC 95%)',
+    definition:
+      'Rango estimado que, con un 95% de certeza estadística, contiene la verdadera tasa de cambio de la variable en el sistema Tierra.',
+    relevance: 'Muestra la precisión de la estimación. Si el intervalo incluye el cero (ej. [-2, +5]), la tendencia no es concluyente.',
+  },
+  {
+    term: 'Test de Mann-Kendall',
+    definition:
+      'Prueba no paramétrica recomendada por NASA y la OMM para evaluar si una serie temporal presenta una tendencia monótona creciente o decreciente.',
+    relevance: 'No asume que los datos sigan una distribución normal ni que el cambio sea estrictamente una línea recta.',
+  },
+  {
+    term: 'Pendiente de Theil-Sen (Sen’s Slope)',
+    definition:
+      'Estimador no paramétrico de la tasa de cambio calculado como la mediana de todas las pendientes posibles entre cada par de puntos en el tiempo.',
+    relevance: 'Es extremadamente robusto frente a valores atípicos (outliers) como tormentas récord o sequías extremas puntuales.',
+  },
+  {
+    term: 'Anomalía y Desestacionalización',
+    definition:
+      'Diferencia entre el valor medido en un mes particular y el promedio histórico de ese mismo mes (climatología mensual).',
+    relevance: 'Elimina el ciclo natural de verano/invierno para dejar al descubierto la verdadera señal del cambio de largo plazo.',
+  },
+]
+
+export function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
+  if (!isOpen) return null
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="glossary-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-line pb-4">
+          <div className="flex items-center gap-2.5">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
+              <BookOpen size={20} aria-hidden="true" />
+            </span>
+            <div>
+              <h2 id="glossary-title" className="text-base font-bold text-ink">
+                Glosario del Detective de Datos
+              </h2>
+              <p className="text-xs text-muted">Conceptos clave de ciencias de la Tierra y estadística</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-muted hover:bg-canvas hover:text-ink focus:outline-none"
+            aria-label="Cerrar glosario"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="mt-5 space-y-4">
+          {terms.map((item) => (
+            <div key={item.term} className="rounded-xl border border-line bg-canvas/40 p-3.5 text-xs">
+              <h3 className="font-semibold text-accent text-sm">{item.term}</h3>
+              <p className="mt-1 text-ink leading-relaxed">{item.definition}</p>
+              <p className="mt-2 text-[11px] text-muted italic border-t border-line/50 pt-1.5">
+                💡 <strong>¿Por qué importa?</strong> {item.relevance}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 flex justify-end border-t border-line pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover"
+          >
+            Entendido, volver al análisis
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

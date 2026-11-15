@@ -301,3 +301,12 @@ advertencia por años incompletos y explicación errónea de autocorrelación/IC
 Histórico: **44 tests backend, 10 frontend, build y benchmark** en aquella
 revisión. Para la auditoría de noviembre de 2026, ver el registro actualizado
 arriba; no asumir que este conteo histórico refleja la rama actual.
+
+Fase final de identidad: el nombre visible se acortó a **Earth Trend Detective**
+para que el propósito sea memorable, mientras la documentación conserva el
+alineamiento con el proyecto oficial de NASA Space Apps. El primer bloque del
+Dashboard ahora responde explícitamente qué hace la herramienta y usa una
+jerarquía inspirada en NASA: azul institucional para la navegación y rojo NASA
+para la marca, la llamada principal y los estados activos. Se eliminó el banner
+de proveedor duplicado porque el estado de NASA POWER ya aparece en el header y
+la procedencia se explica junto a los resultados.

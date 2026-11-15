@@ -33,7 +33,7 @@ export const variables: ScientificVariable[] = [
     id: 'solar_radiation',
     name: 'Surface solar radiation',
     description: 'Incident solar flux at the surface under all-sky conditions.',
-    unit: 'kW·h/m²/día',
+    unit: 'kW·h/m²/day',
     measurement: 'Kilowatt-hours per square meter per day',
   },
   {

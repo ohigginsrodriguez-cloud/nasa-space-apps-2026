@@ -88,6 +88,10 @@
     text-transform: uppercase;
   }
 
+  .eyebrow.text-signal {
+    color: var(--color-signal);
+  }
+
   .status-pill {
     display: inline-flex;
     align-items: center;

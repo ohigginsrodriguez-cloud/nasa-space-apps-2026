@@ -21,11 +21,11 @@ export function Sidebar() {
       }}
     >
       <div className={`flex h-20 items-center justify-between gap-3 px-5 lg:h-24 ${collapsed ? 'lg:justify-center lg:px-3' : 'lg:px-6'}`}>
-        <NavLink to="/dashboard" aria-label="Earth System Trend Detective — Inicio" className="flex min-w-0 items-center gap-3 rounded-md" onClick={() => setMobileOpen(false)}>
-           <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-accent shadow-md"><Orbit size={25} strokeWidth={1.8} aria-hidden="true" /></span>
+        <NavLink to="/dashboard" aria-label="Earth Trend Detective — NASA Space Apps" className="flex min-w-0 items-center gap-3 rounded-md" onClick={() => setMobileOpen(false)}>
+           <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-signal text-white shadow-md"><Orbit size={25} strokeWidth={1.8} aria-hidden="true" /></span>
           <span className={collapsed ? 'lg:sr-only' : ''}>
-             <span className="block text-sm font-extrabold tracking-[0.04em]">EARTH SYSTEM</span>
-             <span className="block text-xs font-medium tracking-wide text-white/70">Trend Detective</span>
+              <span className="block text-sm font-extrabold tracking-[0.04em]">EARTH TREND</span>
+              <span className="block text-xs font-medium tracking-wide text-white/70">DETECTIVE</span>
           </span>
         </NavLink>
         <button ref={menuButton} type="button" className="flex size-11 items-center justify-center rounded-lg border border-white/25 text-white transition-colors hover:bg-white/10 lg:hidden" aria-label={mobileOpen ? t('closeMenu') : t('openMenu')} aria-expanded={mobileOpen} aria-controls="main-navigation" onClick={() => setMobileOpen(!mobileOpen)}>

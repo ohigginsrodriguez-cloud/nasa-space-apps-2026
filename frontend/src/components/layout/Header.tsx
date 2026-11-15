@@ -16,7 +16,7 @@ export function Header() {
         <p className="mt-1 text-xs leading-relaxed text-muted sm:text-sm">{section.id === 'investigation' ? t('investigationDescription') : t('trendsDescription')}</p>
       </div>
       <div className="flex items-center gap-3">
-        <span className="status-pill" data-demo={draft.sourceId === 'local-demo'}>{draft.sourceId === 'local-demo' ? 'Local demo · synthetic' : 'NASA POWER · MVP'}</span>
+        <span className="status-pill" data-demo={draft.sourceId === 'local-demo'}>{draft.sourceId === 'local-demo' ? 'Local demo · synthetic' : 'NASA POWER · live data'}</span>
       </div>
     </header>
   )

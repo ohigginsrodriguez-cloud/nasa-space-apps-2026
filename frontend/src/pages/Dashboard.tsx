@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, CircleHelp, Compass, FlaskConical, LoaderCircle, Play, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, CircleHelp, Compass, LoaderCircle, Play, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/common/Button'
 import { ProjectGuideModal } from '../components/common/ProjectGuideModal'
@@ -46,7 +46,6 @@ export function Dashboard() {
   const selectedVariableNames = draft.variableIds
     .map((id) => variables.find((variable) => variable.id === id)?.name)
     .filter(Boolean)
-  const isDemo = draft.sourceId === 'local-demo'
 
   async function generate() {
     if (geoError) return
@@ -91,21 +90,22 @@ export function Dashboard() {
 
       <ProjectGuideModal isOpen={showProjectGuide} onClose={() => setShowProjectGuide(false)} />
 
-      <section className="surface-panel overflow-hidden border-accent/20 bg-linear-to-br from-accent-soft/70 via-surface to-surface p-5 sm:p-7">
+       <section className="surface-panel relative overflow-hidden border-signal/35 bg-linear-to-br from-signal-soft via-surface to-surface p-5 sm:p-7">
+        <div className="absolute inset-x-0 top-0 h-1 bg-signal" aria-hidden="true" />
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <p className="eyebrow">WHAT THIS TOOL DOES</p>
+            <p className="eyebrow text-signal">NASA SPACE APPS · WHAT THIS TOOL DOES</p>
             <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-              Turn NASA Earth data into understandable evidence.
+              Turn NASA Earth data into evidence you can understand.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-              Choose a variable, region, and time period. Earth System Trend Detective shows what changed, how fast it changed, how strong the evidence is, and what the data cannot prove.
+              Earth Trend Detective turns long-term NASA observations into a clear answer: what changed, where it changed, and how strong the evidence is.
             </p>
           </div>
           <button
             type="button"
             onClick={() => setShowWizard(!showWizard)}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-accent-hover"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-signal px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-red-700"
           >
             <Compass size={16} aria-hidden="true" />
             {showWizard ? 'Close guided setup' : 'Need help choosing?'}
@@ -127,25 +127,11 @@ export function Dashboard() {
         </div>
       </section>
 
-      {/* Banner de Asistente Guiado */}
-      {showWizard && (
+       {showWizard && (
         <div className="animate-in fade-in duration-200">
           <DetectiveWizard onComplete={handleWizardComplete} />
         </div>
       )}
-
-      {/* Notificación de proveedor */}
-       <div className="flex items-start gap-3 rounded-lg border border-accent/20 bg-accent-soft/65 px-4 py-3.5 shadow-sm">
-        <FlaskConical size={18} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
-        <p className="text-xs leading-relaxed text-muted">
-          <strong className="font-semibold text-ink">
-             {isDemo ? t('syntheticMode') : t('activeSource')}
-          </strong>{' '}
-          {isDemo
-             ? t('syntheticDescription')
-             : t('nasaDescription')}
-        </p>
-      </div>
 
       <div inert={isLoading} aria-busy={isLoading}>
         {/* Ejemplos Demostrativos */}

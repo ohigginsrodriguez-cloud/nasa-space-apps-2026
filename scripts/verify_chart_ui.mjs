@@ -59,6 +59,26 @@ try {
   const handle = page.locator('#region .rectangle-drag-handle')
   const handleBox = await handle.boundingBox()
   assert.ok(handleBox)
+  const centerBeforeResize = await handle.evaluate((element) => {
+    const style = element.getAttribute('style') ?? ''
+    return style.match(/left: ([\d.]+)px; top: ([\d.]+)px/)?.slice(1, 3).map(Number)
+  })
+  assert.ok(centerBeforeResize)
+  const widthBeforeResize = (await rectangle.boundingBox())?.width
+  assert.ok(widthBeforeResize)
+  await page.getByRole('button', { name: '4° × 4°', exact: true }).click()
+  await page.getByText('4.00° wide × 4.00° high', { exact: true }).waitFor()
+  const centerAfterResize = await handle.evaluate((element) => {
+    const style = element.getAttribute('style') ?? ''
+    return style.match(/left: ([\d.]+)px; top: ([\d.]+)px/)?.slice(1, 3).map(Number)
+  })
+  assert.ok(centerAfterResize)
+  assert.ok(Math.abs(centerAfterResize[0] - centerBeforeResize[0]) < 1, 'resizing must keep the moved rectangle center')
+  assert.ok(Math.abs(centerAfterResize[1] - centerBeforeResize[1]) < 1, 'resizing must keep the moved rectangle center')
+  const widthAfterResize = (await rectangle.boundingBox())?.width
+  assert.ok(widthAfterResize && widthAfterResize < widthBeforeResize, 'the selected rectangle size must change')
+  assert.match(await page.locator('#region [role=status]').innerText(), /4° × 4° area applied/)
+
   await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2)
   await page.mouse.down()
   await page.mouse.move(handleBox.x + handleBox.width / 2 + 30, handleBox.y + handleBox.height / 2, { steps: 4 })

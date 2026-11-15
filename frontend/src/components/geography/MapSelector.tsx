@@ -173,7 +173,16 @@ export function MapSelector({ center, value, onChange, onValidationChange }: Map
   }, [center, onChange, onValidationChange, value])
 
   function applyRectangle(size: number) {
-    const bounds = createBounds(center, size)
+    // Resizing changes only the dimensions. Keep the center of the current
+    // selection, which may already have been moved away from the preset region.
+    const currentBounds = draft ?? value
+    const currentCenter: [number, number] = currentBounds
+      ? [
+          (currentBounds.south + currentBounds.north) / 2,
+          (currentBounds.west + currentBounds.east) / 2,
+        ]
+      : center
+    const bounds = createBounds(currentCenter, size)
     setDraft(bounds)
     onValidationChange?.(null)
     onChange(bounds)

@@ -243,6 +243,19 @@ o visual ni convierte la tabla histórica en una auditoría exhaustiva.
 - Comprobación final: Chromium E2E aprobado, **11 tests frontend**, typecheck y
   build aprobados.
 
+### Selector de mapa: cambiar tamaño sin volver al centro predefinido
+
+- Causa: `applyRectangle()` usaba siempre el centro original de la región para
+  construir las nuevas dimensiones, por lo que un área previamente movida saltaba
+  hacia atrás al elegir otro tamaño.
+- Corrección: `MapSelector.tsx` ahora centra el nuevo rectángulo en el centro de
+  la selección vigente (`draft`/`value`), cambiando solo alto y ancho. El
+  `MapController` sigue preservando el zoom establecido.
+- E2E comprueba arrastrar lejos de la posición inicial, elegir 4° × 4°, confirmar
+  que el centro en pantalla no cambia, el tamaño sí cambia y el zoom se mantiene.
+- Validación: navegador Chromium E2E aprobado; 11 pruebas frontend, typecheck y
+  build aprobados.
+
 Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 `feature/scientific-interpretation-and-audit`.
 

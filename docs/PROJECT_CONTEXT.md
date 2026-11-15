@@ -231,6 +231,17 @@ real valida OLS/MK/Sen frente a SciPy y pymannkendall. También se ejecutó el
 E2E con Playwright y Chromium: siete paneles, zoom/arrastre, vista conjunta,
 estado vacío, móvil y API real sin errores JavaScript. `httpx2` elimina la
 advertencia deprecada de Starlette.
+Primera fase de claridad para la submission: se añadió `ProjectGuideModal.tsx`,
+accesible desde Dashboard y TrendsPage, con flujo de tres pasos, metodología,
+documentación NASA POWER y disclaimer de no afiliación.
+`TimeSeriesChart.tsx` ahora incluye un panel desplegable de procedencia con
+fuente, región, periodo, método, productos/modelos, faltantes y documentación.
+Se corrigió el overflow móvil introducido por estos controles: el encabezado y
+las pestañas de `TrendsPage` se adaptan en viewport de 390 px sin ocultar
+acciones.
+Verificación final de esta fase: backend **51 passed**, frontend **11 passed**,
+typecheck, build y E2E correctos.
+
 La limpieza de ramas solo debe borrar ramas ya fusionadas; se preservan las que
 tienen commits exclusivos.
 

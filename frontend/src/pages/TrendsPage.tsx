@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { TimeSeriesChart } from '../components/charts/TimeSeriesChart'
 import { GlossaryModal } from '../components/common/GlossaryModal'
 import { PageIntro } from '../components/common/PageIntro'
+import { ProjectGuideModal } from '../components/common/ProjectGuideModal'
 import { RegionComparison } from '../components/detective/RegionComparison'
 import { useResearch } from '../context/ResearchContext'
 
@@ -11,6 +12,7 @@ export function TrendsPage() {
   const { visualization, dataset, isPending, dataLoadState, dataLoadError } = useResearch()
   const [activeTab, setActiveTab] = useState<'single' | 'compare'>('single')
   const [showGlossary, setShowGlossary] = useState(false)
+  const [showProjectGuide, setShowProjectGuide] = useState(false)
 
   return (
     <div className="space-y-6">
@@ -20,7 +22,15 @@ export function TrendsPage() {
           title="Detective de Tendencias Ambientales"
           description="Inferencia multi-método (Regresión OLS, Mann-Kendall, Sen) con detección de tendencias opuestas y bandas de confianza al 95%."
         />
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setShowProjectGuide(true)}
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-accent hover:text-accent hover:shadow-md"
+          >
+            <BookOpen size={14} className="text-accent" />
+            <span>Cómo funciona</span>
+          </button>
           <button
             type="button"
             onClick={() => setShowGlossary(true)}
@@ -29,11 +39,11 @@ export function TrendsPage() {
             <BookOpen size={14} className="text-accent" />
             <span>Glosario Científico</span>
           </button>
-          <div className="flex rounded-lg border border-line bg-surface p-1 shadow-sm">
+            <div className="flex min-w-0 max-w-full flex-wrap rounded-lg border border-line bg-surface p-1 shadow-sm">
             <button
               type="button"
               onClick={() => setActiveTab('single')}
-              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+                className={`inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-center text-xs font-semibold transition-colors sm:flex-none sm:px-3 ${
                 activeTab === 'single'
                   ? 'bg-accent text-white'
                   : 'text-muted hover:text-ink'
@@ -45,7 +55,7 @@ export function TrendsPage() {
             <button
               type="button"
               onClick={() => setActiveTab('compare')}
-              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+                className={`inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-center text-xs font-semibold transition-colors sm:flex-none sm:px-3 ${
                 activeTab === 'compare'
                    ? 'bg-accent text-white'
                   : 'text-muted hover:text-ink'
@@ -59,6 +69,7 @@ export function TrendsPage() {
       </div>
 
       <GlossaryModal isOpen={showGlossary} onClose={() => setShowGlossary(false)} />
+      <ProjectGuideModal isOpen={showProjectGuide} onClose={() => setShowProjectGuide(false)} />
 
       {activeTab === 'compare' ? (
         <RegionComparison />

@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, CircleHelp, Compass, Fla
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/common/Button'
 import { GlossaryModal } from '../components/common/GlossaryModal'
+import { ProjectGuideModal } from '../components/common/ProjectGuideModal'
 import { PageIntro } from '../components/common/PageIntro'
 import { DetectiveWizard } from '../components/detective/DetectiveWizard'
 import { MapSelector } from '../components/geography/MapSelector'
@@ -20,6 +21,7 @@ export function Dashboard() {
   const [step, setStep] = useState(0)
   const [showWizard, setShowWizard] = useState(false)
   const [showGlossary, setShowGlossary] = useState(false)
+  const [showProjectGuide, setShowProjectGuide] = useState(false)
   const [mapDraftError, setMapDraftError] = useState<string | null>(null)
 
   const {
@@ -79,6 +81,14 @@ export function Dashboard() {
         <div className="flex items-center gap-2">
           <button
             type="button"
+            onClick={() => setShowProjectGuide(true)}
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-accent hover:text-accent hover:shadow-md"
+          >
+            <BookOpen size={14} className="text-accent" />
+            <span>Cómo funciona</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setShowGlossary(true)}
              className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-accent hover:text-accent hover:shadow-md"
           >
@@ -101,6 +111,7 @@ export function Dashboard() {
       </div>
 
       <GlossaryModal isOpen={showGlossary} onClose={() => setShowGlossary(false)} />
+      <ProjectGuideModal isOpen={showProjectGuide} onClose={() => setShowProjectGuide(false)} />
 
       {/* Banner de Asistente Guiado */}
       {showWizard && (

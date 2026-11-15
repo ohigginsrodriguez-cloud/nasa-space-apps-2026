@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
-import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Download, HelpCircle, Info, Link2, Minus, SlidersHorizontal, XCircle } from 'lucide-react'
+import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Download, ExternalLink, HelpCircle, Info, Link2, Minus, SlidersHorizontal, XCircle } from 'lucide-react'
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from 'recharts'
 import { regions, variables } from '../../data/mockData'
 import type { BackendResult, DataConfiguration, TimeSeriesDataset, TimeSeriesPoint } from '../../types'
@@ -295,6 +295,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
     }))
   const visibleVariables = selectedVariables.filter((variable) => !hiddenVariables.includes(variable.id))
   const regionName = dataset?.region?.name ?? region?.name ?? 'la región'
+  const products = [...new Set(results.map((result) => result.variable.product).filter((product): product is string => Boolean(product)))]
   const chartPoints: TimeSeriesPoint[] = zoomedPoints(points, zoomLevel, panOffset)
   const combinedPoints = visibleVariables.reduce(
     (data, variable) => {
@@ -424,8 +425,45 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
         </div>
       </SectionTitle>
 
-      {configuration && selectedVariables.length > 0 && points.length > 0 ? (
+      {configuration && dataset && selectedVariables.length > 0 && points.length > 0 ? (
         <>
+          <details className="mb-5 rounded-xl border border-line bg-canvas/35 p-4">
+            <summary className="cursor-pointer text-sm font-bold text-accent">
+              Cómo se obtuvo este resultado
+            </summary>
+            <div className="mt-4 grid gap-3 border-t border-line pt-4 text-xs sm:grid-cols-2">
+              <div>
+                <dt className="font-bold text-ink">Fuente</dt>
+                <dd className="mt-1 text-muted">{dataset.isDemonstration ? 'Datos sintéticos reproducibles (demo)' : 'NASA POWER Monthly API'}</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-ink">Región consultada</dt>
+                <dd className="mt-1 text-muted">{regionName}</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-ink">Periodo y frecuencia</dt>
+                <dd className="mt-1 text-muted">{configuration.timeRange.startDate} a {configuration.timeRange.endDate} · mensual</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-ink">Método principal</dt>
+                <dd className="mt-1 text-muted">Valores anuales completos · OLS + intervalo de confianza del 95%</dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="font-bold text-ink">Productos y modelos</dt>
+                <dd className="mt-1 text-muted">{products.length > 0 ? products.join(' · ') : 'Metadatos no disponibles en esta respuesta.'}</dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="font-bold text-ink">Calidad de datos</dt>
+                <dd className="mt-1 text-muted">{dataset.missingValueCount > 0 ? `${dataset.missingValueCount} observaciones faltantes; revisa las advertencias de cada variable.` : 'No se detectaron observaciones faltantes en la serie consultada.'}</dd>
+              </div>
+            </div>
+            {dataset.sourceUrl && (
+              <a href={dataset.sourceUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center text-xs font-bold text-accent underline underline-offset-4">
+                Abrir documentación de la fuente <ExternalLink size={12} className="ml-1" aria-hidden="true" />
+              </a>
+            )}
+          </details>
+
           {/* Controles de visualización y leyenda */}
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">

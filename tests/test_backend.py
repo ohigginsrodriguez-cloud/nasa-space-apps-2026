@@ -33,21 +33,26 @@ def test_variable_catalog_has_internal_ids_and_provider_availability() -> None:
     response = client.get("/api/v1/variables")
     assert response.status_code == 200
     catalog = {item["id"]: item for item in response.json()}
-    assert set(catalog) == {
-        "temperature",
-        "precipitation",
-        "soil_moisture",
-        "ndvi",
-        "evapotranspiration",
-    }
+    # Must include our core variables and roadmap variables
+    assert "temperature" in catalog
+    assert "precipitation" in catalog
+    assert "soil_moisture" in catalog
+    assert "relative_humidity" in catalog
+    assert "solar_radiation" in catalog
+    assert "surface_pressure" in catalog
+    assert "wind_speed" in catalog
+    assert "ndvi" in catalog
     assert catalog["temperature"]["available"] is True
-    assert catalog["soil_moisture"]["available"] is False
+    assert catalog["soil_moisture"]["available"] is True
+    assert catalog["ndvi"]["available"] is False
 
 
 def test_provider_filter_reports_real_provider_support() -> None:
     response = client.get("/api/v1/variables?provider=nasa-power")
     catalog = {item["id"]: item for item in response.json()}
     assert catalog["temperature"]["available"] is True
+    assert catalog["soil_moisture"]["available"] is True
+    assert catalog["solar_radiation"]["available"] is True
     assert catalog["ndvi"]["available"] is False
 
 

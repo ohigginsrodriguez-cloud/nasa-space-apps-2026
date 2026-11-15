@@ -1,8 +1,21 @@
-export type VariableId = 'temperature' | 'precipitation'
+export type VariableId =
+  | 'temperature'
+  | 'precipitation'
+  | 'soil_moisture'
+  | 'relative_humidity'
+  | 'solar_radiation'
+  | 'surface_pressure'
+  | 'wind_speed'
 export type RegionId = 'sonoran-desert' | 'amazon-basin' | 'chesapeake-estuary' | 'new-york-city'
 export type TemporalInterval = 'monthly'
 export type SectionId = 'investigation' | 'analysis'
-export type VariableCategory = 'Atmósfera' | 'Hidrología' | 'Océanos' | 'Superficie terrestre'
+export type VariableCategory =
+  | 'Todas'
+  | 'Atmósfera'
+  | 'Hidrología'
+  | 'Superficie terrestre'
+  | 'Energía'
+  | 'Océanos e Hidrología'
 export type IntegrationStatus = 'demo' | 'requires-configuration' | 'pending'
 
 export interface ScientificVariable {
@@ -82,6 +95,7 @@ export interface BackendVariable {
   description: string
   unit: string
   aggregation: string
+  category?: string
   product: string | null
   status: string
   available: boolean

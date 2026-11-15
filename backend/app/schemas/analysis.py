@@ -59,6 +59,7 @@ class VariableInfo(BaseModel):
     description: str
     unit: str
     aggregation: str
+    category: str = "Atmósfera"
     product: str | None
     status: str
     available: bool

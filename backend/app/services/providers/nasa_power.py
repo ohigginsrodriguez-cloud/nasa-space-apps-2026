@@ -74,6 +74,15 @@ class NasaPowerProvider:
                 "2 degrees wide and 2 degrees tall; use a point for smaller areas."
             )
 
+        if route == "regional" and (
+            region.north - region.south > 10
+            or region.east - region.west > 10
+        ):
+            raise ValueError(
+                "El área es demasiado grande para NASA POWER: cada lado del "
+                "rectángulo debe medir entre 2° y 10°."
+            )
+
         params: dict[str, str | float] = {
             "parameters": variable.remote_parameter,
             "community": "RE",

@@ -12,6 +12,7 @@ import { VariableSelector } from '../components/variables/VariableSelector'
 import { useResearch } from '../context/ResearchContext'
 import { demoExamples, regions, variables } from '../data/mockData'
 import type { DataConfiguration } from '../types'
+import { validateGeographicSelection } from '../utils/configuration'
 
 const steps = ['Variable', 'Ubicación', 'Periodo']
 
@@ -19,6 +20,7 @@ export function Dashboard() {
   const [step, setStep] = useState(0)
   const [showWizard, setShowWizard] = useState(false)
   const [showGlossary, setShowGlossary] = useState(false)
+  const [mapDraftError, setMapDraftError] = useState<string | null>(null)
 
   const {
     draft,
@@ -46,10 +48,14 @@ export function Dashboard() {
   const isDemo = draft.sourceId === 'local-demo'
 
   async function generate() {
+    if (geoError) return
     if (await applyConfiguration()) navigate('/trends')
   }
 
   function handleWizardComplete(config: Partial<DataConfiguration>) {
+    setGeographicBounds(null)
+    setSelectedPoint(null)
+    setMapDraftError(null)
     updateDraft({
       ...draft,
       ...config,
@@ -59,7 +65,8 @@ export function Dashboard() {
   }
 
   const isLoading = dataLoadState === 'loading'
-  const canContinue = step === 0 ? draft.variableIds.length > 0 : true
+  const geoError = mapDraftError ?? validateGeographicSelection(draft.sourceId, geographicBounds, selectedPoint)
+  const canContinue = step === 0 ? draft.variableIds.length > 0 : step === 1 ? geoError === null : true
 
   return (
     <div className="space-y-5">
@@ -132,6 +139,7 @@ export function Dashboard() {
                 type="button"
                 onClick={() => {
                   loadExample(example.id)
+                  setMapDraftError(null)
                   setStep(0)
                 }}
                 className="flex min-h-16 items-center justify-between gap-3 rounded-lg border border-line p-3 text-left hover:border-accent hover:bg-accent-soft/30 focus-visible:outline-2 focus-visible:outline-accent"
@@ -188,6 +196,7 @@ export function Dashboard() {
                 point={selectedPoint}
                 onChange={setGeographicBounds}
                 onPointChange={setSelectedPoint}
+                onValidationChange={setMapDraftError}
               />
             </div>
           )}
@@ -249,6 +258,8 @@ export function Dashboard() {
         </p>
       )}
 
+      {geoError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">{geoError}</p>}
+
       {isLoading && (
         <p
           role="status"
@@ -292,7 +303,7 @@ export function Dashboard() {
             <ArrowRight size={15} aria-hidden="true" />
           </Button>
         ) : (
-          <Button variant="primary" disabled={isLoading} onClick={() => { void generate() }}>
+          <Button variant="primary" disabled={isLoading || geoError !== null} onClick={() => { void generate() }}>
             {isLoading ? (
               <>
                 <LoaderCircle size={15} className="animate-spin" aria-hidden="true" />

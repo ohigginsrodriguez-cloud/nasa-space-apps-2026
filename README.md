@@ -8,6 +8,11 @@
 
 Herramienta científica e interactiva para el reto de la **NASA Space Apps Challenge 2026**: *"Be An Earth System Trend Detective!"*. Permite formular preguntas, seleccionar variables de misiones y modelos de la Tierra, adquirir series temporales para cualquier región del planeta, visualizar su evolución histórica y determinar cuantitativamente si los cambios observados son estadísticamente significativos.
 
+**Contexto y cambios:** consulta [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md)
+para retomar el proyecto, revisar decisiones, pruebas y pendientes.
+NASA POWER regional admite rectángulos de **2° a 10° por eje**; para áreas
+menores se puede seleccionar un punto.
+
 ---
 
 ## 🎯 Cumplimiento de Objetivos del Challenge
@@ -42,7 +47,7 @@ Uno de los puntos clave del reto es evidenciar cómo un mismo proceso impulsa te
 
 ### Requisitos previos
 - Python 3.10 o superior
-- Node.js 20+ y npm
+- Node.js ^22.12.0 o >=24.0.0 y npm
 
 ### 1. Backend (FastAPI)
 ```bash
@@ -79,6 +84,7 @@ Para ejecutar la suite completa de pruebas unitarias y de integración:
 .venv/bin/python scripts/verify_analysis.py
 
 # Verificar compilación estricta de TypeScript y build del frontend
+npm --prefix frontend test
 npm --prefix frontend run build
 ```
 

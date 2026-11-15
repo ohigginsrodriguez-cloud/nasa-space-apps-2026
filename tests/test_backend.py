@@ -137,7 +137,8 @@ def test_analysis_rejects_inverted_dates() -> None:
     assert response.status_code == 422
 
 
-def test_nasa_power_provider_uses_monthly_regional_request_and_converts_rain():
+def test_nasa_power_provider_uses_monthly_regional_request_and_converts_rain(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.services.providers.nasa_power.CACHE_DIR", tmp_path)
     payload = {
         "features": [
             {
@@ -195,7 +196,8 @@ def test_nasa_power_provider_uses_monthly_regional_request_and_converts_rain():
     assert len(series) == 2
 
 
-def test_nasa_power_provider_parses_point_response():
+def test_nasa_power_provider_parses_point_response(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.services.providers.nasa_power.CACHE_DIR", tmp_path)
     payload = {
         "properties": {
             "parameter": {
@@ -316,4 +318,3 @@ def test_analyze_trend_insufficient_data_when_n_less_than_3():
     assert trend.status == "insufficient_data"
     assert trend.slope_per_year is None
     assert trend.n_observations == 2
-

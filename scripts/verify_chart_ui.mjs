@@ -15,9 +15,9 @@ try {
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.goto('http://localhost:5173')
-  await page.locator('#variable-picker').waitFor()
-  for (const variableId of ['temperature', 'precipitation', 'soil_moisture', 'relative_humidity', 'solar_radiation', 'surface_pressure', 'wind_speed']) {
-    await page.locator('#variable-picker').selectOption(variableId)
+  await page.getByText('Add a NASA POWER variable', { exact: true }).click()
+  for (const variableName of ['Air temperature', 'Precipitation', 'Root-zone soil moisture', 'Relative humidity', 'Surface solar radiation', 'Surface pressure', 'Wind speed']) {
+    await page.getByRole('button', { name: variableName, exact: true }).click()
   }
   await page.getByRole('button', { name: 'Next', exact: true }).click()
   await page.getByRole('button', { name: 'Next', exact: true }).click()

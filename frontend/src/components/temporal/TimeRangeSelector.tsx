@@ -27,7 +27,7 @@ export function TimeRangeSelector({ value, onChange, error }: TimeRangeSelectorP
   const latestCompleteMonth = lastCompleteMonth()
   const { language } = useLanguage()
   return (
-    <section id="temporal" aria-labelledby="temporal-title" className="surface-panel scroll-mt-6 p-5 sm:p-6">
+    <section id="temporal" aria-labelledby="temporal-title" className="surface-panel scroll-mt-6 border-signal/20 bg-linear-to-br from-signal-soft/35 via-surface to-surface p-5 sm:p-6">
        <SectionTitle id="temporal-title" title={language === 'en' ? 'How far back should we look?' : '¿Durante cuánto tiempo?'} description={language === 'en' ? 'A long period helps evaluate trends. The provider determines the available coverage.' : 'Un periodo largo ayuda a evaluar tendencias. El proveedor indicará su cobertura disponible.'} />
       <div>
         <div className="grid min-w-0 gap-4 sm:grid-cols-2">

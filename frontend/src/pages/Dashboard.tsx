@@ -190,21 +190,15 @@ export function Dashboard() {
                 }}
                 onUseSuggestion={(variableIds) => updateDraft({ ...draft, variableIds })}
               />
-               <details open={Boolean(geographicBounds || selectedPoint)} className="surface-panel p-4">
-                 <summary className="cursor-pointer text-sm font-bold text-accent">Customize the area (optional)</summary>
-                 <p className="mt-2 text-sm leading-relaxed text-muted">The selected region is ready to analyze. Open this only if you need a custom point or rectangle.</p>
-                 <div className="mt-4">
-                   <MapSelector
-                     key={draft.regionId}
-                     center={region.center}
-                     value={geographicBounds}
-                     point={selectedPoint}
-                     onChange={setGeographicBounds}
-                     onPointChange={setSelectedPoint}
-                     onValidationChange={setMapDraftError}
-                   />
-                 </div>
-               </details>
+               <MapSelector
+                 key={draft.regionId}
+                 center={region.center}
+                 value={geographicBounds}
+                 point={selectedPoint}
+                 onChange={setGeographicBounds}
+                 onPointChange={setSelectedPoint}
+                 onValidationChange={setMapDraftError}
+               />
             </div>
           )}
           {step === 2 && (

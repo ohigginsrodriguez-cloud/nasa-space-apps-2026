@@ -366,3 +366,16 @@ eliminación independiente. En el mapa, un control azul situado en el centro
 del rectángulo permite mover toda el área; las esquinas continúan redimensionando
 la selección y las coordenadas siguen disponibles para precisión manual.
 La interacción fue comprobada con Playwright a 1280 px.
+
+Revisión final de interacción geográfica: el rectángulo ya no se dibuja con dos
+clics ni tiene marcadores visibles en sus esquinas. Se crea automáticamente
+centrado en la región, con tamaño válido de 5° × 5°; también se ofrecen 2° × 2°
+y selección de punto. El usuario solo mueve el área mediante el control central
+azul, por lo que no puede iniciar una consulta regional inválida por tamaño.
+El mapa volvió a ser visible dentro del paso de región, no como opción avanzada.
+
+El selector de variables pasó a un menú desplegable propio: cada opción tiene
+su icono de información dentro del menú y las variables seleccionadas se
+mantienen en una lista separada. Variables, región y periodo recibieron fondos
+azul/rojo muy sutiles y controles con altura mínima de 44 px para mejorar
+legibilidad y objetivos táctiles sin saturar la paleta.

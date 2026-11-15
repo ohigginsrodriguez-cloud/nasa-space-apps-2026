@@ -6,21 +6,11 @@ import { runRegionComparison } from '../../services/api'
 import type { RegionId, SpatialInterpretation, TimeSeriesDataset, VariableId } from '../../types'
 import { getLatestCompleteMonthEnd, validateConfiguration } from '../../utils/configuration'
 import { centeredZoomPoints, variableChartPoints } from '../../utils/chartData'
+import { ChartZoomControls } from '../charts/ChartZoomControls'
 
 const shortDate = new Intl.DateTimeFormat('es', { month: 'short', year: '2-digit', timeZone: 'UTC' })
 const formatDate = (date: string) => shortDate.format(new Date(`${date}T00:00:00Z`))
 const formatValue = (value: number | null | undefined, digits = 2) => (value === null || value === undefined ? '—' : new Intl.NumberFormat('es', { maximumFractionDigits: digits }).format(value))
-
-function ComparisonZoom({ level, onChange }: { level: number; onChange: (level: number) => void }) {
-  return (
-    <aside className="flex shrink-0 flex-col items-center justify-center gap-1 rounded-md border border-line bg-surface p-1" aria-label="Controles de zoom de comparación">
-      <span className="text-[10px] font-semibold text-muted">Zoom</span>
-      <button type="button" className="flex size-7 items-center justify-center rounded border border-line text-lg hover:border-accent hover:text-accent disabled:opacity-40" aria-label="Acercar gráfica" onClick={() => onChange(level + 1)} disabled={level >= 4}>+</button>
-      <span className="text-[10px] tabular-nums text-muted">{level === 0 ? '1×' : `${(1.5 ** level).toFixed(1)}×`}</span>
-      <button type="button" className="flex size-7 items-center justify-center rounded border border-line text-lg hover:border-accent hover:text-accent disabled:opacity-40" aria-label="Alejar gráfica" onClick={() => onChange(level - 1)} disabled={level <= 0}>−</button>
-    </aside>
-  )
-}
 
 export function RegionComparison() {
   const [variableId, setVariableId] = useState<VariableId>('precipitation')
@@ -255,7 +245,7 @@ export function RegionComparison() {
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-            <ComparisonZoom level={zoomLevel} onChange={setZoomLevel} />
+            <ChartZoomControls level={zoomLevel} onChange={setZoomLevel} label="Controles de zoom de comparación" />
             </div>
             <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
               <span>OLS p = {formatValue(resultA?.trend.p_value, 4)} · MK p = {formatValue(resultA?.trend.mann_kendall?.p_value, 4)}</span>
@@ -294,7 +284,7 @@ export function RegionComparison() {
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-            <ComparisonZoom level={zoomLevel} onChange={setZoomLevel} />
+            <ChartZoomControls level={zoomLevel} onChange={setZoomLevel} label="Controles de zoom de comparación" />
             </div>
             <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
               <span>OLS p = {formatValue(resultB?.trend.p_value, 4)} · MK p = {formatValue(resultB?.trend.mann_kendall?.p_value, 4)}</span>

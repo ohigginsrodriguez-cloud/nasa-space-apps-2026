@@ -190,6 +190,14 @@ export interface StatisticalVerdict {
 export interface MultivariateInterpretation {
   title: string
   summary: string
+  pattern_summary?: string
+  selected_variables: Array<{
+    id: VariableId
+    name: string
+    unit: string
+    direction: BackendTrend['direction']
+    significant: boolean | null
+  }>
   processes: Array<{
     id: string
     name: string

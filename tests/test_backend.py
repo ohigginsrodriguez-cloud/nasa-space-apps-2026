@@ -158,6 +158,10 @@ def test_analysis_response_contains_interpretation_blocks():
     assert all("interpretation" in item for item in body["results"])
     assert body["results"][0]["interpretation"]["p_values"]["ols"] is not None
     assert body["multivariate_interpretation"]["processes"] == []
+    assert [item["id"] for item in body["multivariate_interpretation"]["selected_variables"]] == [
+        "temperature",
+        "precipitation",
+    ]
 
 
 def test_single_variable_analysis_does_not_claim_multivariate_diagnosis():

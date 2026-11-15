@@ -78,6 +78,18 @@ def statistical_verdict(variable: dict[str, Any], trend: dict[str, Any]) -> dict
 def physical_processes(results: list[dict[str, Any]]) -> dict[str, Any]:
     """Detect exploratory physical patterns only from significant directions."""
     by_id = {item["variable"]["id"]: item for item in results}
+    selected_variables = [
+        {
+            "id": item["variable"]["id"],
+            "name": item["variable"]["name"],
+            "unit": item["variable"]["unit"],
+            "direction": item["trend"].get("direction"),
+            "significant": (item.get("interpretation") or {}).get(
+                "significant", item["trend"].get("significant")
+            ),
+        }
+        for item in results
+    ]
 
     def supports(variable_id: str, direction: str) -> bool:
         item = by_id.get(variable_id)
@@ -136,8 +148,14 @@ def physical_processes(results: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "title": "Interconexión del sistema terrestre detectada" if processes else "Sin patrón multivariable concluyente",
         "processes": processes,
+        "selected_variables": selected_variables,
         "summary": (
-            "Los patrones son hipótesis exploratorias basadas en tendencias significativas."
+            f"Se analizaron conjuntamente {len(selected_variables)} variables: "
+            f"{', '.join(item['name'] for item in selected_variables)}. "
+            "Cada variable conserva su unidad y su propio veredicto estadístico."
+        ),
+        "pattern_summary": (
+            "Se encontraron patrones compatibles; son hipótesis exploratorias basadas en tendencias significativas."
             if processes
             else "No se encontró una combinación predefinida de tendencias significativas."
         ),

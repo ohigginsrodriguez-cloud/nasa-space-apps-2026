@@ -217,6 +217,13 @@ Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 - Los patrones de interconexión son hipótesis; no afirman causalidad.
 - Se actualizaron catálogo, alcance y metodología para que reflejen las siete
   variables POWER, los años completos y las limitaciones vigentes.
+- Cuando se seleccionan dos o más variables, la API y la UI muestran una
+  interpretación conjunta aunque no exista un patrón predefinido: enumera las
+  variables/unidades analizadas, resume sus veredictos y separa los patrones
+  exploratorios de las conclusiones estadísticas individuales.
+- Los controles de zoom comparten un componente; el arrastre con mouse usa
+  actualización por frame y permite recorrer la ventana ampliada sin cambiar
+  los cálculos.
 
 Verificación ejecutada después de estos cambios: backend **51 passed**,
 frontend **11 passed**, typecheck y build correctos; el benchmark NASA POWER

@@ -4,6 +4,7 @@ import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip,
 import { regions, variables } from '../../data/mockData'
 import type { BackendResult, DataConfiguration, TimeSeriesDataset, TimeSeriesPoint } from '../../types'
 import { SectionTitle } from '../common/SectionTitle'
+import { ChartZoomControls } from './ChartZoomControls'
 import { variableChartPoints, zoomWindowSize, zoomedPoints } from '../../utils/chartData'
 
 interface TimeSeriesChartProps {
@@ -75,18 +76,6 @@ function ChartLegend({ variable }: { variable: { name: string; unit: string; id:
       <span className="flex items-center gap-1.5 text-muted"><span className="w-5 border-t-2 border-dashed" style={{ borderColor: color }} /> Tendencia</span>
       <span className="flex items-center gap-1.5 text-muted"><span className="size-3 rounded-sm opacity-30" style={{ backgroundColor: color }} /> IC 95%</span>
     </div>
-  )
-}
-
-function ZoomControls({ level, onChange }: { level: number; onChange: (level: number) => void }) {
-  return (
-    <aside className="flex shrink-0 flex-col items-center justify-center gap-1 rounded-md border border-line bg-canvas/50 p-1" aria-label="Controles de zoom">
-      <span className="px-1 text-[10px] font-semibold text-muted">Zoom</span>
-      <button type="button" className="flex size-8 items-center justify-center rounded border border-line bg-surface text-lg font-semibold text-ink hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40" aria-label="Acercar gráfica" title="Acercar gráfica" onClick={() => onChange(level + 1)} disabled={level >= 4}>+</button>
-      <span className="min-w-8 text-center text-[10px] tabular-nums text-muted">{level === 0 ? '1×' : `${(1.5 ** level).toFixed(1)}×`}</span>
-      <button type="button" className="flex size-8 items-center justify-center rounded border border-line bg-surface text-lg font-semibold text-ink hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40" aria-label="Alejar gráfica" title="Alejar gráfica" onClick={() => onChange(level - 1)} disabled={level <= 0}>−</button>
-      <button type="button" className="px-1 text-[10px] text-accent underline disabled:opacity-40" onClick={() => onChange(0)} disabled={level === 0}>Restablecer</button>
-    </aside>
   )
 }
 
@@ -522,7 +511,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
-                <ZoomControls level={zoomLevel} onChange={changeZoom} />
+                <ChartZoomControls level={zoomLevel} onChange={changeZoom} />
               </div>
               {visibleVariables.map((variable) => {
                 const result = results.find((item) => item.variable.id === variable.id)
@@ -643,7 +632,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               </ComposedChart>
             </ResponsiveContainer>
            </div>
-           <ZoomControls level={zoomLevel} onChange={changeZoom} />
+           <ChartZoomControls level={zoomLevel} onChange={changeZoom} />
            </div>
               <div
                 role="status"
@@ -700,21 +689,32 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               ))}
             </div>
           </section>
-          {results.length > 1 && dataset?.multivariateInterpretation?.processes.length ? (
+          {results.length > 1 && dataset?.multivariateInterpretation ? (
             <section aria-labelledby="processes-title" className="mt-5 rounded-xl border border-indigo-200 bg-indigo-50/60 p-4">
               <h2 id="processes-title" className="flex items-center gap-2 text-sm font-bold text-indigo-950">
                 <Link2 size={16} aria-hidden="true" />
-                Interconexión del Sistema Terrestre Detectada
+                Interpretación conjunta de las variables
               </h2>
-              <ul className="mt-3 space-y-3">
-                {dataset.multivariateInterpretation.processes.map((process) => (
-                  <li key={process.id} className="rounded-lg border border-indigo-200 bg-white/80 p-3">
-                    <h3 className="text-xs font-semibold text-indigo-950">{process.name}</h3>
-                    <p className="mt-1 text-xs text-indigo-900">{process.summary}</p>
-                    <p className="mt-1 text-[11px] text-indigo-800">{process.causality_warning}</p>
-                  </li>
+              <p className="mt-2 text-xs text-indigo-900">{dataset.multivariateInterpretation.summary}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {dataset.multivariateInterpretation.selected_variables.map((variable) => (
+                  <span key={variable.id} className="rounded-full border border-indigo-200 bg-white/80 px-2.5 py-1 text-[11px] text-indigo-950">
+                    {variable.name} · {variable.unit}
+                  </span>
                 ))}
-              </ul>
+              </div>
+              {dataset.multivariateInterpretation.processes.length > 0 && (
+                <ul className="mt-3 space-y-3">
+                  {dataset.multivariateInterpretation.processes.map((process) => (
+                    <li key={process.id} className="rounded-lg border border-indigo-200 bg-white/80 p-3">
+                      <h3 className="text-xs font-semibold text-indigo-950">{process.name}</h3>
+                      <p className="mt-1 text-xs text-indigo-900">{process.summary}</p>
+                      <p className="mt-1 text-[11px] text-indigo-800">{process.causality_warning}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="mt-3 text-[11px] text-indigo-800">{dataset.multivariateInterpretation.pattern_summary}</p>
               <p className="mt-2 text-[11px] text-indigo-800">{dataset.multivariateInterpretation.causality_warning}</p>
             </section>
           ) : null}

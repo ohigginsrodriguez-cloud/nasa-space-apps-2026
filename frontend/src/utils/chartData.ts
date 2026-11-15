@@ -15,11 +15,6 @@ export function variableChartPoints(points: TimeSeriesPoint[], result: BackendRe
   })
 }
 
-export function zoomPoints(points: TimeSeriesPoint[], start: string, end: string): TimeSeriesPoint[] {
-  return points.filter((point) => (!start || point.date.slice(0, 7) >= start)
-    && (!end || point.date.slice(0, 7) <= end))
-}
-
 /** Returns a centered temporal window. Level 0 is the complete series. */
 export function centeredZoomPoints(points: TimeSeriesPoint[], level: number): TimeSeriesPoint[] {
   return zoomedPoints(points, level, 0)

@@ -15,10 +15,10 @@ try {
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.goto('http://localhost:5173')
-  await page.getByText('Add a NASA POWER variable', { exact: true }).click()
-  for (const variableName of ['Air temperature', 'Precipitation', 'Root-zone soil moisture', 'Relative humidity', 'Surface solar radiation', 'Surface pressure', 'Wind speed']) {
-    await page.getByRole('button', { name: variableName, exact: true }).click()
-  }
+  await page.getByRole('checkbox', { name: /Select Air temperature/ }).waitFor()
+  const variables = page.getByRole('checkbox', { name: /^Select / })
+  assert.equal(await variables.count(), 7)
+  for (const checkbox of await variables.all()) await checkbox.check()
   await page.getByRole('button', { name: 'Next', exact: true }).click()
   await page.getByRole('button', { name: 'Next', exact: true }).click()
   await page.locator('input[type=date]').nth(0).fill('1991-01-01')

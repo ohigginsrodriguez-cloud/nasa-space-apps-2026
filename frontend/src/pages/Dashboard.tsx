@@ -194,9 +194,7 @@ export function Dashboard() {
                  key={draft.regionId}
                  center={region.center}
                  value={geographicBounds}
-                 point={selectedPoint}
                  onChange={setGeographicBounds}
-                 onPointChange={setSelectedPoint}
                  onValidationChange={setMapDraftError}
                />
             </div>
@@ -219,7 +217,7 @@ export function Dashboard() {
                   </div>
                   <div>
                      <dt className="text-muted">{t('studyRegion')}</dt>
-                    <dd className="mt-1 font-medium text-ink">{selectedPoint ? `Point: ${selectedPoint.latitude.toFixed(2)}, ${selectedPoint.longitude.toFixed(2)}` : geographicBounds ? `Custom area: ${geographicBounds.south.toFixed(2)}° to ${geographicBounds.north.toFixed(2)}° N, ${geographicBounds.west.toFixed(2)}° to ${geographicBounds.east.toFixed(2)}° E` : region.name}</dd>
+                    <dd className="mt-1 font-medium text-ink">{geographicBounds ? `Rectangle: ${geographicBounds.south.toFixed(2)}° to ${geographicBounds.north.toFixed(2)}° N, ${geographicBounds.west.toFixed(2)}° to ${geographicBounds.east.toFixed(2)}° E` : region.name}</dd>
                   </div>
                   <div>
                      <dt className="text-muted">{t('dataProvider')}</dt>

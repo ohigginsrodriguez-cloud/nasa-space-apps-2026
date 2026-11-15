@@ -12,8 +12,8 @@ export function SectionTitle({ id, title, description, children }: SectionTitleP
     <div className="mb-6 flex flex-wrap items-start justify-between gap-3 border-b border-line pb-4">
       <div className="flex items-start gap-3">
         <div>
-          <h2 id={id} className="text-base font-bold tracking-tight">{title}</h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted">{description}</p>
+           <h2 id={id} className="text-lg font-bold tracking-tight sm:text-xl">{title}</h2>
+           <p className="mt-1 text-base leading-relaxed text-muted">{description}</p>
         </div>
       </div>
       {children}

@@ -67,7 +67,7 @@ export function validateGeographicSelection(
       return (
         'The selected area is too small for NASA POWER. ' +
         'Necesita al menos 2° de alto y 2° de ancho. ' +
-        'Expand the rectangle or switch to point selection mode.'
+        'Choose a larger rectangle size.'
       )
     }
     if (latSpan > 10 || lonSpan > 10) {

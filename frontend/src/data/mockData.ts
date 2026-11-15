@@ -64,7 +64,7 @@ export const regions: Region[] = [
   {
     id: 'lacandon-jungle',
     name: 'Lacandon Jungle · Chiapas',
-    description: 'Humid tropical forest · representative point',
+    description: 'Humid tropical forest · regional rectangle',
     prompt: 'In tropical forest, investigate whether accumulated precipitation and soil moisture show sustained drying.',
     suggestedVariables: ['precipitation', 'soil_moisture'],
     center: [16.8, -91.3],
@@ -72,7 +72,7 @@ export const regions: Region[] = [
   {
     id: 'tabasco-wetlands',
     name: 'Centla Wetlands · Tabasco',
-    description: 'Coastal wetlands · representative point',
+    description: 'Coastal wetlands · regional rectangle',
     prompt: 'In estuarine basins, explore how precipitation and temperature interact in the hydrological regime.',
     suggestedVariables: ['precipitation', 'temperature'],
     center: [18.4, -92.6],

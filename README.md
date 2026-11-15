@@ -1,8 +1,8 @@
-# Trend detective
+# Earth Trend Detective
 
 **From NASA Earth data to understandable evidence.**
 
-Trend detective is an educational investigation tool for the NASA Space
+Earth Trend Detective is an educational investigation tool for the NASA Space
 Apps challenge **“Be An Earth System Trend Detective!”** It helps a user move
 from a question to a defensible answer:
 

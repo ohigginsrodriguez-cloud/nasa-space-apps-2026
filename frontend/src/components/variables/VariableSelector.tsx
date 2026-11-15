@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, ChevronDown, X } from 'lucide-react'
+import { Check, ChevronDown, CircleHelp, X } from 'lucide-react'
 import { variables } from '../../data/mockData'
 import { getVariables } from '../../services/api'
 import type { BackendVariable, VariableId } from '../../types'
@@ -82,6 +82,16 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
                         <span className="block" onMouseEnter={() => setInfoId(variable.id)} onMouseLeave={() => setInfoId((current) => current === variable.id ? null : current)}>{variable.name}</span>
                         <span className="block text-xs font-normal text-muted">{metadata?.unit ?? variable.unit}</span>
                       </span>
+                    </button>
+                    <button
+                      type="button"
+                      title={`About ${variable.name}`}
+                      aria-label={`About ${variable.name}`}
+                      aria-expanded={infoOpen}
+                      onClick={() => setInfoId(infoOpen ? null : variable.id)}
+                      className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-accent/30 text-accent hover:bg-accent hover:text-white"
+                    >
+                      <CircleHelp size={17} aria-hidden="true" />
                     </button>
                   </div>
                   {infoOpen && (

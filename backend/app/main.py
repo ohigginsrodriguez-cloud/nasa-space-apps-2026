@@ -19,7 +19,7 @@ from app.services.interpretation import physical_processes, spatial_divergence, 
 from app.services.providers.registry import get_provider
 
 app = FastAPI(
-    title="Trend detective API",
+    title="Earth Trend Detective API",
     description=(
         "Versioned API for environmental time series. NASA POWER provides "
         "monthly point and bounding-box data; the demo provider is synthetic."

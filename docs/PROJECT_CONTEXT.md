@@ -380,8 +380,9 @@ mantienen en una lista separada. Variables, región y periodo recibieron fondos
 azul/rojo muy sutiles y controles con altura mínima de 44 px para mejorar
 legibilidad y objetivos táctiles sin saturar la paleta.
 
-La interfaz de variables volvió al selector de tarjetas/grid anterior, ahora
-con un icono de ayuda junto al nombre de cada variable. La geografía usa
+La interfaz de variables usa un menú desplegable sencillo, ahora con un icono
+de ayuda junto a cada opción y una lista compacta de variables seleccionadas.
+La geografía usa
 exclusivamente rectángulos: no se ofrece selección por punto ni dibujo libre.
 Los tamaños disponibles son 2°, 3°, 4°, 5°, 6°, 8° y 10° por lado, todos
 válidos para NASA POWER. El arrastre del rectángulo tiene una amortiguación del

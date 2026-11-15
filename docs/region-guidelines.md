@@ -38,6 +38,7 @@ inválidas y límites del proveedor.
 - Sur menor que norte.
 - Oeste menor que este para un rectángulo simple.
 - Rechazar regiones vacías o inválidas.
+- NASA POWER regional admite entre 2° y 10° en cada eje (límites inclusivos).
 - Guardar la región enviada junto con el resultado.
 
 ## Agregación espacial
@@ -55,10 +56,16 @@ punto.
 
 ## Regiones iniciales para ejemplos
 
-Las regiones de la interfaz son ejemplos educativos y deben tener geometría
-reproducible antes de usarse con datos reales:
+El catálogo ofrece únicamente ubicaciones mexicanas. Sus geometrías reproducibles
+están en `backend/app/regions.py`:
 
-- Desierto de Sonora.
-- Cuenca del Amazonas.
-- Estuario de Chesapeake.
-- Área metropolitana de Nueva York.
+| Región | Tipo | Coordenadas |
+| --- | --- | --- |
+| Desierto de Sonora · México | Rectángulo | Latitud 28–30°, longitud −112 a −110° |
+| Selva Lacandona · Chiapas | Punto representativo | 16.8°, −91.3° |
+| Pantanos de Centla · Tabasco | Punto representativo | 18.4°, −92.6° |
+| Valle de México y alrededores | Rectángulo | Latitud 18.5–20.5°, longitud −100.2 a −98.2° |
+
+Los rectángulos son áreas educativas aproximadas, no límites administrativos ni
+máscaras de ecosistemas. Los puntos representan la celda del proveedor en esa
+ubicación, no el promedio de toda la selva o humedal.

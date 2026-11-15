@@ -79,6 +79,10 @@ export function validateConfiguration(configuration: DataConfiguration): string 
   const timeError = validateTimeRange(configuration.timeRange)
   if (timeError) return timeError
   if (!configuration.variableIds.length) return 'Selecciona al menos una variable para continuar.'
+  if (configuration.variableIds.length > 7) return 'Selecciona como máximo siete variables.'
+  if (configuration.sourceId === 'nasa-power' && configuration.timeRange.startDate < '1981-01-01') {
+    return 'NASA POWER mensual ofrece datos meteorológicos desde enero de 1981. Elige un inicio posterior.'
+  }
   return null
 }
 

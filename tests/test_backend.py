@@ -14,7 +14,7 @@ client = TestClient(app)
 def demo_request(**overrides):
     body = {
         "variable_ids": ["temperature", "precipitation"],
-        "region": {"type": "predefined", "id": "amazon-basin"},
+        "region": {"type": "predefined", "id": "lacandon-jungle"},
         "start_date": "2001-01-01",
         "end_date": "2025-12-31",
         "provider": "demo",
@@ -59,9 +59,9 @@ def test_provider_filter_reports_real_provider_support() -> None:
 def test_regions_endpoint_returns_reproducible_bounds() -> None:
     response = client.get("/api/v1/regions")
     assert response.status_code == 200
-    amazon = next(row for row in response.json() if row["id"] == "amazon-basin")
-    assert amazon["south"] < amazon["north"]
-    assert amazon["west"] < amazon["east"]
+    sonora = next(row for row in response.json() if row["id"] == "sonoran-desert")
+    assert sonora["south"] < sonora["north"]
+    assert sonora["west"] < sonora["east"]
 
 
 def test_demo_analysis_supports_multiple_variables_and_long_series() -> None:

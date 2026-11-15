@@ -187,10 +187,16 @@ export function Dashboard() {
             <div className="space-y-4">
               <RegionSelector
                 value={draft.regionId}
-                onChange={(regionId) => updateDraft({ ...draft, regionId })}
+                onChange={(regionId) => {
+                  setMapDraftError(null)
+                  setGeographicBounds(null)
+                  setSelectedPoint(null)
+                  updateDraft({ ...draft, regionId })
+                }}
                 onUseSuggestion={(variableIds) => updateDraft({ ...draft, variableIds })}
               />
               <MapSelector
+                key={draft.regionId}
                 center={region.center}
                 value={geographicBounds}
                 point={selectedPoint}

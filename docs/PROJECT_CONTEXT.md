@@ -98,7 +98,7 @@ propio comportamiento, aunque sí valida coordenadas geográficas.
 
 ## Comparación mundial: propuesta y dificultad
 
-Actualmente la comparación ofrece cuatro regiones predefinidas.
+Actualmente la comparación ofrece cuatro ubicaciones mexicanas predefinidas.
 
 **Elegir dos ubicaciones en cualquier parte del mundo: dificultad moderada.**
 Reutilizar `MapSelector` y `validateGeographicSelection` en cada panel, mantener
@@ -116,7 +116,7 @@ comparaciones estadísticas múltiples si se buscan tendencias en muchas regione
 
 Esta ampliación está propuesta, no implementada en esta corrección.
 
-## Pendientes observados al retomar
+## Pendientes observados al retomar (antes de la corrección siguiente)
 
 - `RegionComparison.tsx` detecta signos opuestos sin exigir significancia en
   ambos; su texto causal no se demuestra únicamente por tendencias opuestas.
@@ -124,3 +124,63 @@ Esta ampliación está propuesta, no implementada en esta corrección.
 - No interpretar los porcentajes históricos del README como auditoría nueva.
 - Cachés locales no versionadas en `data/cache/` y `backend/data/`: preservadas.
 - No se volvió a ejecutar el benchmark científico en esta corrección geográfica.
+
+## Corrección posterior: error 422 y catálogo mexicano
+
+### Causa reproducida
+
+El servidor local respondió **422** al enviar las siete variables activas:
+`variable_ids: List should have at most 5 items after validation, not 7`.
+La UI permitía siete, pero `AnalysisRequest` tenía `max_length=5`.
+El esquema ahora admite siete; el proveedor las consulta individualmente,
+respetando el límite de un parámetro por petición regional de POWER.
+No se afirma que todo 422 tenga esta causa: sigue siendo la respuesta correcta
+ante solicitudes inválidas.
+
+### Cambios y archivos
+
+- `backend/app/schemas/analysis.py`: aceptar las siete variables activas.
+- `frontend/src/utils/apiErrors.ts`, `services/api.ts`: mostrar errores
+  estructurados de FastAPI legiblemente (antes terminaban como `[object Object]`);
+  validar configuración antes de cualquier análisis, incluida comparación.
+- `utils/configuration.ts`: máximo de siete y límite inferior POWER 1981.
+- `backend/app/regions.py`, `frontend/src/data/mockData.ts`, `types/index.ts`:
+  solo Sonora mexicano, Selva Lacandona, Pantanos de Centla y Valle de México.
+  Lacandona/Centla son puntos representativos; Sonora/Valle son cajas de 2°×2°.
+- `DetectiveWizard.tsx`: reutilizar catálogo mexicano, corregir conteo inclusivo
+  de años y quitar promesa de máxima potencia estadística.
+- `RegionSelector.tsx`: nombres correctos de variables sugeridas y texto México.
+- `ResearchContext.tsx`, `Dashboard.tsx`: limpiar geografía personalizada al
+  elegir otra región; reiniciar mapa al cambiar región; ejemplos usan sus fechas
+  declaradas 1991–2023 y NASA POWER (antes cargaban demo y fechas diferentes).
+- `RegionComparison.tsx`: regiones mexicanas, validación previa, sincronización
+  de gráficas, ocultar resultados de configuraciones anteriores, etiqueta demo,
+  exigir significancia OLS para banner y retirar afirmación causal no demostrada.
+- `tests/test_mexico_regions.py`, `tests/test_backend.py`,
+  `frontend/tests/apiErrors.test.ts`: regresiones del catálogo y siete variables.
+- `scripts/verify_analysis.py`: usar Sonora mexicano y Lacandona; fallar realmente
+  ante errores de descarga o discrepancias de MK además de OLS/Sen.
+- README y `docs/region-guidelines.md`: geometrías, resultados reales y alcance.
+
+### Comprobaciones ejecutadas
+
+- Backend: **42 passed**, una advertencia de deprecación Starlette/httpx.
+- Frontend: **7 passed**; TypeScript y Vite compilan correctamente.
+- Servidor local `localhost:8000`: **cuatro análisis HTTP 200**, uno por cada
+  región, **siete variables simultáneas**, periodo 1991–2023, 396 meses por variable.
+  Datos NASA POWER reales (con la caché normal del proveedor); no respuestas simuladas.
+- Benchmark Sonora temperatura / Lacandona precipitación: diferencias OLS, MK
+  y Sen frente a SciPy/pymannkendall iguales a cero en la salida.
+- UI servida en `localhost:5173`: HTTP 200. No se automatizó un navegador;
+  las pruebas frontend comprueban validadores y contratos, no clics/renderizado.
+
+### Operación y límites
+
+Si se mantiene abierto un frontend antiguo, recargar la página. Si el backend
+no usa `--reload`, reiniciarlo para cargar el nuevo límite y catálogo.
+El aviso de React DevTools es normal en desarrollo.
+Los puntos del mapa personalizados siguen disponibles; solo el catálogo de
+regiones se restringió a México.
+Los antiguos pendientes del banner comparativo y `syncId` quedaron corregidos.
+La revisión actual no certifica ausencia de cualquier otro defecto científico
+o visual ni convierte la tabla histórica en una auditoría exhaustiva.

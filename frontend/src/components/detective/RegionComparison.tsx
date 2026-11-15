@@ -4,6 +4,7 @@ import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip,
 import { regions, variables } from '../../data/mockData'
 import { runAnalysis } from '../../services/api'
 import type { RegionId, TimeSeriesDataset, VariableId } from '../../types'
+import { validateConfiguration } from '../../utils/configuration'
 
 const shortDate = new Intl.DateTimeFormat('es', { month: 'short', year: '2-digit', timeZone: 'UTC' })
 const formatDate = (date: string) => shortDate.format(new Date(`${date}T00:00:00Z`))
@@ -11,8 +12,8 @@ const formatValue = (value: number | null | undefined, digits = 2) => (value ===
 
 export function RegionComparison() {
   const [variableId, setVariableId] = useState<VariableId>('precipitation')
-  const [regionAId, setRegionAId] = useState<RegionId>('new-york-city')
-  const [regionBId, setRegionBId] = useState<RegionId>('amazon-basin')
+  const [regionAId, setRegionAId] = useState<RegionId>('sonoran-desert')
+  const [regionBId, setRegionBId] = useState<RegionId>('lacandon-jungle')
   const [startDate, setStartDate] = useState('1995-01-01')
   const [endDate, setEndDate] = useState('2023-12-01')
   const [sourceId, setSourceId] = useState('nasa-power')
@@ -25,8 +26,16 @@ export function RegionComparison() {
   const selectedVar = variables.find((v) => v.id === variableId) ?? variables[0]
   const regionA = regions.find((r) => r.id === regionAId) ?? regions[0]
   const regionB = regions.find((r) => r.id === regionBId) ?? regions[1]
+  const configurationKey = JSON.stringify([variableId, regionAId, regionBId, startDate, endDate, sourceId])
+  const [resultKey, setResultKey] = useState<string | null>(null)
+  const hasCurrentResults = resultKey === configurationKey
+  const validationError = validateConfiguration({
+    variableIds: [variableId], regionId: regionAId, sourceId,
+    timeRange: { startDate, endDate, interval: 'monthly' },
+  })
 
   async function handleCompare() {
+    if (validationError) return
     setLoading(true)
     setError(null)
     try {
@@ -44,6 +53,7 @@ export function RegionComparison() {
       ])
       setDatasetA(resA)
       setDatasetB(resB)
+      setResultKey(configurationKey)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -51,12 +61,12 @@ export function RegionComparison() {
     }
   }
 
-  const resultA = datasetA?.results.find((r) => r.variable.id === variableId)
-  const resultB = datasetB?.results.find((r) => r.variable.id === variableId)
+  const resultA = hasCurrentResults ? datasetA?.results.find((r) => r.variable.id === variableId) : undefined
+  const resultB = hasCurrentResults ? datasetB?.results.find((r) => r.variable.id === variableId) : undefined
 
   const slopeA = resultA?.trend.change_per_decade
   const slopeB = resultB?.trend.change_per_decade
-  const isOpposing = slopeA !== undefined && slopeA !== null && slopeB !== undefined && slopeB !== null && ((slopeA > 0 && slopeB < 0) || (slopeA < 0 && slopeB > 0))
+  const isOpposing = resultA?.trend.significant && resultB?.trend.significant && slopeA !== undefined && slopeA !== null && slopeB !== undefined && slopeB !== null && ((slopeA > 0 && slopeB < 0) || (slopeA < 0 && slopeB > 0))
 
   return (
     <div className="rounded-2xl border border-line bg-surface p-5 sm:p-6 shadow-sm space-y-5">
@@ -72,13 +82,13 @@ export function RegionComparison() {
                 Reto NASA: Respuestas Contrastantes
               </span>
             </h2>
-            <p className="text-xs text-muted">Contrasta una misma variable en dos ecosistemas bajo el mismo periodo temporal.</p>
+            <p className="text-xs text-muted">Contrasta una misma variable en dos regiones de México bajo el mismo periodo temporal. Lacandona y Centla usan puntos representativos; Sonora y Valle de México, rectángulos aproximados.</p>
           </div>
         </div>
 
         <button
           type="button"
-          disabled={loading}
+          disabled={loading || validationError !== null}
           onClick={() => void handleCompare()}
           className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
         >
@@ -162,6 +172,8 @@ export function RegionComparison() {
         </div>
       </div>
 
+      {validationError && <p role="alert" className="text-xs text-red-800">{validationError}</p>}
+      {sourceId === 'local-demo' && <p role="status" className="text-xs text-muted">DEMO / SINTÉTICO: estas observaciones no son mediciones de NASA.</p>}
       {error && (
         <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
           {error}
@@ -186,7 +198,7 @@ export function RegionComparison() {
                 <strong>{slopeB! > 0 ? `+${formatValue(slopeB)}` : formatValue(slopeB)} {selectedVar.unit}/década</strong>.
               </p>
               <p className="mt-2 text-[11px] text-purple-800 italic">
-                📌 <strong>Evidencia del Challenge:</strong> Un mismo motor del sistema climático global (como la intensificación del ciclo hidrológico) redistribuye la humedad provocando sequías en cuencas continentales mientras incrementa precipitaciones en zonas marítimas o costeras.
+                Las dos tendencias son significativas según OLS. Los signos opuestos por sí solos no demuestran que exista una causa común.
               </p>
             </div>
           </div>
@@ -194,7 +206,7 @@ export function RegionComparison() {
       )}
 
       {/* Gráficas comparativas lado a lado */}
-      {datasetA && datasetB && (
+      {hasCurrentResults && datasetA && datasetB && (
         <div className="grid gap-5 lg:grid-cols-2 pt-2">
           {/* Tarjeta Región A */}
           <div className="rounded-xl border border-line bg-canvas/40 p-4">
@@ -211,7 +223,7 @@ export function RegionComparison() {
             </div>
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={datasetA.points} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
+                <ComposedChart syncId="region-comparison" data={datasetA.points} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
                   <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
                   <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} />
@@ -243,7 +255,7 @@ export function RegionComparison() {
             </div>
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={datasetB.points} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
+                <ComposedChart syncId="region-comparison" data={datasetB.points} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
                   <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
                   <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} />

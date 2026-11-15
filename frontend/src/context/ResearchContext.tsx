@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 import { defaultConfiguration, demoExamples } from '../data/mockData'
 import type { DataConfiguration, GeographicBounds, GeographicPoint, TimeSeriesDataset, VariableId } from '../types'
 import { runAnalysis } from '../services/api'
-import { sameConfiguration, validateConfiguration, validateTimeRange } from '../utils/configuration'
+import { sameConfiguration, validateConfiguration, validateGeographicSelection, validateTimeRange } from '../utils/configuration'
 
 type DataLoadState = 'idle' | 'loading' | 'success' | 'error'
 
@@ -56,6 +56,10 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
   const [timeError, setTimeError] = useState<string | null>(null)
 
   function updateDraft(next: DataConfiguration) {
+    if (next.regionId !== draft.regionId) {
+      setGeographicBounds(null)
+      setSelectedPoint(null)
+    }
     setDraft(next)
     setNotice(null)
     setTimeError(null)
@@ -76,6 +80,7 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
 
   async function applyConfiguration(): Promise<boolean> {
     const error = validateConfiguration(draft)
+      ?? validateGeographicSelection(draft.sourceId, geographicBounds, selectedPoint)
     setTimeError(validateTimeRange(draft.timeRange))
     if (error) {
       setDataLoadState('idle')
@@ -83,21 +88,6 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
       setNotice({ text: error, error: true })
       return false
     }
-    if (
-      draft.sourceId === 'nasa-power'
-      && geographicBounds
-      && (geographicBounds.north - geographicBounds.south < 2
-        || geographicBounds.east - geographicBounds.west < 2)
-    ) {
-      setDataLoadState('idle')
-      setDataLoadError(null)
-      setNotice({
-        text: 'NASA POWER necesita un rectángulo de al menos 2° de alto y 2° de ancho. Selecciona un punto o amplía el área.',
-        error: true,
-      })
-      return false
-    }
-
     setDataLoadState('loading')
     setDataLoadError(null)
     setNotice(null)
@@ -123,7 +113,7 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
   function loadExample(exampleId: string) {
     const example = demoExamples.find((item) => item.id === exampleId)
     if (!example) return
-    const configuration = { ...defaultConfiguration, regionId: example.regionId, variableIds: example.variableIds, sourceId: 'local-demo' }
+    const configuration = { ...defaultConfiguration, regionId: example.regionId, variableIds: example.variableIds, timeRange: example.timeRange, sourceId: 'nasa-power' }
     setDraft(configuration)
     setVisualization(null)
     setDataset(null)

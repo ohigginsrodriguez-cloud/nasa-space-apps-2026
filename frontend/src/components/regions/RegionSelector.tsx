@@ -1,5 +1,5 @@
 import { MapPin, Sparkles } from 'lucide-react'
-import { regions } from '../../data/mockData'
+import { regions, variables } from '../../data/mockData'
 import type { RegionId, VariableId } from '../../types'
 import { SectionTitle } from '../common/SectionTitle'
 
@@ -13,11 +13,11 @@ const fieldClass = 'mt-2 block min-h-11 w-full rounded-lg border border-line bg-
 
 export function RegionSelector({ value, onChange, onUseSuggestion }: RegionSelectorProps) {
   const region = regions.find((item) => item.id === value) ?? regions[0]
-  const suggestedNames = region.suggestedVariables.map((id) => id === 'temperature' ? 'temperatura' : 'precipitación').join(' y ')
+  const suggestedNames = region.suggestedVariables.map((id) => variables.find((variable) => variable.id === id)?.name ?? id).join(', ')
 
   return (
     <section id="preset-region" aria-labelledby="region-title" className="scroll-mt-6 rounded-xl border border-line bg-surface p-5 sm:p-6">
-      <SectionTitle id="region-title" title="¿Dónde quieres investigar?" description="Elige un área de interés para orientar tu pregunta.">
+      <SectionTitle id="region-title" title="¿Dónde quieres investigar?" description="Elige una región de México para orientar tu pregunta.">
         <MapPin size={18} className="text-accent" aria-hidden="true" />
       </SectionTitle>
       <label className="block text-xs font-medium">Región de estudio

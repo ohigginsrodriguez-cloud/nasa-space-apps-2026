@@ -21,25 +21,32 @@ menores se puede seleccionar un punto.
 | :--- | :---: | :--- |
 | **1. Identificar variables de la Tierra** | 🟢 **100%** | Catálogo con 7 variables activas verificadas en NASA POWER (MERRA-2) y roadmap detallado para instrumentos satelitales (MODIS, GLDAS, SWOT, GPM, OMI). |
 | **2. Definiciones sencillas y accesibles** | 🟢 **100%** | Glosario interactivo integrado en la UI y descripciones a nivel preparatoria para estudiantes y público general. |
-| **3. Adquisición regional de datos** | 🟢 **100%** | 4 regiones predefinidas representativas, selector interactivo de coordenadas por punto y caja delimitadora (*Bounding Box*) con ponderación por latitud. |
+| **3. Adquisición regional de datos** | 🟢 Implementado | 4 ubicaciones mexicanas: Sonora, Selva Lacandona, Pantanos de Centla y Valle de México. Puntos representativos y cajas aproximadas documentados. |
 | **4. Visualización de series temporales** | 🟢 **100%** | Gráficas compuestas en Recharts mostrando la serie mensual, la recta de tendencia estimada y la banda de confianza al 95%. |
 | **5. Análisis estadístico: Tasa de cambio** | 🟢 **100%** | Cálculo de la tasa decadal ($\beta_1 \times 10$) y la pendiente mediana de Theil-Sen. |
 | **6. Pruebas de significancia (t-test / MK)** | 🟢 **100%** | Doble prueba de significancia: $t$-test sobre regresión OLS y Test de Mann-Kendall con corrección por empates y continuidad ($\alpha = 0,05$). |
 | **7. Intervalos de confianza** | 🟢 **100%** | Intervalo de confianza analítico del 95% para la tasa decadal y bandas de incertidumbre sobre la recta de regresión. |
 | **8. Desestacionalización** | 🟢 **100%** | Climatología mensual, serie de anomalías y agregación anual tolerante ($\ge 9$ meses) para no perder años incompletos. |
 | **9. "Detective de Datos" guiado** | 🟢 **100%** | Asistente en 3 pasos que orienta al usuario según fenómeno, ecosistema y profundidad temporal. |
-| **10. Ejemplos demostrativos** | 🟢 **100%** | 3 casos de estudio de largo plazo ($\ge 20$ años) listos con 1 clic, incluyendo el caso de tendencias opuestas contrastantes. |
-| **11. Detección de tendencias opuestas** | 🟢 **100%** | Modo de comparación bi-regional con detección automática de pendientes contrastantes ante un mismo proceso global. |
+| **10. Ejemplos demostrativos** | 🟢 Implementado | 3 casos mexicanos precargados (1991–2023), con NASA POWER como fuente inicial. |
+| **11. Detección de tendencias opuestas** | 🟢 Implementado | Comparación bi-regional con gráficas sincronizadas; banner solo si ambas pendientes son significativas por OLS y de signo opuesto. No infiere causalidad. |
 
 ---
 
-## 🧪 Hallazgo Científico: Tendencias Opuestas Reales con Datos de NASA
+## 🧪 Verificación con datos de México
 
-Uno de los puntos clave del reto es evidenciar cómo un mismo proceso impulsa tendencias en direcciones opuestas según la región:
-- **Área Metropolitana de Nueva York**: Precipitación acumulada con tendencia al aumento (**$+72.30 \text{ mm/década}$**, $p = 0.050$, significativa).
-- **Cuenca del Amazonas**: Precipitación acumulada con tendencia a la disminución/secamiento (**$-102.14 \text{ mm/década}$**, $p = 0.071$, reducción de $-10.2 \text{ mm/año}$).
+Consultas reales de NASA POWER para **1991–2023**, geometrías en
+[`docs/region-guidelines.md`](docs/region-guidelines.md):
 
-*Ambos comportamientos son detectados y contrastados automáticamente por el modo de comparación de la herramienta.*
+- **Sonora, temperatura:** +0.291 °C/década; OLS p=0.000751;
+  Mann-Kendall p=0.005546.
+- **Selva Lacandona, precipitación:** +199.173 mm/década; OLS p=0.034661;
+  Mann-Kendall p=0.060817. Los métodos difieren en significancia: se muestra
+  una advertencia, no se oculta la discrepancia.
+
+`scripts/verify_analysis.py` verifica OLS, MK y Sen frente a SciPy/pymannkendall.
+No se afirma que estas dos series tengan tendencias opuestas: son variables
+diferentes. El comparador permite investigar una misma variable entre regiones.
 
 ---
 

@@ -38,7 +38,7 @@ class RegionRequest(BaseModel):
 class AnalysisRequest(BaseModel):
     """Input for a multi-variable time-series and trend analysis."""
 
-    variable_ids: list[str] = Field(min_length=1, max_length=5)
+    variable_ids: list[str] = Field(min_length=1, max_length=7)
     region: RegionRequest
     start_date: date
     end_date: date

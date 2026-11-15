@@ -1,5 +1,6 @@
 import type { BackendResult, BackendVariable, DataConfiguration, GeographicBounds, GeographicPoint, RegionId, TimeSeriesDataset } from '../types'
-import { validateGeographicSelection } from '../utils/configuration'
+import { validateConfiguration, validateGeographicSelection } from '../utils/configuration'
+import { formatApiError } from '../utils/apiErrors'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
@@ -24,7 +25,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   })
   if (!response.ok) {
     const body = await response.json().catch(() => null)
-    throw new Error(body?.detail?.message ?? body?.detail ?? `API error ${response.status}`)
+    throw new Error(formatApiError(body, response.status))
   }
   return response.json() as Promise<T>
 }
@@ -38,8 +39,9 @@ export async function runAnalysis(
   bounds: GeographicBounds | null,
   point: GeographicPoint | null,
 ): Promise<TimeSeriesDataset> {
-  const geographicError = validateGeographicSelection(configuration.sourceId, bounds, point)
-  if (geographicError) throw new Error(geographicError)
+  const validationError = validateConfiguration(configuration)
+    ?? validateGeographicSelection(configuration.sourceId, bounds, point)
+  if (validationError) throw new Error(validationError)
   // The backend is the sole source of scientific calculations; the frontend
   // only adapts the response into chart-friendly points.
   const provider = configuration.sourceId === 'nasa-power' ? 'nasa-power' : 'demo'

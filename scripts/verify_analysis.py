@@ -33,7 +33,7 @@ def run_benchmark():
     provider = NasaPowerProvider()
     test_cases = [
         ("Desierto de Sonora", PREDEFINED_REGIONS["sonoran-desert"], VARIABLES["temperature"], "temperature"),
-        ("Cuenca del Amazonas", PREDEFINED_REGIONS["amazon-basin"], VARIABLES["precipitation"], "precipitation"),
+        ("Selva Lacandona", PREDEFINED_REGIONS["lacandon-jungle"], VARIABLES["precipitation"], "precipitation"),
     ]
 
     start = date(1991, 1, 1)
@@ -47,6 +47,7 @@ def run_benchmark():
             series = provider.get_series(var, region, start, end)
         except Exception as e:
             print(f"Error fetching data: {e}")
+            all_passed = False
             continue
 
         annual = aggregate_annual(series, var, min_months_per_year=9)
@@ -118,7 +119,9 @@ def run_benchmark():
             for w in full_trend.warnings:
                 print(f"  • Advertencia: {w}")
 
-        if diff_slope_ols >= 1e-6 or diff_p_ols >= 1e-6 or diff_slope_sen >= 1e-6:
+        if any(not np.isfinite(diff) or diff >= 1e-6 for diff in (
+            diff_slope_ols, diff_p_ols, diff_slope_sen, diff_s, diff_p_mk, diff_z,
+        )):
             all_passed = False
 
     print("\n" + "=" * 80)
@@ -127,7 +130,8 @@ def run_benchmark():
     else:
         print("RESULTADO GLOBAL: ALGUNAS DESVIACIONES SUPERARON EL UMBRAL.")
     print("=" * 80)
+    return all_passed
 
 
 if __name__ == "__main__":
-    run_benchmark()
+    sys.exit(0 if run_benchmark() else 1)

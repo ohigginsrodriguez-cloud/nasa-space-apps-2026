@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ArrowRight, Compass, Flame, Leaf, Sparkles, Sun, Umbrella, Wind } from 'lucide-react'
 import type { DataConfiguration, RegionId, VariableId } from '../../types'
+import { regions } from '../../data/mockData'
 
 interface DetectiveWizardProps {
   onComplete: (config: Partial<DataConfiguration>) => void
@@ -44,53 +45,30 @@ const phenomena = [
   },
 ]
 
-const locations: Array<{ id: RegionId; name: string; type: string; desc: string }> = [
-  {
-    id: 'sonoran-desert',
-    name: 'Desierto de Sonora (Phoenix, Arizona)',
-    type: 'Desierto cálido árido',
-    desc: 'Ideal para estudiar estrés térmico, alta radiación y aridez.',
-  },
-  {
-    id: 'amazon-basin',
-    name: 'Cuenca del Amazonas',
-    type: 'Selva tropical húmeda',
-    desc: 'El mayor pulmón verde del planeta; clave para el ciclo hidrológico.',
-  },
-  {
-    id: 'chesapeake-estuary',
-    name: 'Estuario de Chesapeake',
-    type: 'Estuario costero y humedales',
-    desc: 'Ecosistema de transición entre agua dulce y salada vulnerable al clima.',
-  },
-  {
-    id: 'new-york-city',
-    name: 'Metrópolis de Nueva York',
-    type: 'Gran ciudad y costa atlántica',
-    desc: 'Área urbana densa propensa a islas de calor y tormentas costeras.',
-  },
-]
+const locations = regions.map((region) => ({
+  id: region.id, name: region.name, type: region.description, desc: region.prompt,
+}))
 
 const timeSpans = [
   {
     id: '30yr',
-    label: '30 años (1994–2024)',
-    desc: 'Norma climatológica de la OMM: máxima potencia estadística.',
-    start: '1994-01-01',
+    label: '30 años (1995–2024)',
+    desc: 'Periodo largo para estudiar cambios; la significancia depende de los datos.',
+    start: '1995-01-01',
     end: '2024-12-01',
   },
   {
     id: '20yr',
-    label: '20 años (2004–2024)',
+    label: '20 años (2005–2024)',
     desc: 'Periodo recomendado para identificar señales decadalmente robustas.',
-    start: '2004-01-01',
+    start: '2005-01-01',
     end: '2024-12-01',
   },
   {
     id: '15yr',
-    label: '15 años (2009–2024)',
+    label: '15 años (2010–2024)',
     desc: 'Análisis de la última década y media reciente.',
-    start: '2009-01-01',
+    start: '2010-01-01',
     end: '2024-12-01',
   },
 ]

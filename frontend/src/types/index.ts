@@ -6,7 +6,7 @@ export type VariableId =
   | 'solar_radiation'
   | 'surface_pressure'
   | 'wind_speed'
-export type RegionId = 'sonoran-desert' | 'amazon-basin' | 'chesapeake-estuary' | 'new-york-city'
+export type RegionId = 'sonoran-desert' | 'lacandon-jungle' | 'tabasco-wetlands' | 'valley-of-mexico'
 export type TemporalInterval = 'monthly'
 export type SectionId = 'investigation' | 'analysis'
 export type VariableCategory =
@@ -68,6 +68,7 @@ export interface DemoExample {
   description: string
   regionId: RegionId
   variableIds: VariableId[]
+  timeRange: TimeRange
 }
 
 export interface GeographicBounds {

@@ -6,6 +6,7 @@ import { GlossaryModal } from '../components/common/GlossaryModal'
 import { PageIntro } from '../components/common/PageIntro'
 import { ProjectGuideModal } from '../components/common/ProjectGuideModal'
 import { RegionComparison } from '../components/detective/RegionComparison'
+import { InvestigationFindings } from '../components/detective/InvestigationFindings'
 import { useResearch } from '../context/ResearchContext'
 import { useLanguage } from '../context/LanguageContext'
 
@@ -90,7 +91,10 @@ export function TrendsPage() {
           )}
 
           {visualization && dataset ? (
-            <TimeSeriesChart configuration={visualization} dataset={dataset} pendingChanges={isPending} />
+            <>
+              <InvestigationFindings configuration={visualization} dataset={dataset} pending={isPending} />
+              <TimeSeriesChart configuration={visualization} dataset={dataset} pendingChanges={isPending} />
+            </>
           ) : (
             dataLoadState !== 'loading' && (
               <section className="surface-panel border-dashed p-6 text-center">

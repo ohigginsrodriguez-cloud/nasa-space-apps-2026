@@ -310,3 +310,26 @@ jerarquía inspirada en NASA: azul institucional para la navegación y rojo NASA
 para la marca, la llamada principal y los estados activos. Se eliminó el banner
 de proveedor duplicado porque el estado de NASA POWER ya aparece en el header y
 la procedencia se explica junto a los resultados.
+
+## Investigación orientada a preguntas
+
+La interfaz adopta una cabecera negra, fondo blanco, estructura azul y acciones
+rojas inspiradas en la referencia NASA.gov. El hero pregunta “Is your region
+changing?” y lleva al flujo de configuración. Los tres casos científicos ahora
+son visibles y precargan directamente la revisión de región/periodo, antes de
+consultar POWER. Se retiró el asistente paralelo del Dashboard y se plegaron
+las opciones avanzadas de gráficas. El resumen muestra coordenadas cuando la
+selección geográfica es personalizada.
+
+Los resultados comienzan con `InvestigationFindings`: respuesta por variable
+del backend, periodo, región consultada, años completos, límites y distinción
+entre datos NASA y demo. No se inventan niveles de confianza ni probabilidades;
+se mantienen los veredictos calculados y las advertencias científicas.
+El usuario puede volver a refinar su pregunta. Se actualizó idioma y título
+HTML y se añadió atribución/disclaimer al pie.
+
+Validación: 51 pruebas backend, 11 frontend, typecheck, build y E2E aprobados.
+Se comprobó además pregunta → revisión → resultados a 1440 y 390 px sin
+desbordamiento horizontal. Pendientes: evaluación con usuarios, auditoría
+completa de accesibilidad, despliegue público y video; estas mejoras de UX no
+constituyen una puntuación oficial de jueces.

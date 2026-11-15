@@ -1,23 +1,19 @@
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, CircleHelp, Compass, LoaderCircle, Play, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, CircleHelp, LoaderCircle, Play, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/common/Button'
 import { ProjectGuideModal } from '../components/common/ProjectGuideModal'
-import { PageIntro } from '../components/common/PageIntro'
-import { DetectiveWizard } from '../components/detective/DetectiveWizard'
 import { MapSelector } from '../components/geography/MapSelector'
 import { RegionSelector } from '../components/regions/RegionSelector'
 import { TimeRangeSelector } from '../components/temporal/TimeRangeSelector'
 import { VariableSelector } from '../components/variables/VariableSelector'
 import { useResearch } from '../context/ResearchContext'
 import { demoExamples, regions, variables } from '../data/mockData'
-import type { DataConfiguration } from '../types'
 import { validateGeographicSelection } from '../utils/configuration'
 import { useLanguage } from '../context/LanguageContext'
 
 export function Dashboard() {
   const [step, setStep] = useState(0)
-  const [showWizard, setShowWizard] = useState(false)
   const [showProjectGuide, setShowProjectGuide] = useState(false)
   const [mapDraftError, setMapDraftError] = useState<string | null>(null)
 
@@ -52,18 +48,6 @@ export function Dashboard() {
     if (await applyConfiguration()) navigate('/trends')
   }
 
-  function handleWizardComplete(config: Partial<DataConfiguration>) {
-    setGeographicBounds(null)
-    setSelectedPoint(null)
-    setMapDraftError(null)
-    updateDraft({
-      ...draft,
-      ...config,
-    })
-    setShowWizard(false)
-    setStep(2) // Ir directamente al resumen / periodo
-  }
-
   const isLoading = dataLoadState === 'loading'
   const geoError = mapDraftError ?? validateGeographicSelection(draft.sourceId, geographicBounds, selectedPoint)
   const canContinue = step === 0 ? draft.variableIds.length > 0 : step === 1 ? geoError === null : true
@@ -71,11 +55,7 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <PageIntro
-          eyebrow={t('guidedResearch')}
-          title={t('earthDetective')}
-          description={t('guidedDescription')}
-        />
+        <p className="eyebrow">ASK A QUESTION. FOLLOW THE EVIDENCE.</p>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -90,58 +70,51 @@ export function Dashboard() {
 
       <ProjectGuideModal isOpen={showProjectGuide} onClose={() => setShowProjectGuide(false)} />
 
-       <section className="surface-panel relative overflow-hidden border-signal/35 bg-linear-to-br from-signal-soft via-surface to-surface p-5 sm:p-7">
+       <section className="relative overflow-hidden bg-[#080d18] p-6 text-white sm:p-12">
         <div className="absolute inset-x-0 top-0 h-1 bg-signal" aria-hidden="true" />
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <p className="eyebrow text-signal">NASA SPACE APPS · WHAT THIS TOOL DOES</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-              Turn NASA Earth data into evidence you can understand.
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-              Earth Trend Detective turns long-term NASA observations into a clear answer: what changed, where it changed, and how strong the evidence is.
+            <p className="text-xs font-bold tracking-widest text-white/70">EXPLORE OUR CHANGING PLANET</p>
+            <h1 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-tight sm:text-6xl">
+              Is your region changing?
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
+              Investigate decades of temperature, rainfall, and soil moisture with NASA Earth data. Discover how fast they are changing—and whether the evidence supports a trend.
             </p>
           </div>
           <button
             type="button"
-            onClick={() => setShowWizard(!showWizard)}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-signal px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-red-700"
+            onClick={() => { document.getElementById('investigation-setup')?.scrollIntoView(); document.getElementById('investigation-setup')?.focus({ preventScroll: true }) }}
+            className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-sm bg-[#c62d1f] px-5 py-3 text-base font-bold text-white transition-colors hover:bg-red-800"
           >
-            <Compass size={16} aria-hidden="true" />
-            {showWizard ? 'Close guided setup' : 'Need help choosing?'}
+            Start an investigation <ArrowRight size={18} aria-hidden="true" />
           </button>
         </div>
-        <div className="mt-6 grid gap-3 border-t border-accent/15 pt-5 sm:grid-cols-3">
+        <div className="mt-8 grid gap-5 border-t border-white/25 pt-5 sm:grid-cols-3">
           <div>
-            <p className="text-sm font-bold text-ink">What changed?</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted">Measure the direction and rate of change.</p>
+            <p className="text-sm font-bold">01 / Ask</p>
+            <p className="mt-1 text-sm leading-relaxed text-white/70">Choose a question, region, and period.</p>
           </div>
           <div>
-            <p className="text-sm font-bold text-ink">Where did it change?</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted">Investigate a region or compare two regions.</p>
+            <p className="text-sm font-bold">02 / Investigate</p>
+            <p className="mt-1 text-sm leading-relaxed text-white/70">Explore a time series from NASA POWER.</p>
           </div>
           <div>
-            <p className="text-sm font-bold text-ink">How strong is the evidence?</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted">Review uncertainty, p-values, and warnings.</p>
+            <p className="text-sm font-bold">03 / Understand</p>
+            <p className="mt-1 text-sm leading-relaxed text-white/70">Read the rate of change, evidence, and limits.</p>
           </div>
         </div>
       </section>
 
-       {showWizard && (
-        <div className="animate-in fade-in duration-200">
-          <DetectiveWizard onComplete={handleWizardComplete} />
-        </div>
-      )}
-
       <div inert={isLoading} aria-busy={isLoading}>
         {/* Ejemplos Demostrativos */}
-         <details className="surface-panel p-4">
-          <summary className="flex min-h-9 cursor-pointer list-none items-center gap-2 text-sm font-medium [&::-webkit-details-marker]:hidden">
+         <section className="py-4" aria-labelledby="question-title">
+          <h2 id="question-title" className="flex min-h-9 items-center gap-2 text-xl font-bold">
             <Sparkles size={16} className="text-accent" aria-hidden="true" />
-             {t('examples')}
-          </summary>
+             Start with a question
+          </h2>
           <p className="mt-2 text-xs text-muted">
-             {t('examplesDescription')}
+             Choose a real NASA POWER case study, then review its region and dates. Or build your own investigation below.
           </p>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             {demoExamples.map((example) => (
@@ -151,7 +124,8 @@ export function Dashboard() {
                 onClick={() => {
                   loadExample(example.id)
                   setMapDraftError(null)
-                  setStep(0)
+                  setStep(2)
+                  document.getElementById('investigation-setup')?.focus()
                 }}
                  className="flex min-h-16 items-center justify-between gap-3 rounded-lg border border-line p-3 text-left transition-all hover:border-accent hover:bg-accent-soft/50 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-accent"
               >
@@ -163,10 +137,10 @@ export function Dashboard() {
               </button>
             ))}
           </div>
-        </details>
+         </section>
 
         {/* Pasos numerados */}
-        <nav aria-label="Pasos de la investigación" className="mt-4">
+        <nav id="investigation-setup" tabIndex={-1} aria-label="Investigation setup" className="mt-4 scroll-mt-6">
           <ol className="grid grid-cols-3 gap-2">
             {steps.map((label, index) => (
               <li key={label}>
@@ -195,14 +169,14 @@ export function Dashboard() {
         <div className="mt-4">
           {step === 0 && <>
             <VariableSelector selectedIds={draft.variableIds} onToggle={toggleVariable} />
-            {draft.variableIds.length >= 2 && <label className="mt-4 block text-sm">
+            {draft.variableIds.length >= 2 && <details className="mt-4"><summary className="cursor-pointer text-sm text-muted">Advanced chart options</summary><label className="mt-4 block text-sm">
                {t('chartPresentation')}
                <select className="ml-2 rounded-lg border border-line bg-surface p-2 text-xs font-semibold transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" value={draft.chartLayout ?? 'separate'} onChange={(event) => updateDraft({ ...draft, chartLayout: event.target.value as 'separate' | 'combined' })}>
                  <option value="separate">{t('separateRecommended')}</option>
                  <option value="combined">{t('combined')}</option>
               </select>
                <p className="mt-2 text-xs text-muted">{t('separateHelp')}</p>
-            </label>}
+            </label></details>}
           </>}
           {step === 1 && (
             <div className="space-y-4">
@@ -245,7 +219,7 @@ export function Dashboard() {
                   </div>
                   <div>
                      <dt className="text-muted">{t('studyRegion')}</dt>
-                    <dd className="mt-1 font-medium text-ink">{region.name}</dd>
+                    <dd className="mt-1 font-medium text-ink">{selectedPoint ? `Point: ${selectedPoint.latitude.toFixed(2)}, ${selectedPoint.longitude.toFixed(2)}` : geographicBounds ? `Custom area: ${geographicBounds.south.toFixed(2)}° to ${geographicBounds.north.toFixed(2)}° N, ${geographicBounds.west.toFixed(2)}° to ${geographicBounds.east.toFixed(2)}° E` : region.name}</dd>
                   </div>
                   <div>
                      <dt className="text-muted">{t('dataProvider')}</dt>

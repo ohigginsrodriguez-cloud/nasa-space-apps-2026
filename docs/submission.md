@@ -2,7 +2,9 @@
 
 ## Project name
 
-**Earth System Trend Detective**
+**Earth Trend Detective**
+
+Displayed name for the project addressing **Be An Earth System Trend Detective!**
 
 ## Tagline
 
@@ -15,6 +17,10 @@ students, educators, and citizen scientists investigate how Earth system
 variables change over time. Users select a NASA POWER variable, define a
 region and time period, generate a monthly time series, and evaluate the rate
 and statistical evidence of the observed trend.
+
+The interface starts with an environmental question and offers three NASA POWER
+case studies. Users review the configuration, run the analysis, and receive a
+plain-language answer before exploring the charts and method details.
 
 The application combines OLS regression, Mann–Kendall, Theil–Sen slope
 estimation, confidence intervals, missing-data checks, and plain-language

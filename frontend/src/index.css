@@ -4,7 +4,7 @@
   --font-sans: "Public Sans", "Inter", "Helvetica Neue", Arial, sans-serif;
   --font-display: "Inter", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
-  --color-canvas: #f3f6fa;
+  --color-canvas: #ffffff;
   --color-surface: #ffffff;
   --color-ink: #10233f;
   --color-muted: #53677f;
@@ -68,15 +68,15 @@
 @layer components {
   .surface-panel {
     border: 1px solid var(--color-line);
-    border-radius: 0.9rem;
+    border-radius: 0.35rem;
     background: var(--color-surface);
-    box-shadow: 0 8px 24px rgb(16 35 63 / 0.045);
+    box-shadow: none;
     transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
   }
 
   .surface-panel:hover {
     border-color: color-mix(in srgb, var(--color-accent) 28%, var(--color-line));
-    box-shadow: 0 12px 30px rgb(16 35 63 / 0.07);
+    box-shadow: none;
   }
 
   .eyebrow {

@@ -18,12 +18,15 @@ export function MainLayout({ children }: MainLayoutProps) {
   }, [pathname])
 
   return (
-    <div className="min-h-dvh lg:flex">
-      <a href="#main-content" className="sr-only z-50 rounded-lg bg-accent p-3 text-white focus:not-sr-only focus:fixed focus:top-4 focus:left-4">Saltar al contenido</a>
+    <div className="min-h-dvh">
+      <a href="#main-content" className="sr-only z-50 rounded-lg bg-accent p-3 text-white focus:not-sr-only focus:fixed focus:top-4 focus:left-4">Skip to content</a>
       <Sidebar />
       <div className="min-w-0 flex-1">
         <Header />
         <main ref={mainContent} id="main-content" tabIndex={-1} className="mx-auto max-w-400 px-5 py-7 outline-none sm:px-8 sm:py-9 xl:px-10">{children}</main>
+        <footer className="border-t border-line px-5 py-6 text-center text-xs text-muted">
+          Independent educational NASA Space Apps project. Not endorsed by NASA. Data: NASA POWER; products vary by variable.
+        </footer>
       </div>
     </div>
   )

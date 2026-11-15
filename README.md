@@ -42,6 +42,8 @@ trend → evidence → responsible interpretation**.
   Rectangle sizes are limited to valid NASA POWER spans of 2°–10° per axis.
 - **Time resolution:** monthly input with annual aggregation for the main trend
   estimate; incomplete calendar years are excluded from that estimate.
+- **Secondary comparison:** results include an optional, folded tool for
+  comparing two user-defined rectangles with the same variable and period.
 
 NASA POWER products may be model or reanalysis products rather than direct
 satellite observations. The interface identifies the source and product
@@ -57,6 +59,9 @@ Configure an investigation manually:
 4. generate the series; and
 5. read the finding, trend rate, confidence interval, OLS result,
    Mann–Kendall result, and limitations.
+
+After the primary result, judges can optionally open “Compare two rectangles”
+to test the same variable in two independently defined areas.
 
 The project includes real-data checks for Mexican examples. For instance, the
 documented Sonora temperature run reports a positive decadal rate with

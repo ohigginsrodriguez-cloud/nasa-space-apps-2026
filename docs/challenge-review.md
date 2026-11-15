@@ -56,7 +56,7 @@ products rather than direct satellite observations.
 | Measure rate of change | Complete | OLS and Theil–Sen rates, including per-decade rate | Rate depends on period and product |
 | Evaluate significance | Complete | OLS/t-test, Mann–Kendall, p-values, confidence intervals | Autocorrelation is warned about, not corrected |
 | Explain result and limitations | Complete | Findings-first result, glossary, warnings, provenance | Learner testing is still pending |
-| Explore regional contrast | Deferred | Not shown in the primary interface | Future work after the single-area flow is stable |
+| Explore regional contrast | Secondary | Folded two-rectangle comparison after the main result | Exploratory only; it does not test causal differences between slopes |
 
 ## Judge-oriented strengths
 

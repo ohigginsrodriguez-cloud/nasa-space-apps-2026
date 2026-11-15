@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { TimeSeriesChart } from '../components/charts/TimeSeriesChart'
 import { GlossaryModal } from '../components/common/GlossaryModal'
 import { PageIntro } from '../components/common/PageIntro'
+import { RegionComparison } from '../components/detective/RegionComparison'
 import { InvestigationFindings } from '../components/detective/InvestigationFindings'
 import { useResearch } from '../context/ResearchContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -37,6 +38,15 @@ export function TrendsPage() {
           <Link to="/dashboard" className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-white">{t('configureInvestigation')}</Link>
         </section>
       )}
+      <details className="surface-panel p-5">
+        <summary className="cursor-pointer text-base font-bold text-accent">Compare two rectangles (optional)</summary>
+        <p className="my-4 text-sm leading-relaxed text-muted">
+          Compare the same variable over the same period in two user-defined
+          rectangles. This is exploratory: different trends do not prove a
+          shared cause or a statistically significant difference between slopes.
+        </p>
+        <RegionComparison />
+      </details>
     </div>
   )
 }

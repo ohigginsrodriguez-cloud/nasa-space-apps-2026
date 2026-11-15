@@ -39,6 +39,10 @@ of being hidden.
 | Evaluate evidence | OLS/t-test, Mann–Kendall, p-values, confidence intervals |
 | Explain responsibly | Plain-language findings, warnings, glossary, and limitations |
 
+An optional secondary comparison lets a user define two rectangles and compare
+the same variable over the same period. It is outside the main flow and does
+not establish causality or test a significant difference between slopes.
+
 ## NASA data and reproducibility
 
 The active real-data provider is the [NASA POWER Monthly

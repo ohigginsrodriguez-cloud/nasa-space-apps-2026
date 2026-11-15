@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --font-sans: "Public Sans", "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
   --color-canvas: #f3f6fa;
   --color-surface: #ffffff;
   --color-ink: #10233f;
@@ -15,8 +16,8 @@
   --color-signal-soft: #fff0ed;
   --color-success: #087f5b;
   --color-success-soft: #eaf7f2;
-  --color-chart-temperature: #d1495b;
-  --color-chart-precipitation: #087f8c;
+  --color-chart-temperature: #fc3d21;
+  --color-chart-precipitation: #0b3d91;
 }
 
 @layer base {
@@ -28,6 +29,10 @@
   body {
     @apply m-0 min-w-80 bg-canvas font-sans text-ink antialiased;
     font-feature-settings: "cv11", "ss01";
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
   }
 
   button, summary, select, input {

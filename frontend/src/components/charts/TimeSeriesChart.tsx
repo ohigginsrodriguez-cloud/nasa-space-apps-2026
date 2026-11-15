@@ -19,17 +19,17 @@ const formatDate = (date: string, full = false) => (full ? fullDate : shortDate)
 const formatValue = (value: number | null | undefined, digits = 2) => (value === null || value === undefined ? '—' : new Intl.NumberFormat('es', { maximumFractionDigits: digits }).format(value))
 
 const colors: Record<string, string> = {
-  temperature: 'var(--color-chart-temperature, #e11d48)',
-  precipitation: 'var(--color-chart-precipitation, #0284c7)',
-  soil_moisture: '#059669',
-  relative_humidity: '#8b5cf6',
-  solar_radiation: '#d97706',
-  surface_pressure: '#4b5563',
-  wind_speed: '#06b6d4',
+  temperature: 'var(--color-chart-temperature, #FC3D21)',
+  precipitation: 'var(--color-chart-precipitation, #0B3D91)',
+  soil_moisture: '#1B5E7A',
+  relative_humidity: '#5B6770',
+  solar_radiation: '#F5A623',
+  surface_pressure: '#111111',
+  wind_speed: '#7A9E9F',
 }
 
 function getVariableColor(id: string): string {
-  return colors[id] || '#6366f1'
+  return colors[id] || '#5B6770'
 }
 
 function ChartTooltip({ active, payload, label }: TooltipContentProps<TooltipValueType, string | number>) {

@@ -34,9 +34,20 @@ try {
   assert.ok(zoomedWidth && zoomedWidth > 20, 'the rectangle should be visible at the selected zoom')
   const rectangleBox = await rectangle.boundingBox()
   assert.ok(rectangleBox)
-  await page.mouse.move(rectangleBox.x + rectangleBox.width * 0.25, rectangleBox.y + rectangleBox.height * 0.4)
+  const centerX = rectangleBox.x + rectangleBox.width / 2
+  const centerY = rectangleBox.y + rectangleBox.height / 2
+  await page.mouse.move(centerX - 15, centerY - 15)
+  const afterHover = await rectangle.boundingBox()
+  assert.ok(afterHover)
+  assert.ok(Math.abs(afterHover.x - rectangleBox.x) < 2, 'hovering over the area must not reset or move it')
+  await page.mouse.click(centerX, centerY)
+  const afterClick = await rectangle.boundingBox()
+  assert.ok(afterClick)
+  assert.ok(Math.abs(afterClick.x - rectangleBox.x) < 2, 'a click without dragging must not reset or move the selected area')
+  await page.mouse.move(rectangleBox.x + rectangleBox.width * 0.2, centerY)
   await page.mouse.down()
-  await page.mouse.move(rectangleBox.x + rectangleBox.width * 0.25 + 40, rectangleBox.y + rectangleBox.height * 0.4 + 25, { steps: 5 })
+  // Cross the center handle while holding the mouse: the rectangle must keep moving.
+  await page.mouse.move(rectangleBox.x + rectangleBox.width * 0.8, centerY + 25, { steps: 8 })
   await page.mouse.up()
   const movedWidth = (await rectangle.boundingBox())?.width
   const movedRectangleBox = await rectangle.boundingBox()

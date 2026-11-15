@@ -124,13 +124,19 @@ function DraggableRectangle({ bounds, onChange }: { bounds: GeographicBounds; on
     map.on('mouseup', finish)
   }, [bounds, finish, map, move])
 
+  const stopClick = useCallback((event: LeafletMouseEvent) => {
+    // A plain click selects nothing; only a held mouse drag may move the area.
+    event.originalEvent.preventDefault()
+    event.originalEvent.stopPropagation()
+  }, [])
+
   useEffect(() => () => finish(), [finish])
 
   return (
     <Rectangle
       bounds={[[bounds.south, bounds.west], [bounds.north, bounds.east]]}
       pathOptions={{ color: '#1d4ed8', fillColor: '#1d4ed8', fillOpacity: 0.12, weight: 3, className: 'leaflet-area-draggable' }}
-      eventHandlers={{ mousedown: start }}
+      eventHandlers={{ mousedown: start, click: stopClick }}
     />
   )
 }
@@ -178,7 +184,7 @@ export function MapSelector({ center, value, onChange, onValidationChange }: Map
     <section id="region" aria-labelledby="map-title" className="surface-panel scroll-mt-6 border-accent/20 bg-linear-to-br from-accent-soft/35 via-surface to-surface p-5 sm:p-6">
       <div className="mb-4">
         <h2 id="map-title" className="text-xl font-bold">Where should we investigate?</h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted">A valid NASA POWER rectangle is created for you. Drag the rectangle itself or its blue center handle to move it.</p>
+        <p className="mt-1 text-sm leading-relaxed text-muted">A valid NASA POWER rectangle is created for you. Click and hold the rectangle or its blue center handle, then drag to move it.</p>
       </div>
       <div className="mb-4">
         <p className="mb-2 text-sm font-semibold text-ink">Choose a valid rectangle size</p>
@@ -209,7 +215,7 @@ export function MapSelector({ center, value, onChange, onValidationChange }: Map
       </div>
       <p role="status" aria-live="polite" className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted"><MapPin size={15} className="mt-0.5 shrink-0" aria-hidden="true" />{message}</p>
       {tilesUnavailable && <p role="status" className="mt-2 text-sm text-muted">Map tiles could not be loaded. The predefined area remains usable.</p>}
-      <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted"><CircleHelp size={15} className="mt-0.5 shrink-0" aria-hidden="true" />Drag anywhere inside the rectangle or use the blue center handle to move the area. Choose a size above to change its dimensions. The map zoom stays where you set it.</p>
+      <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted"><CircleHelp size={15} className="mt-0.5 shrink-0" aria-hidden="true" />The area moves only while you hold the mouse button and drag. Moving the cursor over it or clicking without dragging does not reset or move it. Choose a size above to change its dimensions. The map zoom stays where you set it.</p>
     </section>
   )
 }

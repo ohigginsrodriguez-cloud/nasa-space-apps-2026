@@ -231,6 +231,18 @@ o visual ni convierte la tabla histórica en una auditoría exhaustiva.
 - Verificación: **11 pruebas frontend**, typecheck y build correctos; Chromium
   completó el E2E con análisis API HTTP 200 y sin errores JS.
 
+### Selector de mapa: no mover/resetear con hover o clic simple
+
+- La interacción queda explícita: el usuario debe hacer clic y mantener
+  presionado mientras arrastra. Hover y clic sin arrastre no modifican la
+  selección; se detiene el evento de clic de Leaflet para evitar que llegue al
+  mapa. El control central conserva el mismo comportamiento de arrastre.
+- E2E verifica hover sin cambios, clic en el centro sin cambios y arrastre
+  continuo cruzando el control central; comprueba cambio real de posición y
+  que el zoom permanece.
+- Comprobación final: Chromium E2E aprobado, **11 tests frontend**, typecheck y
+  build aprobados.
+
 Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 `feature/scientific-interpretation-and-audit`.
 

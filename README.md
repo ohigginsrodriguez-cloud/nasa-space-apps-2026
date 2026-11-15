@@ -123,14 +123,15 @@ Consulta los detalles en [`docs/statistical-methodology.md`](docs/statistical-me
 ## Gráficas y revisión del reto
 
 Cada variable tiene un panel independiente, nombre, unidad y escala propios.
-Pulsa su botón para ocultarla/mostrarla, o **Mostrar todas**. Los campos
-**Zoom: desde / Hasta** amplían el periodo visible; **Restablecer zoom**
-recupera la serie completa. Las estadísticas no cambian al hacer zoom.
+Pulsa su botón para ocultarla/mostrarla, o **Mostrar todas**. Los botones
+**+ / −** amplían o reducen la ventana visible; con zoom activo puedes
+arrastrar la gráfica horizontalmente para recorrer los datos. Las estadísticas
+no cambian al hacer zoom.
 
 Consulta [`docs/challenge-review.md`](docs/challenge-review.md) para la tabla
 de cumplimiento revisada, evidencia y limitaciones (los porcentajes históricos
 de arriba no son una certificación de NASA).
 
-Prueba de navegador reproducible: con Playwright y Chromium instalados y ambos
-servidores encendidos, ejecutar `node scripts/verify_chart_ui.mjs`.
-También se puede indicar una instalación externa mediante `PLAYWRIGHT_MODULE`.
+Prueba de navegador reproducible: instala dependencias en `frontend`, enciende
+ambos servidores y ejecuta `npm run test:e2e`. El script verifica el flujo
+completo y la API real.

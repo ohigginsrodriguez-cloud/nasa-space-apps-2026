@@ -44,15 +44,14 @@ tests estadísticos, inteligencia artificial ni tendencias opuestas significativ
 
 ## Pruebas ejecutadas
 
-- `pytest -q`: **51 passed**, una advertencia de deprecación Starlette/httpx.
+- `pytest -q`: **51 passed**, sin advertencias.
 - `npm --prefix frontend test`: **11 passed**; typecheck y build correctos.
 - `scripts/verify_analysis.py`: OLS, MK y Sen coinciden con SciPy/pymannkendall
   en las series POWER 1991–2023 comprobadas.
-- La verificación e2e `scripts/verify_chart_ui.mjs` no pudo ejecutarse:
-  Playwright no está disponible en la ruta externa documentada. El dashboard
-  sí abrió en Chromium integrado, pero falta recorrer el flujo completo.
-- Pruebas unitarias del zoom comprueban los meses incluidos; las de escala
-  verifican que no se modifiquen observaciones ni resultados exportados.
+- `npm --prefix frontend run test:e2e`: PASS; siete paneles, ocultar/mostrar,
+  zoom con botones y arrastre, vista conjunta, estado vacío, móvil y API real.
+- Las pruebas unitarias del zoom verifican ventana centrada, desplazamiento y
+  que no se modifiquen observaciones ni resultados exportados.
 
 Las consultas reales pueden usar la caché POWER del proyecto. Los tests unitarios
 usan datos controlados; no se presentan como resultados ambientales reales.

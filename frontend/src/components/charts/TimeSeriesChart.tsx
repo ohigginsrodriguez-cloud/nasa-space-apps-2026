@@ -285,6 +285,14 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   const region = regions.find((item) => item.id === configuration?.regionId)
   const points = dataset?.points ?? []
   const results = dataset?.results ?? []
+  const selectedGroupVariables = dataset?.multivariateInterpretation?.selected_variables
+    ?? results.map((result) => ({
+      id: result.variable.id,
+      name: result.variable.name,
+      unit: result.variable.unit,
+      direction: result.trend.direction,
+      significant: result.interpretation?.significant ?? result.trend.significant,
+    }))
   const visibleVariables = selectedVariables.filter((variable) => !hiddenVariables.includes(variable.id))
   const regionName = dataset?.region?.name ?? region?.name ?? 'la región'
   const chartPoints: TimeSeriesPoint[] = zoomedPoints(points, zoomLevel, panOffset)
@@ -697,7 +705,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               </h2>
               <p className="mt-2 text-xs text-indigo-900">{dataset.multivariateInterpretation.summary}</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {dataset.multivariateInterpretation.selected_variables.map((variable) => (
+                {selectedGroupVariables.map((variable) => (
                   <span key={variable.id} className="rounded-full border border-indigo-200 bg-white/80 px-2.5 py-1 text-[11px] text-indigo-950">
                     {variable.name} · {variable.unit}
                   </span>

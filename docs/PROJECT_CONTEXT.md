@@ -175,8 +175,8 @@ ante solicitudes inválidas.
 
 ### Comprobaciones ejecutadas
 
-- Backend: **42 passed**, una advertencia de deprecación Starlette/httpx.
-- Frontend: **7 passed**; TypeScript y Vite compilan correctamente.
+- Histórico de la primera integración: backend **42 passed** y frontend **7
+  passed**; esa ejecución tenía la advertencia de deprecación Starlette/httpx.
 - Servidor local `localhost:8000`: **cuatro análisis HTTP 200**, uno por cada
   región, **siete variables simultáneas**, periodo 1991–2023, 396 meses por variable.
   Datos NASA POWER reales (con la caché normal del proveedor); no respuestas simuladas.
@@ -227,10 +227,10 @@ Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 
 Verificación ejecutada después de estos cambios: backend **51 passed**,
 frontend **11 passed**, typecheck y build correctos; el benchmark NASA POWER
-real valida OLS/MK/Sen frente a SciPy y pymannkendall. La advertencia remanente
-es la deprecación Starlette/httpx. `scripts/verify_chart_ui.mjs` no se pudo
-ejecutar porque el módulo Playwright externo indicado no existe en este entorno;
-el dashboard sí cargó en Chromium integrado, pero no se completó el flujo e2e.
+real valida OLS/MK/Sen frente a SciPy y pymannkendall. También se ejecutó el
+E2E con Playwright y Chromium: siete paneles, zoom/arrastre, vista conjunta,
+estado vacío, móvil y API real sin errores JavaScript. `httpx2` elimina la
+advertencia deprecada de Starlette.
 La limpieza de ramas solo debe borrar ramas ya fusionadas; se preservan las que
 tienen commits exclusivos.
 

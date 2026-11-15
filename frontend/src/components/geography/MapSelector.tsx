@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { CircleHelp, MapPin, RotateCcw } from 'lucide-react'
 import { CircleMarker, MapContainer, Marker, Rectangle, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import type { GeographicBounds, GeographicPoint } from '../../types'
@@ -26,7 +26,11 @@ function MapController({ center, bounds, point }: { center: [number, number]; bo
 
 function ClickToBounds({ onCorner }: { onCorner: (latitude: number, longitude: number) => void }) {
   useMapEvents({
-    click(event) { onCorner(event.latlng.lat, event.latlng.lng) },
+    click(event) {
+      const target = event.originalEvent.target as Element
+      if (target.closest('.rectangle-drag-handle')) return
+      onCorner(event.latlng.lat, event.latlng.lng)
+    },
   })
   return null
 }
@@ -61,6 +65,89 @@ function ResizeHandles({ bounds, onChange }: { bounds: GeographicBounds; onChang
       }}
     />)}
   </>
+}
+
+function DraggableRectangle({ bounds, onChange }: { bounds: GeographicBounds; onChange: (bounds: GeographicBounds) => void }) {
+  const map = useMap()
+  const boundsRef = useRef(bounds)
+  const onChangeRef = useRef(onChange)
+  boundsRef.current = bounds
+  onChangeRef.current = onChange
+  const center: [number, number] = [(bounds.south + bounds.north) / 2, (bounds.west + bounds.east) / 2]
+
+  return (
+    <>
+      <Rectangle
+        bounds={[[bounds.south, bounds.west], [bounds.north, bounds.east]]}
+        pathOptions={{ color: '#1d4ed8', fillOpacity: 0.12 }}
+      />
+      <RectangleMoveHandle center={center} bounds={bounds} map={map} onChange={onChangeRef.current} />
+    </>
+  )
+}
+
+function RectangleMoveHandle({
+  center,
+  bounds,
+  map,
+  onChange,
+}: {
+  center: [number, number]
+  bounds: GeographicBounds
+  map: ReturnType<typeof useMap>
+  onChange: (bounds: GeographicBounds) => void
+}) {
+  const [position, setPosition] = useState(() => map.latLngToContainerPoint(center))
+  const dragRef = useRef<{ start: [number, number]; bounds: GeographicBounds } | null>(null)
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
+  useEffect(() => {
+    const updatePosition = () => setPosition(map.latLngToContainerPoint(center))
+    updatePosition()
+    map.on('move zoom resize', updatePosition)
+    return () => { map.off('move zoom resize', updatePosition) }
+  }, [map, center[0], center[1]])
+
+  function move(event: PointerEvent<HTMLDivElement>) {
+    if (!dragRef.current) return
+    const rect = map.getContainer().getBoundingClientRect()
+    const latLng = map.containerPointToLatLng([event.clientX - rect.left, event.clientY - rect.top])
+    const [startLat, startLng] = dragRef.current.start
+    const original = dragRef.current.bounds
+    const height = original.north - original.south
+    const width = original.east - original.west
+    const south = Math.max(-90, Math.min(90 - height, original.south + latLng.lat - startLat))
+    const west = Math.max(-180, Math.min(180 - width, original.west + latLng.lng - startLng))
+    onChangeRef.current({ south, north: south + height, west, east: west + width })
+  }
+
+  return (
+    <div
+      className="rectangle-drag-handle"
+      role="button"
+      tabIndex={0}
+      aria-label="Drag to move the entire area"
+      title="Drag to move the entire area"
+      style={{ left: position.x, top: position.y }}
+      onPointerDown={(event) => {
+        event.stopPropagation()
+        event.currentTarget.setPointerCapture(event.pointerId)
+        dragRef.current = { start: center, bounds: { ...bounds } }
+        map.dragging.disable()
+      }}
+      onPointerMove={move}
+      onPointerUp={(event) => {
+        event.stopPropagation()
+        dragRef.current = null
+        map.dragging.enable()
+        event.currentTarget.releasePointerCapture(event.pointerId)
+      }}
+      onClick={(event) => event.stopPropagation()}
+    >
+      ↕
+    </div>
+  )
 }
 
 const coordinateFields: Array<{ key: keyof GeographicBounds; label: string }> = [
@@ -202,7 +289,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
           <ClickToBounds onCorner={setCorner} />
           {firstCorner && <CircleMarker center={firstCorner} radius={6} pathOptions={{ color: '#1d4ed8' }} />}
           {point && <CircleMarker center={[point.latitude, point.longitude]} radius={7} pathOptions={{ color: '#0f766e', fillColor: '#0f766e', fillOpacity: 0.9 }} />}
-            {value && <><Rectangle bounds={[[value.south, value.west], [value.north, value.east]]} pathOptions={{ color: '#1d4ed8', fillOpacity: 0.12 }} /><ResizeHandles bounds={value} onChange={(bounds) => { onValidationChange?.(null); setFirstCorner(null); onPointChange(null); onChange(bounds); setDraft(bounds); setMessage('Area resized. It will be sent to the backend when you generate the analysis.') }} /></>}
+             {value && <><DraggableRectangle bounds={value} onChange={(bounds) => { onValidationChange?.(null); setFirstCorner(null); onPointChange(null); onChange(bounds); setDraft(bounds); setMessage('Area moved. Drag its corners to resize it.') }} /><ResizeHandles bounds={value} onChange={(bounds) => { onValidationChange?.(null); setFirstCorner(null); onPointChange(null); onChange(bounds); setDraft(bounds); setMessage('Area resized. Drag its center to move it.') }} /></>}
         </MapContainer>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -212,7 +299,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
        {point && <p className="mt-1 text-sm text-muted">Point: {point.latitude.toFixed(4)}° lat, {point.longitude.toFixed(4)}° lon.</p>}
        {value && <p className="mt-1 text-sm text-muted">Area: {value.south.toFixed(3)}° to {value.north.toFixed(3)}° lat; {value.west.toFixed(3)}° to {value.east.toFixed(3)}° lon.</p>}
        {tilesUnavailable && <p role="status" className="mt-2 text-sm text-muted">Map tiles could not be loaded. You can continue by entering coordinates manually.</p>}
-         <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-muted"><CircleHelp size={15} className="mt-0.5 shrink-0" aria-hidden="true" />Draw an area, drag its corners, or edit its coordinates. NASA POWER accepts rectangles from 2° to 10° on each axis; use a point for smaller areas. Clearing the area restores the predefined region.</p>
+          <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-muted"><CircleHelp size={15} className="mt-0.5 shrink-0" aria-hidden="true" />Drag the blue center handle to move the entire area, drag a corner to resize it, or use the coordinate fields. NASA POWER accepts rectangles from 2° to 10° on each axis; use a point for smaller areas.</p>
     </section>
   )
 }

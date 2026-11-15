@@ -359,3 +359,10 @@ predefinida queda lista para analizar; `Customize the area (optional)` abre el
 mapa, punto, rectángulo y coordenadas solo para quien necesita precisión
 geográfica. Esto conserva la validación NASA POWER de 2°–10° para rectángulos
 sin castigar el flujo principal.
+
+La selección de variables ahora usa un selector desplegable: se añade una
+variable por vez y cada variable seleccionada tiene información contextual y
+eliminación independiente. En el mapa, un control azul situado en el centro
+del rectángulo permite mover toda el área; las esquinas continúan redimensionando
+la selección y las coordenadas siguen disponibles para precisión manual.
+La interacción fue comprobada con Playwright a 1280 px.

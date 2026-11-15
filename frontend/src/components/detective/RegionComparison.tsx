@@ -5,6 +5,7 @@ import { regions, variables } from '../../data/mockData'
 import { runAnalysis } from '../../services/api'
 import type { RegionId, TimeSeriesDataset, VariableId } from '../../types'
 import { validateConfiguration } from '../../utils/configuration'
+import { variableChartPoints } from '../../utils/chartData'
 
 const shortDate = new Intl.DateTimeFormat('es', { month: 'short', year: '2-digit', timeZone: 'UTC' })
 const formatDate = (date: string) => shortDate.format(new Date(`${date}T00:00:00Z`))
@@ -205,6 +206,7 @@ export function RegionComparison() {
         </div>
       )}
 
+      {variableId === 'precipitation' && <p className="text-xs text-muted">Observado: total mensual. Tendencia y banda: equivalente mensual del ajuste anual (÷12). Las tarjetas reportan el cambio del total anual.</p>}
       {/* Gráficas comparativas lado a lado */}
       {hasCurrentResults && datasetA && datasetB && (
         <div className="grid gap-5 lg:grid-cols-2 pt-2">
@@ -223,7 +225,7 @@ export function RegionComparison() {
             </div>
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart syncId="region-comparison" data={datasetA.points} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
+                <ComposedChart syncId="region-comparison" data={resultA ? variableChartPoints(datasetA.points, resultA) : []} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
                   <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
                   <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} />
@@ -255,7 +257,7 @@ export function RegionComparison() {
             </div>
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart syncId="region-comparison" data={datasetB.points} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
+                <ComposedChart syncId="region-comparison" data={resultB ? variableChartPoints(datasetB.points, resultB) : []} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
                   <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
                   <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} />

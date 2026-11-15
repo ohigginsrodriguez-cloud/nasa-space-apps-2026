@@ -87,7 +87,8 @@ export async function runAnalysis(
   })
 
   return {
-    points: [...pointMap.values()] as TimeSeriesDataset['points'],
+    region: response.region,
+    points: [...pointMap.values()].sort((a, b) => String(a.date).localeCompare(String(b.date))) as TimeSeriesDataset['points'],
     sourceId: configuration.sourceId,
     isDemonstration: provider === 'demo',
     missingValueCount: response.results.reduce((total, result) => total + result.series.filter((item) => item.value === null).length, 0),

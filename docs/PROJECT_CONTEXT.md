@@ -184,3 +184,27 @@ regiones se restringió a México.
 Los antiguos pendientes del banner comparativo y `syncId` quedaron corregidos.
 La revisión actual no certifica ausencia de cualquier otro defecto científico
 o visual ni convierte la tabla histórica en una auditoría exhaustiva.
+
+## Revisión del challenge y gráficas por variable
+
+Ver `docs/challenge-review.md` para dictamen, tabla y evidencia actualizada.
+Se separaron variables en paneles con ejes propios, botones mostrar/ocultar y
+zoom por meses; el zoom no recalcula ni filtra exportaciones.
+
+Archivos principales: `TimeSeriesChart.tsx`, `utils/chartData.ts`,
+`RegionComparison.tsx`, `services/api.ts`, `types/index.ts`,
+`aggregation.py`, `schemas/analysis.py`, metodología y README.
+Pruebas nuevas: `frontend/tests/chartData.test.ts`,
+`tests/test_chart_consistency.py`, `scripts/verify_chart_ui.mjs`.
+
+Hallazgos corregidos: escala anual/mensual de lluvia, desplazamiento de medio año
+de rectas, atribución incorrecta de significancia a MK, ubicación personalizada
+mal titulada, etiqueta `annual_anomalies` sin uso real de anomalías, falta de
+advertencia por años incompletos y explicación errónea de autocorrelación/IC.
+
+Verificación: **44 tests backend, 10 frontend, build y benchmark correctos**.
+Esta vez se ejecutó Chromium: siete variables con datos reales, ocultar/mostrar,
+zoom/restablecer, estado vacío y móvil sin errores JS. Playwright fue instalado
+fuera del repo en `/tmp/opencode/browser-check`; ejecutar con
+`PLAYWRIGHT_MODULE=/tmp/opencode/browser-check/node_modules/playwright/index.mjs node scripts/verify_chart_ui.mjs`.
+Los servidores deben estar disponibles en 5173/8000.

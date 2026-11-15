@@ -26,7 +26,7 @@ menores se puede seleccionar un punto.
 | **5. Análisis estadístico: Tasa de cambio** | 🟢 **100%** | Cálculo de la tasa decadal ($\beta_1 \times 10$) y la pendiente mediana de Theil-Sen. |
 | **6. Pruebas de significancia (t-test / MK)** | 🟢 **100%** | Doble prueba de significancia: $t$-test sobre regresión OLS y Test de Mann-Kendall con corrección por empates y continuidad ($\alpha = 0,05$). |
 | **7. Intervalos de confianza** | 🟢 **100%** | Intervalo de confianza analítico del 95% para la tasa decadal y bandas de incertidumbre sobre la recta de regresión. |
-| **8. Desestacionalización** | 🟢 **100%** | Climatología mensual, serie de anomalías y agregación anual tolerante ($\ge 9$ meses) para no perder años incompletos. |
+| **8. Tratamiento estacional (opcional)** | Implementado con límites | Agregación anual ($\ge 9$ meses) y Seasonal MK. Las anomalías no se usan en el ajuste; los años incompletos llevan advertencia de posible sesgo. |
 | **9. "Detective de Datos" guiado** | 🟢 **100%** | Asistente en 3 pasos que orienta al usuario según fenómeno, ecosistema y profundidad temporal. |
 | **10. Ejemplos demostrativos** | 🟢 Implementado | 3 casos mexicanos precargados (1991–2023), con NASA POWER como fuente inicial. |
 | **11. Detección de tendencias opuestas** | 🟢 Implementado | Comparación bi-regional con gráficas sincronizadas; banner solo si ambas pendientes son significativas por OLS y de signo opuesto. No infiere causalidad. |
@@ -120,3 +120,18 @@ Para instrumentos satelitales avanzados que requieren autenticación Bearer Toke
 - **GPM IMERG**: Precipitación satelital global de alta resolución.
 
 Consulta los detalles en [`docs/statistical-methodology.md`](docs/statistical-methodology.md) y [`docs/variable-catalog.md`](docs/variable-catalog.md).
+
+## Gráficas y revisión del reto
+
+Cada variable tiene un panel independiente, nombre, unidad y escala propios.
+Pulsa su botón para ocultarla/mostrarla, o **Mostrar todas**. Los campos
+**Zoom: desde / Hasta** amplían el periodo visible; **Restablecer zoom**
+recupera la serie completa. Las estadísticas no cambian al hacer zoom.
+
+Consulta [`docs/challenge-review.md`](docs/challenge-review.md) para la tabla
+de cumplimiento revisada, evidencia y limitaciones (los porcentajes históricos
+de arriba no son una certificación de NASA).
+
+Prueba de navegador reproducible: con Playwright y Chromium instalados y ambos
+servidores encendidos, ejecutar `node scripts/verify_chart_ui.mjs`.
+También se puede indicar una instalación externa mediante `PLAYWRIGHT_MODULE`.

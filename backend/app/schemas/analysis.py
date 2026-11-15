@@ -101,7 +101,7 @@ class TrendResult(BaseModel):
     trend_band: list[dict] = Field(default_factory=list)
     alpha: float = 0.05
     data_source: str = "nasa_power"
-    analysis_method: str = "annual_anomalies"
+    analysis_method: str = "annual_values"
 
 
 class VariableSeries(BaseModel):

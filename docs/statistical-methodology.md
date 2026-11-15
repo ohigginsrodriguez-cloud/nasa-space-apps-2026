@@ -13,15 +13,20 @@ Este documento describe formalmente los métodos matemáticos, estadísticos y d
    - Variables de estado promedio (ej. Temperatura $T2M$, Humedad $RH2M$, Radiación): se conserva el promedio mensual.
    - Variables acumulativas (ej. Precipitación $PRECTOTCORR$ en $\text{mm/día}$): se multiplican por los días calendario de cada mes:
      $$P_{\text{mes}} = P_{\text{diario}} \times \text{días}(mes, año)$$
-4. **Desestacionalización**:
-   - **Climatología mensual**: Para cada mes calendario $m \in \{1, \dots, 12\}$, se calcula la media histórica:
+4. **Tratamiento estacional**:
+   - El análisis principal usa agregados anuales (`analysis_method=annual_values`).
+     No usa anomalías: la etiqueta anterior `annual_anomalies` era incorrecta.
+   - Existe una función auxiliar de climatología/anomalías, pero no forma parte
+     del ajuste ni de la exportación actual. Sus definiciones son:
      $$\bar{C}_m = \frac{1}{K} \sum_{k=1}^K X_{m, k}$$
    - **Anomalías mensuales**: $A_{m, k} = X_{m, k} - \bar{C}_m$.
 5. **Agregación anual tolerante**:
    - Se requiere un mínimo de $9$ meses válidos por año ($k \ge 9$).
    - Para variables de suma (precipitación), si faltan $1$ a $3$ meses, el total anual se normaliza al equivalente de 12 meses:
      $$\text{Total}_{\text{anual}} = \left( \sum_{m=1}^k P_m \right) \times \frac{12}{k}$$
-   - Para variables de media (temperatura, radiación, humedad), se toma el promedio de los meses disponibles.
+    - Para variables de media (temperatura, radiación, humedad), se toma el promedio de los meses disponibles.
+   - Con 9–11 meses se advierte de posible sesgo estacional. Extrapolar un total
+     con meses faltantes no garantiza estimar bien la lluvia anual.
 
 ---
 
@@ -42,7 +47,15 @@ Para la serie anual $(t_i, y_i)$ con $i = 1, \dots, n$:
   $$\text{CI}_{95\%} = \left[ 10 \cdot (\beta_1 - t_{n-2, 0.975} \cdot \text{SE}), \; 10 \cdot (\beta_1 + t_{n-2, 0.975} \cdot \text{SE}) \right]$$
 - **Banda de confianza de la recta para cada fecha mensual $t$**:
   $$\text{SE}(\hat{y}(t)) = \text{SE}_{\text{res}} \sqrt{\frac{1}{n} + \frac{(t - \bar{t})^2}{\sum_{i=1}^n (t_i - \bar{t})^2}}$$
-  $$\text{banda}(t) = \hat{y}(t) \pm t_{n-2, 0.975} \cdot \text{SE}(\hat{y}(t))$$
+   $$\text{banda}(t) = \hat{y}(t) \pm t_{n-2, 0.975} \cdot \text{SE}(\hat{y}(t))$$
+
+Los años del ajuste se representan por su año entero, anclado al centro del año.
+La evaluación mensual usa $t = año + (mes-0.5)/12 - 0.5$, para evitar desplazar
+la recta medio año. En variables acumulativas, la API conserva el ajuste a
+totales anuales; la gráfica mensual divide recta y banda entre 12 y las etiqueta
+como **equivalentes mensuales**. No son predicciones del ciclo estacional mensual.
+Las tarjetas y exportaciones conservan las magnitudes anuales originales.
+El zoom filtra solo la vista; no vuelve a calcular significancia.
 
 ### 2.2. Test no paramétrico de Mann-Kendall (con corrección de empates)
 
@@ -77,7 +90,9 @@ La API y la UI analizan la validez de los supuestos estadísticos y emiten alert
 1. **Tamaño de muestra ($n < 10$)**: Alerta que la prueba estadística tiene baja potencia y recomienda ampliar el periodo a $\ge 20$ años.
 2. **Autocorrelación residual ($|r_1| > 0.30$)**: Calcula el coeficiente de autocorrelación de rezago 1 en los residuos de regresión:
    $$r_1 = \frac{\sum_{i=1}^{n-1} (e_i - \bar{e})(e_{i+1} - \bar{e})}{\sum_{i=1}^n (e_i - \bar{e})^2}$$
-   Si $|r_1| > 0.30$, advierte que el $p$-value de OLS puede estar inflado (falsa significancia).
+   Si $|r_1| > 0.30$, se advierte de incumplimiento de independencia. Una
+   autocorrelación positiva puede producir p-values demasiado pequeños y
+   exagerar la significancia. No se aplica corrección automática.
 3. **Discordancia metodológica**: Si OLS resulta significativo pero Mann-Kendall no (o viceversa), notifica la discrepancia sugiriendo la presencia de anomalías extremas o no-linealidades.
 4. **Varianza cero**: Detecta series constantes ($\sigma^2 = 0$) y devuelve `status: constant_series` sin generar `NaN`.
 

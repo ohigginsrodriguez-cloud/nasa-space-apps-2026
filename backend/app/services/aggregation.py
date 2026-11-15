@@ -12,7 +12,6 @@ from app.catalog import Variable
 from app.schemas.analysis import Observation, TrendResult
 from app.services.trend_stats import (
     calculate_ols,
-    compute_climatology_and_anomalies,
     compute_lag1_autocorrelation,
     compute_trend_line_and_bands,
     mann_kendall,
@@ -59,7 +58,8 @@ def analyze_trend(
         for obs in series
     ]
     dates_str = [obs.date.isoformat() for obs in series]
-    t_monthly = np.array([obs.date.year + (obs.date.month - 0.5) / 12.0 for obs in series], dtype=float)
+    # Annual values are anchored at the middle of the calendar year.
+    t_monthly = np.array([obs.date.year + (obs.date.month - 0.5) / 12.0 - 0.5 for obs in series], dtype=float)
 
     # Seasonal Mann-Kendall on monthly observations
     smk_res = seasonal_mann_kendall(monthly_tuples)
@@ -85,7 +85,7 @@ def analyze_trend(
             trend_band=[],
             alpha=0.05,
             data_source=data_source,
-            analysis_method="annual_anomalies",
+            analysis_method="annual_values",
         )
 
     years = np.array([float(year) for year, _ in annual], dtype=float)
@@ -97,6 +97,15 @@ def analyze_trend(
     sen_res = sen_slope(values, years, alpha=0.95)
 
     warnings: list[str] = []
+    month_counts: dict[int, set[int]] = defaultdict(set)
+    for obs in series:
+        if obs.value is not None and isfinite(obs.value):
+            month_counts[obs.date.year].add(obs.date.month)
+    if any(9 <= len(months) < 12 for months in month_counts.values()):
+        warnings.append(
+            "Hay años con 9–11 meses: sus agregados son aproximaciones y pueden "
+            "tener sesgo estacional. Los totales se estiman multiplicando la media mensual por 12."
+        )
 
     # Check for constant series
     if ols_res.get("status") == "constant_series" or mk_res.get("status") == "constant_series":
@@ -110,8 +119,8 @@ def analyze_trend(
             confidence_interval_per_decade=None,
             significant=False,
             n_observations=len(annual),
-            warnings=["La serie es constante: todos los valores observados son idénticos."],
-            message="La serie es constante: no hay tendencia que evaluar.",
+            warnings=warnings + ["Los agregados anuales son constantes; los meses pueden tener variación estacional."],
+            message="La serie anual es constante: no hay tendencia anual que evaluar.",
             ols=ols_res,
             mann_kendall=mk_res,
             seasonal_mann_kendall=smk_res,
@@ -120,7 +129,7 @@ def analyze_trend(
             trend_band=[],
             alpha=0.05,
             data_source=data_source,
-            analysis_method="annual_anomalies",
+            analysis_method="annual_values",
         )
 
     slope = ols_res.get("slope_per_year")
@@ -150,7 +159,7 @@ def analyze_trend(
             trend_band=[],
             alpha=0.05,
             data_source=data_source,
-            analysis_method="annual_anomalies",
+            analysis_method="annual_values",
         )
 
     # 1. Statistical warning: Small sample size
@@ -167,7 +176,8 @@ def analyze_trend(
     if r1 is not None and abs(r1) > 0.30:
         warnings.append(
             f"Autocorrelación residual moderada/alta (|r1| = {abs(r1):.2f} > 0.30). "
-            "El p-value de OLS puede estar sobreestimado (falsa significancia)."
+            "La independencia de los residuos no está garantizada: el p-value y el IC de OLS "
+            "pueden ser poco fiables; la autocorrelación positiva puede exagerar la significancia."
         )
 
     # 3. Discrepancy between OLS and Mann-Kendall
@@ -227,5 +237,5 @@ def analyze_trend(
         trend_band=trend_band,
         alpha=alpha,
         data_source=data_source,
-        analysis_method="annual_anomalies",
+        analysis_method="annual_values",
     )

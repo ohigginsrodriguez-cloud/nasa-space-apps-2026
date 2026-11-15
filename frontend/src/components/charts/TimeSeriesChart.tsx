@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Download, HelpCircle, Info, Minus, SlidersHorizontal, XCircle } from 'lucide-react'
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from 'recharts'
 import { regions, variables } from '../../data/mockData'
 import type { BackendResult, DataConfiguration, TimeSeriesDataset, TimeSeriesPoint } from '../../types'
 import { SectionTitle } from '../common/SectionTitle'
+import { variableChartPoints, zoomPoints } from '../../utils/chartData'
 
 interface TimeSeriesChartProps {
   configuration: DataConfiguration | null
@@ -105,7 +106,7 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
 
   let naturalLanguage = ''
   if (isConstant) {
-    naturalLanguage = `La variable ${variable.name} se mantuvo constante durante todo el periodo analizado en ${regionName}. No existe tendencia lineal que evaluar.`
+    naturalLanguage = `Los agregados anuales de ${variable.name} son constantes en ${regionName}. No hay tendencia anual que evaluar; los valores mensuales pueden variar.`
   } else if (slopeDecade !== null) {
     const dirVerb = isUp ? 'aumentó' : isDown ? 'disminuyó' : 'se mantuvo sin cambio lineal'
     const absChange = Math.abs(slopeDecade)
@@ -115,7 +116,7 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
     const mkP = trend.mann_kendall?.p_value ?? trend.p_value
 
     if (isSig) {
-      naturalLanguage = `${variable.name} en ${regionName} ${dirVerb} ${formatValue(absChange)} ${variable.unit} por década${ciText}; test Mann-Kendall p=${formatValue(mkP, 4)}: tendencia estadísticamente significativa.`
+      naturalLanguage = `${variable.name} en ${regionName} ${dirVerb} ${formatValue(absChange)} ${variable.unit} por década${ciText}. Significativa según OLS (p=${formatValue(trend.p_value, 4)}). Mann-Kendall p=${formatValue(mkP, 4)}: ${mkP !== null && mkP < 0.05 ? 'significativa' : 'sin evidencia suficiente de significancia'}.`
     } else {
       naturalLanguage = `Hay una tendencia de ${formatValue(absChange)} ${variable.unit}/década, pero aún no es estadísticamente significativa (p=${formatValue(trend.p_value, 3)} ≥ 0,05). Un periodo más largo podría cambiar esto.`
     }
@@ -146,8 +147,10 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
           {isConstant
             ? 'Serie constante'
             : isSig
-            ? 'Significativa (α = 0,05)'
-            : 'No significativa (α = 0,05)'}
+            ? 'Significativa · OLS (α = 0,05)'
+            : trend.status === 'insufficient_data' || trend.status === 'calculation_error'
+            ? 'No evaluable'
+            : 'No significativa · OLS (α = 0,05)'}
         </span>
       </div>
 
@@ -184,7 +187,7 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
             Regresión OLS
             <TermHelp term="Regresión OLS" explanation="Ajuste de mínimos cuadrados ordinarios para estimar la tasa de cambio lineal a lo largo del tiempo." />
           </p>
-          <p className="mt-1 text-muted">Pendiente: <span className="font-mono text-ink">{ols?.slope_per_decade ? formatValue(ols.slope_per_decade) : '—'}</span> {variable.unit}/década</p>
+          <p className="mt-1 text-muted">Pendiente: <span className="font-mono text-ink">{formatValue(ols?.slope_per_decade)}</span> {variable.unit}/década</p>
           <p className="text-muted">p-value: <span className="font-mono text-ink">{ols?.p_value !== undefined && ols?.p_value !== null ? formatValue(ols.p_value, 4) : '—'}</span></p>
           <p className="text-muted">R²: <span className="font-mono text-ink">{ols?.r_squared !== undefined ? formatValue(ols.r_squared, 3) : '—'}</span></p>
         </div>
@@ -214,7 +217,7 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
         <div className="rounded-lg border border-line bg-surface p-2.5">
           <p className="font-semibold text-ink flex items-center">
             Incertidumbre (IC 95%)
-            <TermHelp term="Intervalo de Confianza" explanation="Rango donde se espera que se encuentre la verdadera tasa de cambio con un 95% de probabilidad." />
+            <TermHelp term="Intervalo de Confianza" explanation="Si repitiéramos el muestreo y este procedimiento muchas veces, aproximadamente el 95% de los intervalos contendría la tasa verdadera, bajo los supuestos del método." />
           </p>
           <p className="mt-1 text-muted">Rango: <span className="font-mono text-ink">{trend.confidence_interval_per_decade ? `[${formatValue(trend.confidence_interval_per_decade[0])}, ${formatValue(trend.confidence_interval_per_decade[1])}]` : '—'}</span></p>
           <p className="text-muted">Años analizados: <span className="font-mono text-ink">{trend.n_observations}</span></p>
@@ -238,12 +241,23 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
 export function TimeSeriesChart({ configuration, dataset, pendingChanges }: TimeSeriesChartProps) {
   const [showTrendLines, setShowTrendLines] = useState(true)
   const [showConfidenceBands, setShowConfidenceBands] = useState(true)
+  const [hiddenVariables, setHiddenVariables] = useState<string[]>([])
+  const [zoomStart, setZoomStart] = useState('')
+  const [zoomEnd, setZoomEnd] = useState('')
+  useEffect(() => {
+    setHiddenVariables([])
+    setZoomStart('')
+    setZoomEnd('')
+  }, [dataset])
 
   const selectedVariables = variables.filter((variable) => configuration?.variableIds.includes(variable.id))
   const region = regions.find((item) => item.id === configuration?.regionId)
   const points = dataset?.points ?? []
-  const chartPoints: TimeSeriesPoint[] = points
   const results = dataset?.results ?? []
+  const visibleVariables = selectedVariables.filter((variable) => !hiddenVariables.includes(variable.id))
+  const regionName = dataset?.region?.name ?? region?.name ?? 'la región'
+  const zoomError = zoomStart && zoomEnd && zoomStart > zoomEnd
+  const chartPoints: TimeSeriesPoint[] = zoomError ? [] : zoomPoints(points, zoomStart, zoomEnd)
 
   function downloadExport(format: 'json' | 'csv') {
     if (!dataset || !configuration) return
@@ -292,7 +306,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
       <SectionTitle
         id="chart-title"
         title="Serie temporal y análisis de tendencias"
-        description={region && configuration ? `${region.name} · ${configuration.timeRange.startDate} a ${configuration.timeRange.endDate}` : 'Elige una región, variables y periodo para iniciar.'}
+        description={configuration ? `${regionName} · ${configuration.timeRange.startDate} a ${configuration.timeRange.endDate}` : 'Elige una región, variables y periodo para iniciar.'}
       >
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
@@ -331,15 +345,19 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               {selectedVariables.map((variable) => {
                 const color = getVariableColor(variable.id)
                 return (
-                  <div key={variable.id} className="flex items-center gap-2 text-xs">
+                  <button type="button" key={variable.id}
+                    aria-pressed={!hiddenVariables.includes(variable.id)}
+                    aria-label={`${hiddenVariables.includes(variable.id) ? 'Mostrar' : 'Ocultar'} ${variable.name}`}
+                    onClick={() => setHiddenVariables((current) => current.includes(variable.id) ? current.filter((id) => id !== variable.id) : [...current, variable.id])}
+                    className="flex items-center gap-2 rounded-lg border border-line p-2 text-xs">
                     <span className="flex items-center gap-1 font-medium" style={{ color }}>
                       <Minus size={18} strokeWidth={3} aria-hidden="true" />
                       <span>{variable.name}</span>
                     </span>
                     <span className="text-[11px] text-muted">
-                      (sólida: observado · discontinua: tendencia)
+                      {hiddenVariables.includes(variable.id) ? 'Oculta · mostrar' : 'Visible · ocultar'}
                     </span>
-                  </div>
+                  </button>
                 )
               })}
             </div>
@@ -370,14 +388,34 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
             </div>
           </div>
 
-          {/* Gráfico interactivo Recharts */}
+          <div className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-line p-3 text-xs">
+            <label>Zoom: desde
+              <input aria-label="Zoom desde" type="month" min={points[0]?.date.slice(0, 7)} max={points.at(-1)?.date.slice(0, 7)} value={zoomStart} onChange={(event) => setZoomStart(event.target.value)} className="ml-2 rounded border border-line bg-surface p-2" />
+            </label>
+            <label>Hasta
+              <input aria-label="Zoom hasta" type="month" min={points[0]?.date.slice(0, 7)} max={points.at(-1)?.date.slice(0, 7)} value={zoomEnd} onChange={(event) => setZoomEnd(event.target.value)} className="ml-2 rounded border border-line bg-surface p-2" />
+            </label>
+            <button type="button" className="rounded border border-line p-2" onClick={() => { setZoomStart(''); setZoomEnd('') }}>Restablecer zoom</button>
+            <button type="button" className="rounded border border-line p-2" onClick={() => setHiddenVariables([])}>Mostrar todas</button>
+            <p className="w-full text-muted">Cada variable tiene su propio panel y escala. El zoom es visual: las pruebas estadísticas y descargas conservan el periodo completo.</p>
+          </div>
+          {zoomError && <p role="alert">El inicio del zoom debe ser anterior o igual al final.</p>}
+          {!visibleVariables.length && <p role="status">Todas las variables están ocultas. Activa una variable o pulsa “Mostrar todas”.</p>}
+          {!zoomError && !chartPoints.length && <p role="status">No hay observaciones dentro del zoom seleccionado.</p>}
+          {/* Separate panels avoid overlapping variables and incompatible units. */}
+          {visibleVariables.map((variable) => {
+            const result = results.find((item) => item.variable.id === variable.id)
+            if (!result) return null
+            return <article key={variable.id} aria-label={`Panel de ${variable.name}`} className="mb-5 rounded-xl border border-line p-3">
+              <h3 className="font-semibold" style={{ color: getVariableColor(variable.id) }}>{variable.name} · {variable.unit}</h3>
+              <p className="mb-2 text-xs text-muted">Línea continua: observado · discontinua: tendencia · sombreado: IC 95% de la media estimada.</p>
+              {result.variable.aggregation === 'sum' && <p className="mb-2 text-xs text-muted">Observado: total mensual. Tendencia y banda: equivalente mensual del ajuste anual (÷12). Las tarjetas reportan el cambio del total anual.</p>}
           <div
             className="h-72 min-w-0 w-full sm:h-96"
-            role="img"
-            aria-label={`Gráfica de serie temporal mensual y recta de tendencia de ${region?.name ?? 'la región seleccionada'}.`}
+            aria-label={`Gráfica de ${variable.name} en ${regionName}.`}
           >
             <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 600, height: 360 }}>
-              <ComposedChart data={chartPoints} margin={{ top: 12, right: 12, bottom: 8, left: 0 }} accessibilityLayer>
+              <ComposedChart syncId="variable-panels" data={variableChartPoints(chartPoints, result)} margin={{ top: 12, right: 12, bottom: 8, left: 0 }} accessibilityLayer>
                 <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
                 <XAxis
                   dataKey="date"
@@ -388,12 +426,12 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                   tick={{ fill: 'var(--color-muted)', fontSize: 11 }}
                   dy={10}
                 />
-                {selectedVariables.map((variable, index) => (
+                {[variable].map((variable, index) => (
                   <YAxis
                     key={variable.id}
                     yAxisId={variable.id}
                     orientation={index === 0 ? 'left' : 'right'}
-                    width={46}
+                    width={70}
                     axisLine={false}
                     tickLine={false}
                     tickCount={5}
@@ -411,7 +449,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
 
                 {/* 1. Bandas de confianza (Area) */}
                 {showConfidenceBands &&
-                  selectedVariables.map((variable) => {
+                  [variable].map((variable) => {
                     const color = getVariableColor(variable.id)
                     return (
                       <Area
@@ -428,7 +466,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                   })}
 
                 {/* 2. Series mensuales observadas (Line sólida) */}
-                {selectedVariables.map((variable) => {
+                {[variable].map((variable) => {
                   const color = getVariableColor(variable.id)
                   return (
                     <Line
@@ -449,7 +487,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
 
                 {/* 3. Rectas de tendencia estimadas (Line discontinua) */}
                 {showTrendLines &&
-                  selectedVariables.map((variable) => {
+                  [variable].map((variable) => {
                     const color = getVariableColor(variable.id)
                     return (
                       <Line
@@ -470,6 +508,8 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+            </article>
+          })}
 
           <p className="mt-2 text-center text-xs text-muted flex items-center justify-center gap-1">
             <Info size={13} aria-hidden="true" />
@@ -490,11 +530,11 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
             </div>
 
             <div className="mt-4 grid gap-4">
-              {selectedVariables.map((variable) => (
+              {visibleVariables.map((variable) => (
                 <TrendSummary
                   key={variable.id}
                   result={results.find((item) => item.variable.id === variable.id)}
-                  regionName={region?.name ?? 'la región'}
+                  regionName={regionName}
                 />
               ))}
             </div>

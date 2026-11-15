@@ -166,6 +166,7 @@ export interface BackendResult {
 }
 
 export interface TimeSeriesDataset {
+  region?: { id: string; name: string; type: string; south: number; west: number; north: number; east: number }
   points: TimeSeriesPoint[]
   sourceId: string
   isDemonstration: boolean

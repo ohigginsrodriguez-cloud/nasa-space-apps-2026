@@ -278,7 +278,8 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   const [hiddenVariables, setHiddenVariables] = useState<string[]>([])
   const [zoomLevel, setZoomLevel] = useState(0)
   const [panOffset, setPanOffset] = useState(0)
-  const panRef = useRef<{ startX: number; startOffset: number } | null>(null)
+  const panRef = useRef<{ pointerId: number; startX: number; startOffset: number; currentOffset: number } | null>(null)
+  const panFrameRef = useRef<number | null>(null)
   const [layout, setLayout] = useState<'separate' | 'combined'>('separate')
   const [expanded, setExpanded] = useState(false)
   const [showZoomHelp, setShowZoomHelp] = useState(false)
@@ -311,18 +312,39 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   }
   function startPan(event: PointerEvent<HTMLDivElement>) {
     if (zoomLevel <= 0 || maxPanOffset <= 0) return
+    event.preventDefault()
     event.currentTarget.setPointerCapture(event.pointerId)
-    panRef.current = { startX: event.clientX, startOffset: panOffset }
+    panRef.current = { pointerId: event.pointerId, startX: event.clientX, startOffset: panOffset, currentOffset: panOffset }
   }
   function movePan(event: PointerEvent<HTMLDivElement>) {
-    if (!panRef.current || maxPanOffset <= 0) return
+    const pan = panRef.current
+    if (!pan || pan.pointerId !== event.pointerId || maxPanOffset <= 0) return
+    event.preventDefault()
     const width = Math.max(1, event.currentTarget.clientWidth)
-    const delta = (panRef.current.startX - event.clientX) / width * maxPanOffset
-    setPanOffset(Math.max(-Math.floor(maxPanOffset / 2), Math.min(Math.ceil(maxPanOffset / 2), panRef.current.startOffset + delta)))
+    const windowSize = Math.max(1, zoomWindowSize(points, zoomLevel))
+    const sensitivity = 1.5
+    const delta = (pan.startX - event.clientX) / width * windowSize * sensitivity
+    pan.currentOffset = Math.max(
+      -Math.floor(maxPanOffset / 2),
+      Math.min(Math.ceil(maxPanOffset / 2), pan.startOffset + delta),
+    )
+    if (panFrameRef.current === null) {
+      panFrameRef.current = requestAnimationFrame(() => {
+        panFrameRef.current = null
+        if (panRef.current) setPanOffset(panRef.current.currentOffset)
+      })
+    }
   }
   function stopPan(event: PointerEvent<HTMLDivElement>) {
-    if (panRef.current && event.currentTarget.hasPointerCapture(event.pointerId)) {
+    if (panRef.current?.pointerId === event.pointerId && event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    if (panFrameRef.current !== null) {
+      cancelAnimationFrame(panFrameRef.current)
+      panFrameRef.current = null
+    }
+    if (panRef.current?.pointerId === event.pointerId) {
+      setPanOffset(panRef.current.currentOffset)
     }
     panRef.current = null
   }
@@ -487,7 +509,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                 <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
               </div>
               <div className="flex w-full items-stretch gap-2 overflow-x-auto">
-                <div className={`min-w-0 flex-1 ${zoomLevel > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`} style={{ height: expanded ? 700 : 420, touchAction: zoomLevel > 0 ? 'none' : 'auto' }} onPointerDown={startPan} onPointerMove={movePan} onPointerUp={stopPan} onPointerCancel={stopPan}>
+                <div className={`min-w-0 flex-1 select-none ${zoomLevel > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`} style={{ height: expanded ? 700 : 420, touchAction: zoomLevel > 0 ? 'none' : 'auto' }} onPointerDown={startPan} onPointerMove={movePan} onPointerUp={stopPan} onPointerCancel={stopPan}>
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={combinedPoints} margin={{ top: 25, right: 24, bottom: 10, left: 24 }} accessibilityLayer>
                       <CartesianGrid strokeDasharray="3 5" />
@@ -518,7 +540,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               {result.variable.aggregation === 'sum' && <p className="mb-2 text-xs text-muted">Observado: total mensual. Tendencia y banda: equivalente mensual del ajuste anual (÷12). Las tarjetas reportan el cambio del total anual.</p>}
            <div className="flex min-w-0 items-stretch gap-2">
            <div
-             className={`h-72 min-w-0 flex-1 sm:h-96 ${zoomLevel > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+             className={`h-72 min-w-0 flex-1 select-none sm:h-96 ${zoomLevel > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`}
              style={{ ...(expanded ? { height: 700 } : {}), touchAction: zoomLevel > 0 ? 'none' : 'auto' }}
              aria-label={`Gráfica de ${variable.name} en ${regionName}.`}
              onPointerDown={startPan}

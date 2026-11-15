@@ -5,7 +5,6 @@ Implements:
 - Mann-Kendall non-parametric trend test (with tie corrections)
 - Seasonal Mann-Kendall test (Hirsch et al., 1982)
 - Theil-Sen median slope estimator with confidence interval
-- Monthly climatology and anomaly series computation
 - Lag-1 residual autocorrelation check
 """
 
@@ -265,28 +264,6 @@ def sen_slope(
         "intercept": intercept,
         "ci95_per_decade": ci_decade,
     }
-
-
-def compute_climatology_and_anomalies(
-    monthly_series: list[tuple[int, int, float]],
-) -> tuple[dict[int, float], list[tuple[int, int, float]]]:
-    """Compute monthly climatology (mean per calendar month) and monthly anomalies."""
-    by_month: dict[int, list[float]] = {m: [] for m in range(1, 13)}
-    for _, month, val in monthly_series:
-        if val is not None and np.isfinite(val):
-            by_month[month].append(float(val))
-
-    climatology = {
-        m: float(np.mean(vals)) if len(vals) > 0 else 0.0
-        for m, vals in by_month.items()
-    }
-
-    anomalies: list[tuple[int, int, float]] = []
-    for year, month, val in monthly_series:
-        if val is not None and np.isfinite(val):
-            anomalies.append((year, month, float(val) - climatology[month]))
-
-    return climatology, anomalies
 
 
 def compute_lag1_autocorrelation(residuals: list[float] | np.ndarray) -> float | None:

@@ -17,13 +17,15 @@ redirige a `/trends`.
 
 El frontend consume `POST /api/v1/analysis` mediante `src/services/api.ts`.
 El backend es la única fuente del cálculo estadístico. `local-demo` genera
-datos sintéticos; NASA POWER obtiene temperatura y precipitación mensuales.
+datos sintéticos; NASA POWER entrega las siete variables activas descritas en
+el catálogo del proyecto.
 
 El backend aplica regresión lineal y una prueba t bilateral de la pendiente
 sobre agregados anuales completos, con tasa por año y década, p-value e
-intervalo de confianza del 95 %. No corrige autocorrelación ni cambios de
-sensor y no permite inferir causalidad. Mann–Kendall y variables adicionales
-siguen pendientes.
+intervalo de confianza del 95 %. Mann–Kendall, Seasonal MK y Theil–Sen son
+métodos complementarios. No corrige autocorrelación ni cambios de producto o
+sensor y no permite inferir causalidad. NDVI, evapotranspiración y SWOT siguen
+pendientes.
 
 El mapa base usa teselas de OpenStreetMap y requiere conexión a internet; la
 selección manual de coordenadas sigue disponible si no cargan las teselas.

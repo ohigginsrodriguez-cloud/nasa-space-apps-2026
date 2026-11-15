@@ -7,22 +7,25 @@ export function validateTimeRange(range: TimeRange): string | null {
     return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
   }
   if (!isValidDate(range.startDate) || !isValidDate(range.endDate)) return 'Introduce fechas válidas.'
-  const latestCompleteMonth = new Date()
-  latestCompleteMonth.setUTCDate(1)
-  latestCompleteMonth.setUTCMonth(latestCompleteMonth.getUTCMonth() - 1)
-  const latestCompleteMonthEnd = new Date(Date.UTC(
-    latestCompleteMonth.getUTCFullYear(),
-    latestCompleteMonth.getUTCMonth() + 1,
-    0,
-  )).toISOString().slice(0, 10)
+  const latestCompleteMonthEnd = getLatestCompleteMonthEnd()
   if (range.endDate > latestCompleteMonthEnd) {
     return `La fecha final no puede superar el último mes completo (${latestCompleteMonthEnd}).`
   }
   if (range.startDate > latestCompleteMonthEnd || range.startDate > range.endDate) {
     return 'El periodo seleccionado no contiene meses completos válidos.'
   }
-  if (range.startDate > range.endDate) return 'La fecha final debe ser igual o posterior a la inicial.'
   return null
+}
+
+export function getLatestCompleteMonthEnd(now = new Date()): string {
+  const latestCompleteMonth = new Date(now)
+  latestCompleteMonth.setUTCDate(1)
+  latestCompleteMonth.setUTCMonth(latestCompleteMonth.getUTCMonth() - 1)
+  return new Date(Date.UTC(
+    latestCompleteMonth.getUTCFullYear(),
+    latestCompleteMonth.getUTCMonth() + 1,
+    0,
+  )).toISOString().slice(0, 10)
 }
 
 /**

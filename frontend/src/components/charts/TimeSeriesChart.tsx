@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Download, HelpCircle, Info, Minus, SlidersHorizontal, XCircle } from 'lucide-react'
+import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Download, HelpCircle, Info, Link2, Minus, SlidersHorizontal, XCircle } from 'lucide-react'
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from 'recharts'
 import { regions, variables } from '../../data/mockData'
 import type { BackendResult, DataConfiguration, TimeSeriesDataset, TimeSeriesPoint } from '../../types'
@@ -99,7 +99,7 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
   if (!result) return null
   const { variable, trend } = result
   const isConstant = trend.status === 'constant_series'
-  const isSig = trend.significant === true
+  const isSig = result.interpretation?.significant === true || (!result.interpretation && trend.significant === true)
   const slopeDecade = trend.change_per_decade
   const isUp = slopeDecade !== null && slopeDecade > 0
   const isDown = slopeDecade !== null && slopeDecade < 0
@@ -107,6 +107,11 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
   let naturalLanguage = ''
   if (isConstant) {
     naturalLanguage = `Los agregados anuales de ${variable.name} son constantes en ${regionName}. No hay tendencia anual que evaluar; los valores mensuales pueden variar.`
+  } else if (
+    result.interpretation?.status === 'conflicting_evidence'
+    || result.interpretation?.status === 'insufficient_data'
+  ) {
+    naturalLanguage = result.interpretation.summary
   } else if (slopeDecade !== null) {
     const dirVerb = isUp ? 'aumentó' : isDown ? 'disminuyó' : 'se mantuvo sin cambio lineal'
     const absChange = Math.abs(slopeDecade)
@@ -120,6 +125,8 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
     } else {
       naturalLanguage = `Hay una tendencia de ${formatValue(absChange)} ${variable.unit}/década, pero aún no es estadísticamente significativa (p=${formatValue(trend.p_value, 3)} ≥ 0,05). Un periodo más largo podría cambiar esto.`
     }
+  } else if (result.interpretation) {
+    naturalLanguage = result.interpretation.summary
   } else {
     naturalLanguage = trend.message
   }
@@ -139,16 +146,18 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
             isSig
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              ? 'bg-rose-50 text-rose-800 border border-rose-200'
               : 'border border-line bg-surface text-muted'
           }`}
         >
-          {isSig ? <CheckCircle2 size={13} className="text-emerald-600" /> : <XCircle size={13} className="text-muted" />}
+          {isSig ? <CheckCircle2 size={13} className="text-rose-600" /> : <XCircle size={13} className="text-muted" />}
           {isConstant
             ? 'Serie constante'
             : isSig
             ? 'Significativa · OLS (α = 0,05)'
-            : trend.status === 'insufficient_data' || trend.status === 'calculation_error'
+            : result.interpretation?.status === 'insufficient_data'
+            || result.interpretation?.status === 'conflicting_evidence'
+            || trend.status === 'insufficient_data' || trend.status === 'calculation_error'
             ? 'No evaluable'
             : 'No significativa · OLS (α = 0,05)'}
         </span>
@@ -439,7 +448,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                     domain={['auto', 'auto']}
                   />
                 ))}
-                <Tooltip
+              <Tooltip
                   content={ChartTooltip}
                   shared={false}
                   trigger="hover"
@@ -508,6 +517,30 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+              <div
+                role="status"
+                aria-label={`Significancia estadística de ${variable.name}`}
+                className={`mt-3 rounded-lg border px-3 py-2 text-xs ${
+                  result.interpretation?.significant === true || (!result.interpretation && result.trend.significant === true)
+                    ? 'border-rose-200 bg-rose-50 text-rose-900'
+                    : result.interpretation?.significant === false || (!result.interpretation && result.trend.significant === false)
+                      ? 'border-slate-200 bg-slate-50 text-slate-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }`}
+              >
+                <strong>
+                  {result.interpretation?.significant === true || (!result.interpretation && result.trend.significant === true)
+                    ? 'Tendencia significativa'
+                    : result.interpretation?.significant === false || (!result.interpretation && result.trend.significant === false)
+                      ? result.trend.status === 'constant_series' ? 'Serie constante; sin cambio lineal' : 'Tendencia no significativa'
+                      : 'Significancia no evaluable'}
+                </strong>
+                {' · '}OLS p = {formatValue(result.trend.p_value, 4)}
+                {' · '}Mann–Kendall p = {formatValue(result.trend.mann_kendall?.p_value, 4)}
+                {' · '}IC 95% = {result.trend.confidence_interval_per_decade
+                  ? `[${formatValue(result.trend.confidence_interval_per_decade[0])}, ${formatValue(result.trend.confidence_interval_per_decade[1])}] ${variable.unit}/década`
+                  : 'no disponible'}
+              </div>
             </article>
           })}
 
@@ -539,6 +572,24 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               ))}
             </div>
           </section>
+          {results.length > 1 && dataset?.multivariateInterpretation?.processes.length ? (
+            <section aria-labelledby="processes-title" className="mt-5 rounded-xl border border-indigo-200 bg-indigo-50/60 p-4">
+              <h2 id="processes-title" className="flex items-center gap-2 text-sm font-bold text-indigo-950">
+                <Link2 size={16} aria-hidden="true" />
+                Interconexión del Sistema Terrestre Detectada
+              </h2>
+              <ul className="mt-3 space-y-3">
+                {dataset.multivariateInterpretation.processes.map((process) => (
+                  <li key={process.id} className="rounded-lg border border-indigo-200 bg-white/80 p-3">
+                    <h3 className="text-xs font-semibold text-indigo-950">{process.name}</h3>
+                    <p className="mt-1 text-xs text-indigo-900">{process.summary}</p>
+                    <p className="mt-1 text-[11px] text-indigo-800">{process.causality_warning}</p>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[11px] text-indigo-800">{dataset.multivariateInterpretation.causality_warning}</p>
+            </section>
+          ) : null}
         </>
       ) : (
         <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-line bg-canvas/50 px-5 text-center">
@@ -555,7 +606,9 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
 
       <div className="mt-5 border-t border-line pt-4 text-xs leading-relaxed text-muted flex flex-wrap items-center justify-between gap-2">
         <p>
-          {dataset?.isDemonstration ? 'Datos sintéticos de demostración (DEMO / SINTÉTICO); no son observaciones reales de satélites.' : 'Datos meteorológicos obtenidos vía API NASA POWER (MERRA-2).'}
+          {dataset?.isDemonstration
+            ? 'Datos sintéticos de demostración (DEMO / SINTÉTICO); no son observaciones reales de satélites.'
+            : 'Datos obtenidos vía API NASA POWER; el producto de origen depende de la variable y puede ser modelado o satelital.'}
           {dataset?.missingValueCount ? ` Valores faltantes: ${dataset.missingValueCount}.` : ''}
         </p>
         <span className="font-mono text-[11px] text-muted">NASA Space Apps Challenge 2026</span>

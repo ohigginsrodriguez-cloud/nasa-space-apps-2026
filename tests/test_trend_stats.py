@@ -6,6 +6,7 @@ Includes cross-validation against pymannkendall, scipy.stats, and manual numpy f
 from __future__ import annotations
 
 import math
+from calendar import monthrange
 import numpy as np
 import pymannkendall as pmk
 import pytest
@@ -16,7 +17,6 @@ from app.schemas.analysis import Observation
 from app.services.aggregation import aggregate_annual, analyze_trend
 from app.services.trend_stats import (
     calculate_ols,
-    compute_climatology_and_anomalies,
     compute_lag1_autocorrelation,
     compute_trend_line_and_bands,
     mann_kendall,
@@ -161,19 +161,6 @@ def test_seasonal_mann_kendall():
     assert smk["seasons_evaluated"] == 12
 
 
-def test_climatology_and_anomalies():
-    """Monthly climatology should compute correct monthly averages."""
-    monthly_data = [
-        (2020, 1, 10.0), (2021, 1, 12.0),
-        (2020, 2, 20.0), (2021, 2, 22.0),
-    ]
-    clim, anom = compute_climatology_and_anomalies(monthly_data)
-    assert math.isclose(clim[1], 11.0)
-    assert math.isclose(clim[2], 21.0)
-    assert math.isclose(anom[0][2], -1.0)  # 10 - 11
-    assert math.isclose(anom[1][2], 1.0)   # 12 - 11
-
-
 def test_lag1_autocorrelation():
     """Positively correlated residuals should yield high r1."""
     # Strong positive autocorrelation e_t = 0.8 * e_{t-1} + noise
@@ -186,35 +173,37 @@ def test_lag1_autocorrelation():
     assert r1 > 0.5
 
 
-def test_aggregate_annual_accepts_9_to_11_months():
-    """Years with >= 9 months should be retained and scaled if sum."""
+def test_aggregate_annual_uses_only_complete_years_without_extrapolation():
     from datetime import date
     var_precip = VARIABLES["precipitation"]
     var_temp = VARIABLES["temperature"]
 
-    # Year 2020 with 10 months (months 1..10)
+    # Incomplete year is excluded for both sum and mean variables.
     obs_10m = [
         Observation(date=date(2020, m, 1), value=10.0)
         for m in range(1, 11)
     ]
-    # Sum variable: 10 * 10.0 = 100.0 -> scaled to 12m equivalent: 100 * (12/10) = 120.0
-    annual_precip = aggregate_annual(obs_10m, var_precip, min_months_per_year=9)
-    assert len(annual_precip) == 1
-    assert annual_precip[0][0] == 2020
-    assert math.isclose(annual_precip[0][1], 120.0)
-
-    # Mean variable: average is 10.0
-    annual_temp = aggregate_annual(obs_10m, var_temp, min_months_per_year=9)
-    assert len(annual_temp) == 1
-    assert math.isclose(annual_temp[0][1], 10.0)
-
-    # Year with 8 months (< 9) should be discarded
-    obs_8m = [
+    assert aggregate_annual(obs_10m, var_precip) == []
+    assert aggregate_annual(obs_10m, var_temp) == []
+    complete_year = [
         Observation(date=date(2021, m, 1), value=10.0)
-        for m in range(1, 9)
+        for m in range(1, 13)
     ]
-    annual_discarded = aggregate_annual(obs_8m, var_temp, min_months_per_year=9)
-    assert len(annual_discarded) == 0
+    assert aggregate_annual(complete_year, var_precip) == [(2021, 120.0)]
+    assert aggregate_annual(complete_year, var_temp) == [(2021, 10.0)]
+
+    varied_months = [
+        Observation(date=date(2020, month, 1), value=float(month))
+        for month in range(1, 13)
+    ]
+    expected_weighted_mean = sum(
+        month * monthrange(2020, month)[1]
+        for month in range(1, 13)
+    ) / 366
+    assert math.isclose(
+        aggregate_annual(varied_months, var_temp)[0][1],
+        expected_weighted_mean,
+    )
 
 
 def test_analyze_trend_returns_unified_schema_with_trend_line_and_bands():

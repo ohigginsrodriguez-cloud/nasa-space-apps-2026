@@ -30,9 +30,10 @@ preferiblemente el cambio por década para facilitar la interpretación.
 
 ### Significancia estadística
 
-El MVP puede usar una prueba t bilateral sobre la pendiente de una regresión
-lineal. Si `p < 0.05`, se reporta evidencia estadística de una tendencia bajo
-ese método y sus supuestos.
+El resultado principal usa una prueba t bilateral sobre la pendiente OLS y un
+intervalo de confianza del 95%. Se califica como significativo cuando
+`p < 0.05` y el intervalo no contiene cero. Mann-Kendall es evidencia
+complementaria; las discrepancias entre métodos permanecen visibles.
 
 Un `p >= 0.05` no significa que no exista ningún cambio. Significa que la
 evidencia disponible no es suficiente bajo el criterio elegido.
@@ -74,7 +75,7 @@ desestacionalizar o comparar la misma estación entre años.
 - No convertir un valor faltante en cero.
 - Registrar cuántas observaciones faltan.
 - No completar datos automáticamente sin documentar el método.
-- No calcular un promedio anual como completo si faltan meses.
+- Excluir del ajuste anual los años que no tengan 12 meses válidos.
 - Mostrar al usuario cuándo el resultado tiene poca cobertura.
 
 ## Limitaciones conocidas
@@ -85,6 +86,16 @@ desestacionalizar o comparar la misma estación entre años.
 - Cambios de sensor o de producto pueden introducir discontinuidades.
 - La significancia depende del periodo y la calidad de los datos.
 - Una tendencia observada no demuestra su causa.
+- Los datos cercanos al presente en POWER pueden ser provisionales o revisarse
+  al actualizarse el producto; un mes calendario completo no garantiza que el
+  producto de reanálisis ya haya sido finalizado.
 
-Mann-Kendall puede añadirse después como análisis no paramétrico, pero no debe
-mostrarse como implementado hasta tener pruebas y documentación.
+Mann-Kendall, Seasonal Mann-Kendall y Theil-Sen están implementados como
+métodos complementarios; no corrigen automáticamente la autocorrelación.
+
+## Interpretación de patrones
+
+La aplicación genera JSON para el veredicto estadístico, patrones
+multivariables en una región y divergencia espacial de una variable entre dos
+regiones. Los patrones físicos son exploratorios: la coincidencia de tendencias
+no demuestra causalidad ni identifica por sí sola un mecanismo físico.

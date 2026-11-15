@@ -17,7 +17,7 @@ tests estadísticos, inteligencia artificial ni tendencias opuestas significativ
 | Comprensión para estudiantes (opcional) | Implementado | Descripciones, glosario, tarjetas y ayuda | Validación con usuarios pendiente |
 | Flujo guiado y ejemplos (opcional) | Implementado | Asistente y tres ejemplos mexicanos | Ejemplos precargan configuración; no son videos |
 | Comparación regional (opcional) | Implementado | `RegionComparison.tsx`, gráficos sincronizados | No implica causa común ni garantiza signos opuestos |
-| Estacionalidad avanzada (opcional) | Parcial | Agregados anuales y Seasonal MK | Anomalías auxiliares no integradas al ajuste; faltantes pueden sesgar agregados |
+| Estacionalidad avanzada (opcional) | Parcial | Agregados anuales completos y Seasonal MK | El ajuste anual no elimina toda variabilidad interanual; años incompletos se excluyen |
 
 ## Correcciones de esta revisión
 
@@ -36,18 +36,21 @@ tests estadísticos, inteligencia artificial ni tendencias opuestas significativ
 - Separación explícita entre significancia OLS y MK, estado “No evaluable”,
   pendiente cero visible y definición frecuentista del intervalo de confianza.
 - Se corrigió la etiqueta `annual_anomalies`: el ajuste actual es `annual_values`.
-  Se documenta el sesgo posible en años incompletos y la autocorrelación.
+  Los años incompletos ya no se extrapolan y se informa su exclusión.
+- Cada gráfica muestra debajo el estado de significancia, p-values OLS/MK e
+  intervalo; los resultados no evaluables no se etiquetan como no significativos.
+- La API entrega JSON de veredicto, patrones multivariables y divergencia
+  espacial, con advertencias explícitas contra inferencias causales.
 
 ## Pruebas ejecutadas
 
-- `pytest`: **44 passed**, una advertencia de deprecación Starlette/httpx.
-- `npm --prefix frontend test`: **10 passed**.
-- `npm --prefix frontend run build`: TypeScript y Vite correctos.
-- `scripts/verify_analysis.py`: Sonora/temperatura y Lacandona/precipitación
-  1991–2023; OLS/MK/Sen coinciden con SciPy/pymannkendall (<1e-6).
-- `scripts/verify_chart_ui.mjs`: Chromium, API real HTTP 200, siete paneles con
-  SVG renderizados, ocultar/mostrar, zoom/restablecer, todas ocultas y recuperar;
-  viewport móvil 390 px sin desbordamiento horizontal ni errores JS.
+- `pytest -q`: **51 passed**, una advertencia de deprecación Starlette/httpx.
+- `npm --prefix frontend test`: **11 passed**; typecheck y build correctos.
+- `scripts/verify_analysis.py`: OLS, MK y Sen coinciden con SciPy/pymannkendall
+  en las series POWER 1991–2023 comprobadas.
+- La verificación e2e `scripts/verify_chart_ui.mjs` no pudo ejecutarse:
+  Playwright no está disponible en la ruta externa documentada. El dashboard
+  sí abrió en Chromium integrado, pero falta recorrer el flujo completo.
 - Pruebas unitarias del zoom comprueban los meses incluidos; las de escala
   verifican que no se modifiquen observaciones ni resultados exportados.
 

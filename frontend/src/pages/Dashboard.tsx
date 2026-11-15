@@ -114,7 +114,7 @@ export function Dashboard() {
         <FlaskConical size={18} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
         <p className="text-xs leading-relaxed text-muted">
           <strong className="font-semibold text-ink">
-            {isDemo ? 'Modo Sintético Demostrativo (DEMO).' : 'Fuente activa: NASA POWER (MERRA-2).'}
+            {isDemo ? 'Modo Sintético Demostrativo (DEMO).' : 'Fuente activa: NASA POWER; los productos varían por variable.'}
           </strong>{' '}
           {isDemo
             ? 'Las observaciones se generan con algoritmos matemáticos deterministas reproducibles (offline).'
@@ -234,7 +234,7 @@ export function Dashboard() {
                         onChange={(event) => updateDraft({ ...draft, sourceId: event.target.value })}
                         className="rounded border border-line bg-surface px-2.5 py-1 text-ink text-xs"
                       >
-                        <option value="nasa-power">NASA POWER (MERRA-2 Real)</option>
+                        <option value="nasa-power">NASA POWER (datos reales)</option>
                         <option value="local-demo">Datos Sintéticos (Demo reproducible)</option>
                       </select>
                     </dd>

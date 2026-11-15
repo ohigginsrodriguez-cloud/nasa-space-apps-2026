@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { GitCompare, LoaderCircle, TrendingDown, TrendingUp } from 'lucide-react'
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { regions, variables } from '../../data/mockData'
-import { runAnalysis } from '../../services/api'
-import type { RegionId, TimeSeriesDataset, VariableId } from '../../types'
-import { validateConfiguration } from '../../utils/configuration'
+import { runRegionComparison } from '../../services/api'
+import type { RegionId, SpatialInterpretation, TimeSeriesDataset, VariableId } from '../../types'
+import { getLatestCompleteMonthEnd, validateConfiguration } from '../../utils/configuration'
 import { variableChartPoints } from '../../utils/chartData'
 
 const shortDate = new Intl.DateTimeFormat('es', { month: 'short', year: '2-digit', timeZone: 'UTC' })
@@ -17,12 +17,14 @@ export function RegionComparison() {
   const [regionBId, setRegionBId] = useState<RegionId>('lacandon-jungle')
   const [startDate, setStartDate] = useState('1995-01-01')
   const [endDate, setEndDate] = useState('2023-12-01')
+  const maxDate = getLatestCompleteMonthEnd()
   const [sourceId, setSourceId] = useState('nasa-power')
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [datasetA, setDatasetA] = useState<TimeSeriesDataset | null>(null)
   const [datasetB, setDatasetB] = useState<TimeSeriesDataset | null>(null)
+  const [spatialInterpretation, setSpatialInterpretation] = useState<SpatialInterpretation | null>(null)
 
   const selectedVar = variables.find((v) => v.id === variableId) ?? variables[0]
   const regionA = regions.find((r) => r.id === regionAId) ?? regions[0]
@@ -30,30 +32,28 @@ export function RegionComparison() {
   const configurationKey = JSON.stringify([variableId, regionAId, regionBId, startDate, endDate, sourceId])
   const [resultKey, setResultKey] = useState<string | null>(null)
   const hasCurrentResults = resultKey === configurationKey
-  const validationError = validateConfiguration({
-    variableIds: [variableId], regionId: regionAId, sourceId,
-    timeRange: { startDate, endDate, interval: 'monthly' },
-  })
+  const validationError = regionAId === regionBId
+    ? 'Selecciona dos regiones diferentes para comparar.'
+    : validateConfiguration({
+      variableIds: [variableId], regionId: regionAId, sourceId,
+      timeRange: { startDate, endDate, interval: 'monthly' },
+    })
 
   async function handleCompare() {
     if (validationError) return
     setLoading(true)
     setError(null)
     try {
-      const [resA, resB] = await Promise.all([
-        runAnalysis(
-          { variableIds: [variableId], regionId: regionAId, timeRange: { startDate, endDate, interval: 'monthly' }, sourceId },
-          null,
-          null
-        ),
-        runAnalysis(
-          { variableIds: [variableId], regionId: regionBId, timeRange: { startDate, endDate, interval: 'monthly' }, sourceId },
-          null,
-          null
-        ),
-      ])
-      setDatasetA(resA)
-      setDatasetB(resB)
+      const comparison = await runRegionComparison(
+        variableId,
+        [regionAId, regionBId],
+        startDate,
+        endDate,
+        sourceId,
+      )
+      setDatasetA(comparison.datasets[0])
+      setDatasetB(comparison.datasets[1])
+      setSpatialInterpretation(comparison.interpretation)
       setResultKey(configurationKey)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -67,8 +67,6 @@ export function RegionComparison() {
 
   const slopeA = resultA?.trend.change_per_decade
   const slopeB = resultB?.trend.change_per_decade
-  const isOpposing = resultA?.trend.significant && resultB?.trend.significant && slopeA !== undefined && slopeA !== null && slopeB !== undefined && slopeB !== null && ((slopeA > 0 && slopeB < 0) || (slopeA < 0 && slopeB > 0))
-
   return (
     <div className="rounded-2xl border border-line bg-surface p-5 sm:p-6 shadow-sm space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
@@ -143,16 +141,18 @@ export function RegionComparison() {
           <label className="block font-medium text-muted mb-1">Periodo (Inicio / Fin)</label>
           <div className="flex items-center gap-1">
             <input
-              type="text"
+              type="date"
               value={startDate}
+              max={maxDate}
               onChange={(e) => setStartDate(e.target.value)}
               placeholder="YYYY-MM-DD"
               className="w-1/2 rounded border border-line bg-surface px-1.5 py-1.5 text-[11px] font-mono text-ink"
             />
             <span className="text-muted">-</span>
             <input
-              type="text"
+              type="date"
               value={endDate}
+              max={maxDate}
               onChange={(e) => setEndDate(e.target.value)}
               placeholder="YYYY-MM-DD"
               className="w-1/2 rounded border border-line bg-surface px-1.5 py-1.5 text-[11px] font-mono text-ink"
@@ -182,25 +182,26 @@ export function RegionComparison() {
       )}
 
       {/* Banner de Tendencias Opuestas Detectadas */}
-      {isOpposing && (
+      {hasCurrentResults && spatialInterpretation && (
         <div className="rounded-xl border border-purple-300 bg-purple-50/90 p-4 text-purple-950 shadow-xs">
           <div className="flex items-start gap-2.5">
             <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-purple-600 text-white font-bold text-xs">
               ⚡
             </span>
             <div>
-              <h3 className="text-sm font-bold text-purple-900">
-                ¡Tendencias opuestas detectadas en el sistema Tierra!
-              </h3>
+              <h3 className="text-sm font-bold text-purple-900">{spatialInterpretation.title}</h3>
               <p className="mt-1 text-xs leading-relaxed text-purple-900">
-                Mientras que en <strong>{regionA.name}</strong> la {selectedVar.name} {slopeA! > 0 ? 'aumentó' : 'disminuyó'}{' '}
-                (<strong>{slopeA! > 0 ? `+${formatValue(slopeA)}` : formatValue(slopeA)} {selectedVar.unit}/década</strong>), en{' '}
-                <strong>{regionB.name}</strong> se comportó en sentido opuesto:{' '}
-                <strong>{slopeB! > 0 ? `+${formatValue(slopeB)}` : formatValue(slopeB)} {selectedVar.unit}/década</strong>.
+                {spatialInterpretation.summary}
               </p>
-              <p className="mt-2 text-[11px] text-purple-800 italic">
-                Las dos tendencias son significativas según OLS. Los signos opuestos por sí solos no demuestran que exista una causa común.
-              </p>
+              {spatialInterpretation.regions?.map((item) => (
+                <p key={item.id} className="mt-1 text-[11px] text-purple-900">
+                  <strong>{item.name}:</strong> {item.direction} · {formatValue(item.change_per_decade)} {selectedVar.unit}/década ·{' '}
+                  {item.significant === true ? 'significativa' : item.significant === false ? 'no significativa' : 'no evaluable'}
+                </p>
+              ))}
+              {spatialInterpretation.causality_warning && (
+                <p className="mt-2 text-[11px] italic text-purple-800">{spatialInterpretation.causality_warning}</p>
+              )}
             </div>
           </div>
         </div>
@@ -237,8 +238,8 @@ export function RegionComparison() {
               </ResponsiveContainer>
             </div>
             <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
-              <span>Mann-Kendall p = {formatValue(resultA?.trend.mann_kendall?.p_value ?? resultA?.trend.p_value, 4)}</span>
-              <span>{resultA?.trend.significant ? '✅ Significativo (α=0.05)' : '❌ No significativo'}</span>
+              <span>OLS p = {formatValue(resultA?.trend.p_value, 4)} · MK p = {formatValue(resultA?.trend.mann_kendall?.p_value, 4)}</span>
+              <span>{resultA?.interpretation?.significant === null ? 'No evaluable' : resultA?.interpretation?.significant ? '✅ Significativo (α=0.05)' : 'No significativo (α=0.05)'}</span>
             </div>
           </div>
 
@@ -269,8 +270,8 @@ export function RegionComparison() {
               </ResponsiveContainer>
             </div>
             <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
-              <span>Mann-Kendall p = {formatValue(resultB?.trend.mann_kendall?.p_value ?? resultB?.trend.p_value, 4)}</span>
-              <span>{resultB?.trend.significant ? '✅ Significativo (α=0.05)' : '❌ No significativo'}</span>
+              <span>OLS p = {formatValue(resultB?.trend.p_value, 4)} · MK p = {formatValue(resultB?.trend.mann_kendall?.p_value, 4)}</span>
+              <span>{resultB?.interpretation?.significant === null ? 'No evaluable' : resultB?.interpretation?.significant ? '✅ Significativo (α=0.05)' : 'No significativo (α=0.05)'}</span>
             </div>
           </div>
         </div>

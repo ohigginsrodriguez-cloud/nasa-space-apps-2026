@@ -185,6 +185,37 @@ Los antiguos pendientes del banner comparativo y `syncId` quedaron corregidos.
 La revisión actual no certifica ausencia de cualquier otro defecto científico
 o visual ni convierte la tabla histórica en una auditoría exhaustiva.
 
+## Auditoría y correcciones de interpretación (2026-11)
+
+Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
+`feature/scientific-interpretation-and-audit`.
+
+- `pymannkendall` quedó declarado en `backend/requirements.txt`; ya no se
+  requiere instalarlo manualmente aparte.
+- El ajuste anual requiere 12 meses válidos; no extrapola años incompletos.
+- Las variables de estado se agregan con promedio anual ponderado por días de
+  cada mes; las variables acumulativas suman los 12 totales mensuales.
+- El backend limita `end_date` al último mes calendario completo para análisis
+  ordinarios y comparaciones.
+- La API devuelve por variable un veredicto JSON con OLS, Mann-Kendall e IC;
+  también devuelve procesos multivariables exploratorios. Se añadió
+  `/api/v1/analysis/compare` para el JSON de divergencia espacial.
+- La UI presenta estado de significancia, ambos p-values e IC debajo de cada
+  gráfica individual y de cada gráfica regional. Los resultados no evaluables
+  y la evidencia discordante no se muestran como “no significativos”.
+- Los patrones de interconexión son hipótesis; no afirman causalidad.
+- Se actualizaron catálogo, alcance y metodología para que reflejen las siete
+  variables POWER, los años completos y las limitaciones vigentes.
+
+Verificación ejecutada después de estos cambios: backend **51 passed**,
+frontend **11 passed**, typecheck y build correctos; el benchmark NASA POWER
+real valida OLS/MK/Sen frente a SciPy y pymannkendall. La advertencia remanente
+es la deprecación Starlette/httpx. `scripts/verify_chart_ui.mjs` no se pudo
+ejecutar porque el módulo Playwright externo indicado no existe en este entorno;
+el dashboard sí cargó en Chromium integrado, pero no se completó el flujo e2e.
+La limpieza de ramas solo debe borrar ramas ya fusionadas; se preservan las que
+tienen commits exclusivos.
+
 ## Revisión del challenge y gráficas por variable
 
 Ver `docs/challenge-review.md` para dictamen, tabla y evidencia actualizada.
@@ -202,9 +233,6 @@ de rectas, atribución incorrecta de significancia a MK, ubicación personalizad
 mal titulada, etiqueta `annual_anomalies` sin uso real de anomalías, falta de
 advertencia por años incompletos y explicación errónea de autocorrelación/IC.
 
-Verificación: **44 tests backend, 10 frontend, build y benchmark correctos**.
-Esta vez se ejecutó Chromium: siete variables con datos reales, ocultar/mostrar,
-zoom/restablecer, estado vacío y móvil sin errores JS. Playwright fue instalado
-fuera del repo en `/tmp/opencode/browser-check`; ejecutar con
-`PLAYWRIGHT_MODULE=/tmp/opencode/browser-check/node_modules/playwright/index.mjs node scripts/verify_chart_ui.mjs`.
-Los servidores deben estar disponibles en 5173/8000.
+Histórico: **44 tests backend, 10 frontend, build y benchmark** en aquella
+revisión. Para la auditoría de noviembre de 2026, ver el registro actualizado
+arriba; no asumir que este conteo histórico refleja la rama actual.

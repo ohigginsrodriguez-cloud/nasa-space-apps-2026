@@ -6,7 +6,8 @@ Este documento describe formalmente los métodos matemáticos, estadísticos y d
 
 ## 1. Pipeline de Procesamiento de Datos
 
-1. **Adquisición**: Se obtienen observaciones mensuales continuas desde la API de NASA POWER (MERRA-2) o el proveedor sintético demo.
+1. **Adquisición**: Se obtienen observaciones mensuales desde la API NASA POWER
+   (producto/modelo dependiente del parámetro) o el proveedor sintético demo.
 2. **Ponderación espacial**: Para áreas regionales (*Bounding Box*), cada celda de cuadrícula $\phi_i$ se pondera por el coseno de su latitud:
    $$w_i = \cos(\text{latitud}_i), \quad \bar{X}_m = \frac{\sum_i X_{m, i} \cdot w_i}{\sum_i w_i}$$
 3. **Conversión temporal**:
@@ -16,17 +17,15 @@ Este documento describe formalmente los métodos matemáticos, estadísticos y d
 4. **Tratamiento estacional**:
    - El análisis principal usa agregados anuales (`analysis_method=annual_values`).
      No usa anomalías: la etiqueta anterior `annual_anomalies` era incorrecta.
-   - Existe una función auxiliar de climatología/anomalías, pero no forma parte
-     del ajuste ni de la exportación actual. Sus definiciones son:
-     $$\bar{C}_m = \frac{1}{K} \sum_{k=1}^K X_{m, k}$$
-   - **Anomalías mensuales**: $A_{m, k} = X_{m, k} - \bar{C}_m$.
-5. **Agregación anual tolerante**:
-   - Se requiere un mínimo de $9$ meses válidos por año ($k \ge 9$).
-   - Para variables de suma (precipitación), si faltan $1$ a $3$ meses, el total anual se normaliza al equivalente de 12 meses:
-     $$\text{Total}_{\text{anual}} = \left( \sum_{m=1}^k P_m \right) \times \frac{12}{k}$$
-    - Para variables de media (temperatura, radiación, humedad), se toma el promedio de los meses disponibles.
-   - Con 9–11 meses se advierte de posible sesgo estacional. Extrapolar un total
-     con meses faltantes no garantiza estimar bien la lluvia anual.
+    - El análisis no calcula ni ajusta anomalías mensuales; el Seasonal
+      Mann-Kendall opera como método complementario sobre la serie mensual.
+5. **Agregación anual**:
+   - El ajuste de tendencia usa únicamente años calendario con 12 meses válidos.
+   - Los años incompletos se excluyen; no se rellenan ni extrapolan. La API
+     advierte de la exclusión cuando hay meses faltantes.
+   - Para variables de suma (precipitación), se suman los 12 totales mensuales.
+     Para variables de media, se calcula un promedio ponderado por los días de
+     cada mes, incluyendo 29 días en febrero de años bisiestos.
 
 ---
 

@@ -163,6 +163,57 @@ export interface BackendResult {
   variable: BackendVariable
   series: Array<{ date: string; value: number | null }>
   trend: BackendTrend
+  interpretation?: StatisticalVerdict | null
+}
+
+export interface StatisticalVerdict {
+  title: string
+  status: string
+  summary: string
+  direction: BackendTrend['direction']
+  significant: boolean | null
+  change_per_decade: number | null
+  unit: string
+  alpha: number
+  p_values: { ols: number | null; mann_kendall: number | null }
+  confidence_interval: {
+    level: number
+    lower: number | null
+    upper: number | null
+    contains_zero: boolean | null
+  }
+  warnings: string[]
+  causality_warning: string
+}
+
+export interface MultivariateInterpretation {
+  title: string
+  summary: string
+  processes: Array<{
+    id: string
+    name: string
+    summary: string
+    variables: string[]
+    confidence: string
+    causality_warning: string
+  }>
+  causality_warning: string
+}
+
+export interface SpatialInterpretation {
+  title?: string
+  status: string
+  summary: string
+  variable?: BackendVariable
+  regions?: Array<{
+    id: string
+    name: string
+    direction: BackendTrend['direction']
+    significant: boolean | null
+    change_per_decade: number | null
+    p_value: number | null
+  }>
+  causality_warning?: string
 }
 
 export interface TimeSeriesDataset {
@@ -173,4 +224,5 @@ export interface TimeSeriesDataset {
   missingValueCount: number
   results: BackendResult[]
   sourceUrl: string | null
+  multivariateInterpretation?: MultivariateInterpretation | null
 }

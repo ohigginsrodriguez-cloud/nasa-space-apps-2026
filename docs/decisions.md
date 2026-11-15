@@ -29,14 +29,18 @@
 - **Motivo:** los productos, versiones y proveedores pueden cambiar sin que la
   interfaz tenga que cambiar sus identificadores.
 
-## ADR-005 — Cinco variables candidatas, dos para el MVP
+## ADR-005 — Cinco variables candidatas, dos para el MVP (supersedida)
 
-- **Estado:** aceptada
+- **Estado:** supersedida
 - **Decisión:** el catálogo documentará temperatura, precipitación, humedad del
   suelo, NDVI y evapotranspiración; inicialmente solo se habilitarán las dos
   primeras.
 - **Motivo:** ofrece diversidad científica sin prometer integraciones no
   validadas.
+
+Esta decisión describe el alcance inicial y quedó supersedida por la
+integración posterior de siete variables NASA POWER. El catálogo vigente está
+en `docs/variable-catalog.md`.
 
 ## ADR-006 — Agregación dependiente de la variable
 

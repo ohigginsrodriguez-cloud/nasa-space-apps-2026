@@ -74,7 +74,7 @@ function toEnvironmentalVariable(variable: BackendVariable): EnvironmentalVariab
     unit: variable.unit,
     measurement: variable.unit,
     dataType: 'Continua',
-    potentialSources: [variable.product ?? 'NASA POWER (MERRA-2)'],
+    potentialSources: [variable.product ?? 'NASA POWER (producto según variable)'],
     temporalResolution: 'Mensual',
     geographicCoverage: 'Global (cobertura satelital / modelo MERRA-2)',
     integrationStatus: variable.available ? 'demo' : 'pending',
@@ -96,7 +96,7 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
         ? 'Energía'
         : 'Atmósfera',
     dataType: 'Continua',
-    potentialSources: ['NASA POWER (MERRA-2)'],
+    potentialSources: ['NASA POWER (producto según variable)'],
     temporalResolution: 'Mensual',
     geographicCoverage: 'Global (0.5° × 0.625°)',
     integrationStatus: 'demo',

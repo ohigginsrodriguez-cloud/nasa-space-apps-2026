@@ -9,8 +9,8 @@ para encontrarlo.
 
 ## Orden de evaluación
 
-1. NASA POWER Monthly API: primera opción para temperatura y precipitación en
-   el MVP por su REST API y consultas mensuales por punto/área.
+1. NASA POWER Monthly API: fuente activa para las siete variables listadas en
+   el catálogo, con consultas mensuales por punto/área.
 2. Giovanni: exploración y comparación de series para validar resultados.
 3. AppEEARS o GES DISC: evaluar para productos MODIS y GLDAS.
 4. GPM, MERRA-2, GLDAS o MODIS: seleccionar el producto que corresponda a
@@ -21,7 +21,7 @@ para encontrarlo.
 La fuente definitiva se elegirá después de comprobar API, autenticación,
 resolución temporal, cobertura espacial, unidades y límites de uso.
 
-La recomendación, parámetros iniciales y limitaciones están ampliados en
+Los parámetros integrados y limitaciones están ampliados en
 [`data-source-strategy.md`](data-source-strategy.md).
 
 ## Requisitos para registrar una fuente

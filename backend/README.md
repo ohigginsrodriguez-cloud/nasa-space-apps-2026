@@ -4,27 +4,24 @@ API versionada para consultar el catálogo, regiones, series mensuales y
 resultados estadísticos. Tiene dos proveedores:
 
 - `demo`: genera series sintéticas reproducibles para desarrollar el frontend.
-- `nasa-power`: consulta la API mensual oficial de NASA POWER para temperatura
-  a 2 m (`T2M`) y precipitación corregida (`PRECTOTCORR`).
+- `nasa-power`: consulta la API mensual oficial de NASA POWER para las siete
+  variables activas descritas en `docs/variable-catalog.md`.
 
 Los resultados `demo` nunca deben describirse como observaciones NASA.
 
 ## Fuente recomendada para el MVP
 
-NASA POWER es la mejor integración inicial para `temperature` y
-`precipitation`: tiene una API REST mensual, consultas por punto y bounding box,
-no requiere que el equipo procese directamente archivos científicos grandes y
-ambas variables se consultan con el mismo servicio.
+NASA POWER ofrece una API REST mensual y consultas por punto y bounding box; no
+requiere procesar directamente archivos científicos grandes.
 
 La API devuelve `PRECTOTCORR` en mm/day. Este backend convierte cada promedio
 mensual de tasa diaria a acumulado mensual multiplicando por los días del mes.
 La conversión queda centralizada en el proveedor. Verificar metadata de unidad
 del producto antes de presentar una versión final.
 
-POWER no ofrece NDVI ni humedad del suelo como sustitutos directos adecuados.
-Para esas variables se recomienda evaluar AppEEARS con productos MODIS/GLDAS,
-o Giovanni para explorar y descargar series de referencia. No se automatiza el
-sitio web de Giovanni ni se presentan estas variables como integradas.
+NDVI, evapotranspiración y SWOT no están integradas. Se evalúan como roadmap
+mediante productos MODIS, GLDAS y SWOT concretos; Giovanni sirve para explorar
+y validar series, pero no se automatiza su sitio web.
 Detalles: [`docs/data-source-strategy.md`](../docs/data-source-strategy.md).
 
 ## Instalación y ejecución
@@ -80,7 +77,13 @@ Ejemplo:
 ```
 
 `region.type` acepta `predefined`, `bbox` o `point`. El cuerpo incluye
-`results[]`; cada elemento contiene metadata de variable, serie y tendencia.
+`results[]`; cada elemento contiene metadata de variable, serie, tendencia y
+veredicto estadístico. La respuesta incluye el diagnóstico multivariable.
+
+### Comparación espacial
+
+`POST /api/v1/analysis/compare` compara una variable en dos regiones y devuelve
+`spatial_interpretation`.
 
 Cambiar `"provider": "demo"` para desarrollo sin realizar solicitudes externas.
 
@@ -101,6 +104,7 @@ Las pruebas de NASA POWER usan respuestas simuladas y no dependen de red.
 - `app/schemas/analysis.py`: contrato validado de entrada/salida.
 - `app/services/providers/`: proveedores de datos intercambiables.
 - `app/services/aggregation.py`: agregación anual y análisis de tendencias.
+- `app/services/interpretation.py`: veredictos y patrones exploratorios en JSON.
 - `app/main.py`: rutas y orquestación HTTP.
 
 Para añadir una variable: añadir metadata al catálogo, implementar soporte en

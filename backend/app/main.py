@@ -9,10 +9,13 @@ from app.schemas.analysis import (
     AnalysisRequest,
     AnalysisResponse,
     RegionInfo,
+    RegionComparisonRequest,
+    RegionComparisonResponse,
     VariableInfo,
     VariableSeries,
 )
 from app.services.aggregation import analyze_trend
+from app.services.interpretation import physical_processes, spatial_divergence, statistical_verdict
 from app.services.providers.registry import get_provider
 
 app = FastAPI(
@@ -103,13 +106,18 @@ def create_analysis(request: AnalysisRequest) -> AnalysisResponse:
                     status_code=404,
                     detail=f"No data for variable {variable.id} in the requested period",
                 )
+            trend = analyze_trend(series, variable, data_source=request.provider)
             results.append(
                 VariableSeries(
                     variable=VariableInfo(
                         **variable_public_dict(variable, request.provider)
                     ),
                     series=series,
-                    trend=analyze_trend(series, variable, data_source=request.provider),
+                    trend=trend,
+                    interpretation=statistical_verdict(
+                        variable_public_dict(variable, request.provider),
+                        trend.model_dump(),
+                    ),
                 )
             )
     except ValueError as error:
@@ -127,4 +135,64 @@ def create_analysis(request: AnalysisRequest) -> AnalysisResponse:
             "frequency": "monthly",
         },
         results=results,
+        multivariate_interpretation=(
+            physical_processes([item.model_dump() for item in results])
+            if len(results) > 1
+            else None
+        ),
+    )
+
+
+@app.post("/api/v1/analysis/compare", response_model=RegionComparisonResponse)
+def compare_regions(request: RegionComparisonRequest) -> RegionComparisonResponse:
+    """Analyze one variable in two regions and summarize spatial divergence."""
+    variable = VARIABLES.get(request.variable_id)
+    if variable is None:
+        raise HTTPException(status_code=422, detail=f"Unknown variable ID: {request.variable_id}")
+    if not getattr(variable, f"{request.provider.replace('-', '_')}_available"):
+        raise HTTPException(
+            status_code=422,
+            detail=f"Variable {request.variable_id} is unavailable from {request.provider}",
+        )
+
+    try:
+        provider = get_provider(request.provider)
+        region_results = []
+        for region_request in request.regions:
+            region = resolve_region(region_request)
+            series = provider.get_series(
+                variable, region, request.start_date, request.end_date
+            )
+            if not series:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No data for variable {variable.id} in region {region.id}",
+                )
+            trend = analyze_trend(series, variable, data_source=request.provider)
+            region_results.append({
+                "region": region.model_dump(),
+                "series": [item.model_dump() for item in series],
+                "trend": trend.model_dump(),
+                "interpretation": statistical_verdict(
+                    variable_public_dict(variable, request.provider),
+                    trend.model_dump(),
+                ),
+            })
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except RuntimeError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
+
+    variable_info = variable_public_dict(variable, request.provider)
+    return RegionComparisonResponse(
+        provider=provider.id,
+        source_url=provider.source_url,
+        period={
+            "start": request.start_date,
+            "end": request.end_date,
+            "frequency": "monthly",
+        },
+        variable=variable_info,
+        regions=region_results,
+        spatial_interpretation=spatial_divergence(variable_info, region_results),
     )

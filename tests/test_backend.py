@@ -1,4 +1,5 @@
 from datetime import date
+from datetime import datetime, timezone
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -135,6 +136,61 @@ def test_analysis_rejects_inverted_dates() -> None:
         json=demo_request(start_date="2025-01-01", end_date="2020-01-01"),
     )
     assert response.status_code == 422
+
+
+def test_analysis_rejects_current_or_future_month_dates():
+    today = datetime.now(timezone.utc).date()
+    response = client.post(
+        "/api/v1/analysis",
+        json=demo_request(
+            start_date=today.replace(day=1).isoformat(),
+            end_date=today.isoformat(),
+        ),
+    )
+    assert response.status_code == 422
+    assert "last complete month" in response.text
+
+
+def test_analysis_response_contains_interpretation_blocks():
+    response = client.post("/api/v1/analysis", json=demo_request())
+    assert response.status_code == 200
+    body = response.json()
+    assert all("interpretation" in item for item in body["results"])
+    assert body["results"][0]["interpretation"]["p_values"]["ols"] is not None
+    assert body["multivariate_interpretation"]["processes"] == []
+
+
+def test_single_variable_analysis_does_not_claim_multivariate_diagnosis():
+    response = client.post(
+        "/api/v1/analysis",
+        json=demo_request(variable_ids=["temperature"]),
+    )
+    assert response.status_code == 200
+    assert response.json()["multivariate_interpretation"] is None
+
+
+def test_spatial_comparison_endpoint_returns_divergence_json():
+    response = client.post(
+        "/api/v1/analysis/compare",
+        json={
+            "variable_id": "temperature",
+            "regions": [
+                {"type": "predefined", "id": "sonoran-desert"},
+                {"type": "predefined", "id": "lacandon-jungle"},
+            ],
+            "start_date": "2001-01-01",
+            "end_date": "2020-12-31",
+            "provider": "demo",
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["regions"]) == 2
+    assert body["spatial_interpretation"]["status"] in {
+        "opposite_significant_trends",
+        "opposite_directions_mixed_significance",
+        "same_direction",
+    }
 
 
 def test_nasa_power_provider_uses_monthly_regional_request_and_converts_rain(tmp_path, monkeypatch):

@@ -2,10 +2,12 @@
 
 ## Recomendación ejecutiva
 
-Para el MVP, usar **NASA POWER Monthly API** para temperatura del aire a 2 m y
-precipitación corregida. Ofrece una interfaz REST de baja complejidad y
-consultas mensuales para punto y bounding box. Permite validar el recorrido
-completo sin que el equipo descargue y procese productos NetCDF/HDF grandes.
+La integración vigente usa **NASA POWER Monthly API** para siete variables
+meteorológicas y de superficie. Ofrece una interfaz REST de baja complejidad y
+consultas mensuales para punto y bounding box. Los productos exactos se
+documentan por variable; POWER no debe etiquetarse en bloque como MERRA-2.
+La radiación solar `ALLSKY_SFC_SW_DWN` usa productos CERES/SRB; la
+meteorología proviene principalmente de MERRA-2/GEOS-IT.
 
 Endpoint documentado:
 
@@ -21,10 +23,15 @@ Documentación:
 
 ## Variables del MVP en POWER
 
-| ID interno | Parámetro POWER | Descripción | Unidad reportada | Tratamiento |
+| ID interno | Parámetro POWER | Descripción | Unidad de salida | Tratamiento anual |
 |---|---|---|---|---|
-| `temperature` | `T2M` | Temperatura a 2 metros | °C | Promedio mensual; promedio de años completos |
-| `precipitation` | `PRECTOTCORR` | Precipitación corregida | mm/day | POWER mensual es una tasa diaria; multiplicar por días del mes para mm/mes; sumar meses completos por año |
+| `temperature` | `T2M` | Temperatura a 2 metros | °C | Promedio ponderado por días; años completos |
+| `precipitation` | `PRECTOTCORR` | Precipitación corregida | mm/mes | Convertir tasa diaria con días del mes; sumar meses completos |
+| `soil_moisture` | `GWETROOT` | Humedad de zona radicular | fracción (0–1) | Promedio ponderado por días |
+| `relative_humidity` | `RH2M` | Humedad relativa a 2 m | % | Promedio ponderado por días |
+| `solar_radiation` | `ALLSKY_SFC_SW_DWN` | Radiación solar incidente | kWh/m²/día | Promedio ponderado por días |
+| `surface_pressure` | `PS` | Presión superficial | kPa | Promedio ponderado por días |
+| `wind_speed` | `WS10M` | Velocidad del viento a 10 m | m/s | Promedio ponderado por días |
 
 Los nombres internos no deben cambiar si posteriormente se cambia de proveedor.
 Producto, parámetro remoto, unidad original y conversiones son metadata del
@@ -53,11 +60,12 @@ representa un área.
   directa de instrumento.
 - El soporte de variable debe comprobarse por parámetro y comunidad.
 
-## Variables fuera del MVP
+## Variables fuera de la integración actual
 
-Para `ndvi`, evaluar AppEEARS con MODIS MOD13C2. Para `soil_moisture` y
-`evapotranspiration`, evaluar un producto GLDAS concreto mediante AppEEARS o
-GES DISC/OPeNDAP. Esos flujos pueden requerir autenticación Earthdata,
+Para `ndvi`, evaluar AppEEARS con MODIS MOD13C2. Para `evapotranspiration`,
+evaluar un producto GLDAS concreto mediante AppEEARS o GES DISC/OPeNDAP.
+SWOT requiere validar producto, cobertura y muestreo temporal. Estos flujos
+pueden requerir autenticación Earthdata,
 solicitudes asíncronas y procesamiento de formatos geoespaciales.
 
 Giovanni es excelente para explorar productos, crear series y validar

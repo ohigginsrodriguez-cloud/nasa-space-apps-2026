@@ -16,9 +16,10 @@ def test_monthly_trend_is_centered_on_annual_aggregate():
     assert sum(values) / 12 == pytest.approx(10, abs=1e-4)
 
 
-def test_incomplete_years_expose_approximation_warning():
+def test_incomplete_years_are_excluded_and_expose_coverage_warning():
     series = [Observation(date=date(y, m, 1), value=y - 2000 + m)
               for y in range(2000, 2020) for m in range(1, 11)]
     result = analyze_trend(series, VARIABLES["precipitation"])
-    assert result.n_observations == 20
-    assert any("sesgo estacional" in warning for warning in result.warnings)
+    assert result.n_observations == 0
+    assert result.status == "insufficient_data"
+    assert any("Se excluyeron del ajuste anual" in warning for warning in result.warnings)

@@ -5,18 +5,24 @@ identificador estable de la aplicación del producto o nombre remoto de NASA.
 Los nombres de productos que aparecen aquí son **candidatos de investigación**;
 no significan que la integración ya esté terminada.
 
-## Selección propuesta
+## Catálogo vigente
 
-Se proponen cinco variables porque cubren atmósfera, agua, suelo y vegetación
-sin convertir el MVP en una plataforma de todos los datos de NASA.
+La API habilita siete variables de NASA POWER. POWER incluye campos derivados
+de MERRA-2 y otros productos modelados; no todos son mediciones directas de un
+instrumento satelital individual.
 
-| ID interno | Nombre para el usuario | Qué mide | Fuente/producto candidato | Unidad de salida | Agregación | Estado |
+| ID interno | Nombre para el usuario | Qué mide | Fuente/producto | Unidad de salida | Agregación | Estado |
 |---|---|---|---|---|---|---|
-| `temperature` | Temperatura del aire | Temperatura del aire a 2 m | NASA POWER `T2M` (basado en MERRA-2) | °C | Promedio | Demo; POWER disponible |
-| `precipitation` | Precipitación | Precipitación corregida cerca de la superficie | NASA POWER `PRECTOTCORR` (MERRA-2); GPM como opción futura | mm/mes | Suma | Demo; POWER disponible |
-| `soil_moisture` | Humedad del suelo | Agua contenida en una capa definida del suelo | GLDAS, 0–10 cm | m³/m³ | Promedio | Pendiente |
-| `ndvi` | Índice de vegetación (NDVI) | Verdor o actividad relativa de la vegetación | MODIS MOD13C2 | Adimensional | Promedio | Pendiente |
-| `evapotranspiration` | Evapotranspiración | Pérdida de agua por evaporación y transpiración | GLDAS, campo por validar | mm | Suma | Pendiente |
+| `temperature` | Temperatura del aire | Temperatura media a 2 m | NASA POWER `T2M` (MERRA-2) | °C | Promedio anual | Integrada |
+| `precipitation` | Precipitación | Precipitación corregida cerca de superficie | NASA POWER `PRECTOTCORR`, convertida a mm/mes | mm/mes | Suma anual | Integrada |
+| `soil_moisture` | Humedad del suelo (zona radicular) | Índice de humedad en zona de raíces | NASA POWER `GWETROOT` (MERRA-2) | fracción (0–1) | Promedio anual | Integrada |
+| `relative_humidity` | Humedad relativa | Humedad relativa a 2 m | NASA POWER `RH2M` (MERRA-2) | % | Promedio anual | Integrada |
+| `solar_radiation` | Radiación solar superficial | Radiación de onda corta en superficie | NASA POWER `ALLSKY_SFC_SW_DWN` (CERES/SRB) | kWh/m²/día | Promedio anual | Integrada |
+| `surface_pressure` | Presión en superficie | Presión atmosférica superficial | NASA POWER `PS` | kPa | Promedio anual | Integrada |
+| `wind_speed` | Velocidad del viento | Velocidad del viento a 10 m | NASA POWER `WS10M` | m/s | Promedio anual | Integrada |
+| `ndvi` | Índice de vegetación (NDVI) | Verdor de la cubierta vegetal | MODIS MOD13C2 | Adimensional | Promedio | Roadmap; no integrada |
+| `evapotranspiration` | Evapotranspiración | Evaporación y transpiración | GLDAS; producto/campo por validar | Por validar | Por validar | Roadmap |
+| `swot_water` | Elevación de agua superficial | Altura/extensión de aguas superficiales | SWOT NASA/CNES/CSA | m | Por validar | Roadmap |
 
 ## Qué significa el estado
 
@@ -30,15 +36,9 @@ sin convertir el MVP en una plataforma de todos los datos de NASA.
 
 ## Variables del MVP
 
-El MVP debe habilitar inicialmente:
-
-```text
-temperature
-precipitation
-```
-
-Las otras tres variables permanecen visibles como futuras opciones, pero
-deshabilitadas hasta validar sus productos.
+Las siete primeras variables están habilitadas para NASA POWER y para el
+proveedor sintético claramente etiquetado. NDVI, evapotranspiración y SWOT son
+roadmap y no se anuncian como integraciones disponibles.
 
 La selección múltiple sí debe existir desde el comienzo. Sin embargo, el
 análisis conjunto solo debe permitirse cuando las variables sean compatibles
@@ -79,6 +79,7 @@ Antes de cambiar el estado a `Validada`, completar:
 ## Fuentes de referencia
 
 - [NASA POWER Monthly API](https://power.larc.nasa.gov/docs/services/api/temporal/monthly)
+- [NASA POWER Data Sources](https://power.larc.nasa.gov/docs/methodology/data/sources/)
 - [GPM Data](https://gpm.nasa.gov/data)
 - [MERRA-2](https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/)
 - [GLDAS](https://ldas.gsfc.nasa.gov/gldas)

@@ -1,8 +1,22 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { validateGeographicSelection } from '../src/utils/configuration.ts'
+import { getLatestCompleteMonthEnd, validateGeographicSelection, validateTimeRange } from '../src/utils/configuration.ts'
 
 const bounds = (height: number, width: number) => ({ south: 0, north: height, west: 0, east: width })
+
+test('el rango temporal se limita al último mes completo', () => {
+  assert.equal(getLatestCompleteMonthEnd(new Date('2026-11-14T12:00:00Z')), '2026-10-31')
+  assert.equal(validateTimeRange({
+    startDate: '2020-01-01',
+    endDate: '2026-10-31',
+    interval: 'monthly',
+  }), null)
+  assert.match(validateTimeRange({
+    startDate: '2020-01-01',
+    endDate: '2026-11-01',
+    interval: 'monthly',
+  }) ?? '', /último mes completo/)
+})
 
 test('NASA POWER admite los límites inclusivos de 2° y 10°', () => {
   for (const size of [2, 5, 10]) {

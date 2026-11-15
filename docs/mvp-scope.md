@@ -4,16 +4,17 @@
 
 - Datos mensuales.
 - Una fuente de datos principal y un dataset local de demostración.
-- Variables iniciales: `temperature` y `precipitation`.
-- `soil_moisture`, `ndvi` y `evapotranspiration` se mantienen en el catálogo,
-  pero no se habilitan hasta validar sus productos.
-- Región predefinida o rectangular; el punto se conserva como opción de
-  exploración y se integra con datos reales después.
+- Variables integradas vigentes: siete variables de NASA POWER. Consultar
+  `docs/variable-catalog.md`; NDVI, evapotranspiración y SWOT siguen en roadmap.
+- Región predefinida, rectangular o punto; las consultas regionales siguen los
+  límites de NASA POWER.
 - Periodo seleccionable.
 - Gráfico de puntos/serie temporal y línea de tendencia.
 - Pendiente, cambio por década, p-value y etiqueta de significancia.
 - Mensajes claros para usuarios sin formación estadística.
 - Tratamiento visible de datos faltantes.
+- Veredicto estadístico, patrones multivariables exploratorios y divergencia
+  espacial, sin afirmar causalidad.
 
 ## Criterio de éxito
 

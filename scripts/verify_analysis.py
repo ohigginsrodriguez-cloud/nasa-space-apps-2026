@@ -50,7 +50,7 @@ def run_benchmark():
             all_passed = False
             continue
 
-        annual = aggregate_annual(series, var, min_months_per_year=9)
+        annual = aggregate_annual(series, var)
         years = np.array([float(y) for y, _ in annual], dtype=float)
         values = np.array([float(v) for _, v in annual], dtype=float)
 

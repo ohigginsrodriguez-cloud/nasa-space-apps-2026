@@ -19,15 +19,15 @@ menores se puede seleccionar un punto.
 
 | Objetivo del Challenge | Estado | Implementación en este Repositorio |
 | :--- | :---: | :--- |
-| **1. Identificar variables de la Tierra** | 🟢 **100%** | Catálogo con 7 variables activas verificadas en NASA POWER (MERRA-2) y roadmap detallado para instrumentos satelitales (MODIS, GLDAS, SWOT, GPM, OMI). |
-| **2. Definiciones sencillas y accesibles** | 🟢 **100%** | Glosario interactivo integrado en la UI y descripciones a nivel preparatoria para estudiantes y público general. |
+| **1. Identificar variables de la Tierra** | 🟢 Implementado | Catálogo con 7 variables activas de NASA POWER y roadmap detallado para MODIS, GLDAS, SWOT, GPM y otros productos. |
+| **2. Definiciones sencillas y accesibles** | 🟢 Implementado | Glosario interactivo integrado en la UI y descripciones para estudiantes y público general. |
 | **3. Adquisición regional de datos** | 🟢 Implementado | 4 ubicaciones mexicanas: Sonora, Selva Lacandona, Pantanos de Centla y Valle de México. Puntos representativos y cajas aproximadas documentados. |
-| **4. Visualización de series temporales** | 🟢 **100%** | Gráficas compuestas en Recharts mostrando la serie mensual, la recta de tendencia estimada y la banda de confianza al 95%. |
-| **5. Análisis estadístico: Tasa de cambio** | 🟢 **100%** | Cálculo de la tasa decadal ($\beta_1 \times 10$) y la pendiente mediana de Theil-Sen. |
-| **6. Pruebas de significancia (t-test / MK)** | 🟢 **100%** | Doble prueba de significancia: $t$-test sobre regresión OLS y Test de Mann-Kendall con corrección por empates y continuidad ($\alpha = 0,05$). |
-| **7. Intervalos de confianza** | 🟢 **100%** | Intervalo de confianza analítico del 95% para la tasa decadal y bandas de incertidumbre sobre la recta de regresión. |
-| **8. Tratamiento estacional (opcional)** | Implementado con límites | Agregación anual ($\ge 9$ meses) y Seasonal MK. Las anomalías no se usan en el ajuste; los años incompletos llevan advertencia de posible sesgo. |
-| **9. "Detective de Datos" guiado** | 🟢 **100%** | Asistente en 3 pasos que orienta al usuario según fenómeno, ecosistema y profundidad temporal. |
+| **4. Visualización de series temporales** | 🟢 Implementado | Panel por variable con serie mensual, tendencia y banda de confianza al 95%; significancia visible bajo cada gráfica. |
+| **5. Análisis estadístico: Tasa de cambio** | 🟢 Implementado | Tasa decadal ($\beta_1 \times 10$) y pendiente mediana de Theil-Sen. |
+| **6. Pruebas de significancia (t-test / MK)** | 🟢 Implementado | OLS/t-test y Mann-Kendall complementarios, con corrección por empates y continuidad ($\alpha = 0,05$). |
+| **7. Intervalos de confianza** | 🟢 Implementado | Intervalo analítico del 95% para la tasa decadal y bandas de confianza para la media estimada. |
+| **8. Tratamiento estacional (opcional)** | Implementado con límites | Agregación anual con 12 meses completos y Seasonal MK. Los años incompletos se excluyen del ajuste anual. |
+| **9. "Detective de Datos" guiado** | 🟢 Implementado | Asistente en 3 pasos que orienta al usuario según fenómeno, ecosistema y periodo. |
 | **10. Ejemplos demostrativos** | 🟢 Implementado | 3 casos mexicanos precargados (1991–2023), con NASA POWER como fuente inicial. |
 | **11. Detección de tendencias opuestas** | 🟢 Implementado | Comparación bi-regional con gráficas sincronizadas; banner solo si ambas pendientes son significativas por OLS y de signo opuesto. No infiere causalidad. |
 
@@ -38,8 +38,8 @@ menores se puede seleccionar un punto.
 Consultas reales de NASA POWER para **1991–2023**, geometrías en
 [`docs/region-guidelines.md`](docs/region-guidelines.md):
 
-- **Sonora, temperatura:** +0.291 °C/década; OLS p=0.000751;
-  Mann-Kendall p=0.005546.
+- **Sonora, temperatura:** +0.291 °C/década; OLS p=0.000647;
+  Mann-Kendall p=0.005040; IC 95% [0.135, 0.448].
 - **Selva Lacandona, precipitación:** +199.173 mm/década; OLS p=0.034661;
   Mann-Kendall p=0.060817. Los métodos difieren en significancia: se muestra
   una advertencia, no se oculta la discrepancia.
@@ -62,7 +62,6 @@ diferentes. El comparador permite investigar una misma variable entre regiones.
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
-pip install pymannkendall
 
 # Ejecutar el servidor backend
 export PYTHONPATH=backend
@@ -102,10 +101,10 @@ npm --prefix frontend run build
 | ID | Variable | Fuente / Instrumento | Unidades | Agregación |
 | :--- | :--- | :--- | :---: | :---: |
 | `temperature` | Temperatura del aire (2 m) | NASA POWER / MERRA-2 (`T2M`) | °C | Promedio |
-| `precipitation` | Precipitación acumulada | NASA POWER / MERRA-2 (`PRECTOTCORR`) | mm | Suma |
+| `precipitation` | Precipitación acumulada mensual | NASA POWER / MERRA-2 (`PRECTOTCORR`) | mm/mes | Suma anual |
 | `soil_moisture` | Humedad de suelo (raíz) | NASA POWER Land Assimilation (`GWETROOT`) | fracción | Promedio |
 | `relative_humidity` | Humedad relativa (2 m) | NASA POWER / MERRA-2 (`RH2M`) | % | Promedio |
-| `solar_radiation` | Radiación solar en superficie | NASA POWER Solar (`ALLSKY_SFC_SW_DWN`) | kW·h/m²/día | Promedio |
+| `solar_radiation` | Radiación solar en superficie | NASA POWER Solar / CERES-SRB (`ALLSKY_SFC_SW_DWN`) | kW·h/m²/día | Promedio |
 | `surface_pressure` | Presión en superficie | NASA POWER / MERRA-2 (`PS`) | kPa | Promedio |
 | `wind_speed` | Velocidad del viento (10 m) | NASA POWER / MERRA-2 (`WS10M`) | m/s | Promedio |
 

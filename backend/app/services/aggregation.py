@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from calendar import monthrange
 from collections import defaultdict
 from datetime import date
 from math import isfinite
@@ -23,9 +24,8 @@ from app.services.trend_stats import (
 def aggregate_annual(
     series: list[Observation],
     variable: Variable,
-    min_months_per_year: int = 9,
 ) -> list[tuple[int, float]]:
-    """Aggregate monthly values into annual values, requiring >= min_months_per_year."""
+    """Aggregate only complete calendar years; never extrapolate missing months."""
     grouped: dict[int, dict[int, float]] = defaultdict(dict)
     for item in series:
         if item.value is not None and isfinite(item.value):
@@ -33,14 +33,18 @@ def aggregate_annual(
 
     annual: list[tuple[int, float]] = []
     for year, months in sorted(grouped.items()):
-        if len(months) < min_months_per_year:
+        if len(months) < 12:
             continue
-        values = list(months.values())
         if variable.aggregation == "sum":
-            # Scale sum to 12-month annual equivalent if some months are missing
-            annual_value = sum(values) * (12.0 / len(values))
+            annual_value = sum(months.values())
         else:
-            annual_value = sum(values) / len(values)
+            day_weights = {
+                month: monthrange(year, month)[1]
+                for month in months
+            }
+            annual_value = sum(
+                value * day_weights[month] for month, value in months.items()
+            ) / sum(day_weights.values())
         annual.append((year, annual_value))
     return annual
 
@@ -51,7 +55,7 @@ def analyze_trend(
     data_source: str = "nasa_power",
 ) -> TrendResult:
     """Calculate comprehensive trend analysis (OLS, Mann-Kendall, Sen's slope, Seasonal MK)."""
-    annual = aggregate_annual(series, variable, min_months_per_year=9)
+    annual = aggregate_annual(series, variable)
 
     monthly_tuples = [
         (obs.date.year, obs.date.month, obs.value if obs.value is not None else float("nan"))
@@ -63,8 +67,23 @@ def analyze_trend(
 
     # Seasonal Mann-Kendall on monthly observations
     smk_res = seasonal_mann_kendall(monthly_tuples)
+    month_counts: dict[int, set[int]] = defaultdict(set)
+    for obs in series:
+        if obs.value is not None and isfinite(obs.value):
+            month_counts[obs.date.year].add(obs.date.month)
+    incomplete_year_warning = (
+        "Se excluyeron del ajuste anual los años con meses faltantes para evitar "
+        "extrapolaciones y sesgo estacional; revisa la cobertura del periodo."
+        if any(len(months) < 12 for months in month_counts.values())
+        else None
+    )
 
     if len(annual) < 3:
+        insufficient_warnings = [
+            "Se necesitan al menos 3 años calendario con 12 meses válidos para estimar una tendencia."
+        ]
+        if incomplete_year_warning:
+            insufficient_warnings.append(incomplete_year_warning)
         return TrendResult(
             method="linear_regression_on_complete_annual_values",
             direction="undetermined",
@@ -75,8 +94,8 @@ def analyze_trend(
             confidence_interval_per_decade=None,
             significant=None,
             n_observations=len(annual),
-            warnings=["Se necesitan al menos 3 años con ≥9 meses de datos para estimar una tendencia."],
-            message="Se necesitan al menos 3 años completos para estimar una tendencia.",
+            warnings=insufficient_warnings,
+            message="Se necesitan al menos 3 años calendario completos para estimar una tendencia.",
             ols=None,
             mann_kendall=None,
             seasonal_mann_kendall=smk_res,
@@ -97,15 +116,8 @@ def analyze_trend(
     sen_res = sen_slope(values, years, alpha=0.95)
 
     warnings: list[str] = []
-    month_counts: dict[int, set[int]] = defaultdict(set)
-    for obs in series:
-        if obs.value is not None and isfinite(obs.value):
-            month_counts[obs.date.year].add(obs.date.month)
-    if any(9 <= len(months) < 12 for months in month_counts.values()):
-        warnings.append(
-            "Hay años con 9–11 meses: sus agregados son aproximaciones y pueden "
-            "tener sesgo estacional. Los totales se estiman multiplicando la media mensual por 12."
-        )
+    if incomplete_year_warning:
+        warnings.append(incomplete_year_warning)
 
     # Check for constant series
     if ols_res.get("status") == "constant_series" or mk_res.get("status") == "constant_series":

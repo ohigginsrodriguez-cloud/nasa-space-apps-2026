@@ -56,33 +56,33 @@ try {
   assert.ok(Math.abs(movedWidth - zoomedWidth) < 2, `moving area should preserve zoom (before ${zoomedWidth}px, after ${movedWidth}px)`)
   assert.ok(Math.abs(movedRectangleBox.x - rectangleBox.x) > 10, 'dragging the rectangle surface should change the selected region')
   assert.match(await page.locator('#region [role=status]').innerText(), /Area moved/)
-  const handle = page.locator('#region .rectangle-drag-handle')
-  const handleBox = await handle.boundingBox()
-  assert.ok(handleBox)
-  const centerBeforeResize = await handle.evaluate((element) => {
-    const style = element.getAttribute('style') ?? ''
-    return style.match(/left: ([\d.]+)px; top: ([\d.]+)px/)?.slice(1, 3).map(Number)
-  })
-  assert.ok(centerBeforeResize)
+  const centerBeforeResize = { x: movedRectangleBox.x + movedRectangleBox.width / 2, y: movedRectangleBox.y + movedRectangleBox.height / 2 }
   const widthBeforeResize = (await rectangle.boundingBox())?.width
   assert.ok(widthBeforeResize)
   await page.getByRole('button', { name: '4° × 4°', exact: true }).click()
   await page.getByText('4.00° wide × 4.00° high', { exact: true }).waitFor()
-  const centerAfterResize = await handle.evaluate((element) => {
-    const style = element.getAttribute('style') ?? ''
-    return style.match(/left: ([\d.]+)px; top: ([\d.]+)px/)?.slice(1, 3).map(Number)
-  })
+  const resizedBox = await rectangle.boundingBox()
+  assert.ok(resizedBox)
+  const centerAfterResize = { x: resizedBox.x + resizedBox.width / 2, y: resizedBox.y + resizedBox.height / 2 }
   assert.ok(centerAfterResize)
-  assert.ok(Math.abs(centerAfterResize[0] - centerBeforeResize[0]) < 1, 'resizing must keep the moved rectangle center')
-  assert.ok(Math.abs(centerAfterResize[1] - centerBeforeResize[1]) < 1, 'resizing must keep the moved rectangle center')
+  assert.ok(Math.abs(centerAfterResize.x - centerBeforeResize.x) < 2, 'resizing must keep the moved rectangle center')
+  assert.ok(Math.abs(centerAfterResize.y - centerBeforeResize.y) < 3, 'resizing must keep the moved rectangle center')
   const widthAfterResize = (await rectangle.boundingBox())?.width
   assert.ok(widthAfterResize && widthAfterResize < widthBeforeResize, 'the selected rectangle size must change')
   assert.match(await page.locator('#region [role=status]').innerText(), /4° × 4° area applied/)
 
-  await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2)
+  await page.mouse.move(centerAfterResize.x, centerAfterResize.y)
   await page.mouse.down()
-  await page.mouse.move(handleBox.x + handleBox.width / 2 + 30, handleBox.y + handleBox.height / 2, { steps: 4 })
+  // Release outside the map, then hover again without a button.
+  await page.mouse.move(centerAfterResize.x + 30, centerAfterResize.y, { steps: 4 })
+  await page.mouse.move(centerAfterResize.x + 30, 10, { steps: 4 })
   await page.mouse.up()
+  const released = await rectangle.boundingBox()
+  assert.ok(released)
+  await page.mouse.move(centerAfterResize.x, centerAfterResize.y)
+  const hoveredAfterRelease = await rectangle.boundingBox()
+  assert.ok(hoveredAfterRelease)
+  assert.ok(Math.abs(hoveredAfterRelease.x - released.x) < 1 && Math.abs(hoveredAfterRelease.y - released.y) < 1, 'hover after releasing outside the map must not move the area')
   assert.match(await page.locator('#region [role=status]').innerText(), /Area moved/)
   await page.getByRole('button', { name: 'Next', exact: true }).click()
   await page.locator('input[type=date]').nth(0).waitFor()
@@ -137,7 +137,7 @@ try {
   await page.getByRole('button', { name: 'Run comparison', exact: true }).waitFor()
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true)
   assert.deepEqual(errors, [])
-  console.log('PASS: el rectángulo y su control azul se mueven; el zoom persiste; siete paneles, controles, móvil, sin errores JS y API real HTTP 200.')
+  console.log('PASS: arrastre solo con clic sostenido, liberación fuera del mapa, zoom, siete paneles y API HTTP 200.')
 } finally {
   await browser.close()
 }

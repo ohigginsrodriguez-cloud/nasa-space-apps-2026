@@ -256,6 +256,19 @@ o visual ni convierte la tabla histórica en una auditoría exhaustiva.
 - Validación: navegador Chromium E2E aprobado; 11 pruebas frontend, typecheck y
   build aprobados.
 
+### Selector de mapa: evitar arrastre enganchado
+
+- Se reemplazaron los dos mecanismos independientes (superficie y control
+  central) por eventos Pointer sobre el rectángulo con captura del puntero.
+  Soltar fuera del mapa, cancelar, perder captura o perder foco finaliza el
+  arrastre; si el mouse ya no tiene el botón presionado, el movimiento se detiene.
+- El centro se marca con un pequeño punto no interactivo. El usuario arrastra
+  cualquier parte del rectángulo; el indicador no intercepta eventos.
+- La prueba de navegador cubre hover y clic sin arrastre, arrastrar cruzando el
+  centro, cambiar tamaño, soltar fuera del mapa y volver a pasar el cursor,
+  comprobando que no haya desplazamiento adicional. También verifica zoom.
+- Validación: E2E Chromium con API HTTP 200, 11 pruebas frontend y build aprobados.
+
 Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 `feature/scientific-interpretation-and-audit`.
 

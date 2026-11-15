@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CircleHelp, MapPin } from 'lucide-react'
-import { MapContainer, Rectangle, TileLayer, useMap } from 'react-leaflet'
-import type { LeafletMouseEvent } from 'leaflet'
+import { CircleMarker, MapContainer, Rectangle, TileLayer, useMap } from 'react-leaflet'
+import type { Rectangle as LeafletRectangle } from 'leaflet'
 import type { GeographicBounds } from '../../types'
 
 interface MapSelectorProps {
@@ -29,116 +29,84 @@ function MapController({ center, bounds }: { center: [number, number]; bounds: G
   return null
 }
 
-function RectangleMoveHandle({ bounds, onChange }: { bounds: GeographicBounds; onChange: (bounds: GeographicBounds) => void }) {
+function DraggableRectangle({ bounds, onChange }: { bounds: GeographicBounds; onChange: (bounds: GeographicBounds) => void }) {
   const map = useMap()
-  const center: [number, number] = [(bounds.south + bounds.north) / 2, (bounds.west + bounds.east) / 2]
-  const [position, setPosition] = useState(() => map.latLngToContainerPoint(center))
-  const dragRef = useRef<{ start: [number, number]; bounds: GeographicBounds } | null>(null)
+  const rectangleRef = useRef<LeafletRectangle | null>(null)
+  const boundsRef = useRef(bounds)
   const onChangeRef = useRef(onChange)
+  boundsRef.current = bounds
   onChangeRef.current = onChange
 
   useEffect(() => {
-    const updatePosition = () => setPosition(map.latLngToContainerPoint(center))
-    updatePosition()
-    map.on('move zoom resize', updatePosition)
-    return () => { map.off('move zoom resize', updatePosition) }
-  }, [map, center[0], center[1]])
+    const element = rectangleRef.current?.getElement() as SVGPathElement | undefined
+    if (!element) return
+    let drag: { pointerId: number; startX: number; startY: number; original: GeographicBounds } | null = null
+    let mapWasDraggable = false
 
-  function move(event: PointerEvent<HTMLDivElement>) {
-    if (!dragRef.current) return
-    const rect = map.getContainer().getBoundingClientRect()
-    const latLng = map.containerPointToLatLng([event.clientX - rect.left, event.clientY - rect.top])
-    const [startLat, startLng] = dragRef.current.start
-    const original = dragRef.current.bounds
-    const height = original.north - original.south
-    const width = original.east - original.west
-    // Apply a small movement dampener so the rectangle does not feel too fast.
-    const movementFactor = 0.8
-    const south = Math.max(-90, Math.min(90 - height, original.south + (latLng.lat - startLat) * movementFactor))
-    const west = Math.max(-180, Math.min(180 - width, original.west + (latLng.lng - startLng) * movementFactor))
-    onChangeRef.current({ south, north: south + height, west, east: west + width })
-  }
-
-  return (
-    <div
-      className="rectangle-drag-handle"
-      role="button"
-      tabIndex={0}
-      aria-label="Drag to move the entire area"
-      title="Drag to move the entire area"
-      style={{ left: position.x, top: position.y }}
-      onPointerDown={(event) => {
-        event.stopPropagation()
-        event.currentTarget.setPointerCapture(event.pointerId)
-        dragRef.current = { start: center, bounds: { ...bounds } }
-        map.dragging.disable()
-      }}
-      onPointerMove={move}
-      onPointerUp={(event) => {
-        event.stopPropagation()
-        dragRef.current = null
-        map.dragging.enable()
-        event.currentTarget.releasePointerCapture(event.pointerId)
-      }}
-      onClick={(event) => event.stopPropagation()}
-    >
-      ↕
-    </div>
-  )
-}
-
-function DraggableRectangle({ bounds, onChange }: { bounds: GeographicBounds; onChange: (bounds: GeographicBounds) => void }) {
-  const map = useMap()
-  const dragRef = useRef<{ startLat: number; startLng: number; original: GeographicBounds } | null>(null)
-  const onChangeRef = useRef(onChange)
-  onChangeRef.current = onChange
-
-  const move = useCallback((event: LeafletMouseEvent) => {
-    const drag = dragRef.current
-    if (!drag) return
-    const height = drag.original.north - drag.original.south
-    const width = drag.original.east - drag.original.west
-    const south = Math.max(-90, Math.min(90 - height, drag.original.south + event.latlng.lat - drag.startLat))
-    const west = Math.max(-180, Math.min(180 - width, drag.original.west + event.latlng.lng - drag.startLng))
-    onChangeRef.current({ south, north: south + height, west, east: west + width })
-  }, [])
-
-  const finish = useCallback(() => {
-    if (!dragRef.current) return
-    dragRef.current = null
-    map.off('mousemove', move)
-    map.off('mouseup', finish)
-    map.dragging.enable()
-  }, [map, move])
-
-  const start = useCallback((event: LeafletMouseEvent) => {
-    event.originalEvent.preventDefault()
-    event.originalEvent.stopPropagation()
-    dragRef.current = {
-      startLat: event.latlng.lat,
-      startLng: event.latlng.lng,
-      original: { ...bounds },
+    const finish = () => {
+      if (!drag) return
+      const pointerId = drag.pointerId
+      drag = null
+      if (element.hasPointerCapture(pointerId)) element.releasePointerCapture(pointerId)
+      if (mapWasDraggable) map.dragging.enable()
+      element.classList.remove('is-dragging')
     }
-    map.dragging.disable()
-    map.on('mousemove', move)
-    map.on('mouseup', finish)
-  }, [bounds, finish, map, move])
+    const onDown = (event: globalThis.PointerEvent) => {
+      if (!event.isPrimary || event.button !== 0 || drag) return
+      event.preventDefault()
+      event.stopPropagation()
+      drag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, original: { ...boundsRef.current } }
+      mapWasDraggable = map.dragging.enabled()
+      if (mapWasDraggable) map.dragging.disable()
+      element.setPointerCapture(event.pointerId)
+      element.classList.add('is-dragging')
+    }
+    const onMove = (event: globalThis.PointerEvent) => {
+      if (!drag || event.pointerId !== drag.pointerId) return
+      // A release outside the map or a lost mouse-up must never leave a drag active.
+      if (event.pointerType === 'mouse' && (event.buttons & 1) === 0) { finish(); return }
+      const container = map.getContainer().getBoundingClientRect()
+      const start = map.containerPointToLatLng([drag.startX - container.left, drag.startY - container.top])
+      const current = map.containerPointToLatLng([event.clientX - container.left, event.clientY - container.top])
+      const original = drag.original
+      const height = original.north - original.south
+      const width = original.east - original.west
+      const south = Math.max(-90, Math.min(90 - height, original.south + current.lat - start.lat))
+      const west = Math.max(-180, Math.min(180 - width, original.west + current.lng - start.lng))
+      onChangeRef.current({ south, north: south + height, west, east: west + width })
+    }
+    const onUp = (event: globalThis.PointerEvent) => { if (drag?.pointerId === event.pointerId) finish() }
+    const stopMouse = (event: MouseEvent) => event.stopPropagation()
+    element.addEventListener('pointerdown', onDown)
+    element.addEventListener('pointermove', onMove)
+    element.addEventListener('pointerup', onUp)
+    element.addEventListener('pointercancel', onUp)
+    element.addEventListener('lostpointercapture', onUp)
+    element.addEventListener('mousedown', stopMouse)
+    element.addEventListener('click', stopMouse)
+    window.addEventListener('blur', finish)
+    return () => {
+      finish()
+      element.removeEventListener('pointerdown', onDown)
+      element.removeEventListener('pointermove', onMove)
+      element.removeEventListener('pointerup', onUp)
+      element.removeEventListener('pointercancel', onUp)
+      element.removeEventListener('lostpointercapture', onUp)
+      element.removeEventListener('mousedown', stopMouse)
+      element.removeEventListener('click', stopMouse)
+      window.removeEventListener('blur', finish)
+    }
+  }, [map])
 
-  const stopClick = useCallback((event: LeafletMouseEvent) => {
-    // A plain click selects nothing; only a held mouse drag may move the area.
-    event.originalEvent.preventDefault()
-    event.originalEvent.stopPropagation()
-  }, [])
-
-  useEffect(() => () => finish(), [finish])
-
-  return (
+  return <>
     <Rectangle
+      ref={rectangleRef}
       bounds={[[bounds.south, bounds.west], [bounds.north, bounds.east]]}
-      pathOptions={{ color: '#1d4ed8', fillColor: '#1d4ed8', fillOpacity: 0.12, weight: 3, className: 'leaflet-area-draggable' }}
-      eventHandlers={{ mousedown: start, click: stopClick }}
+      pathOptions={{ color: '#1d4ed8', fillColor: '#1d4ed8', fillOpacity: 0.12, weight: 2, className: 'leaflet-area-draggable' }}
     />
-  )
+    <CircleMarker center={[(bounds.south + bounds.north) / 2, (bounds.west + bounds.east) / 2]}
+      radius={3} interactive={false} pathOptions={{ color: '#fff', weight: 1, fillColor: '#1d4ed8', fillOpacity: 1 }} />
+  </>
 }
 
 function createBounds(center: [number, number], size = 5): GeographicBounds {
@@ -155,7 +123,7 @@ function createBounds(center: [number, number], size = 5): GeographicBounds {
 
 export function MapSelector({ center, value, onChange, onValidationChange }: MapSelectorProps) {
   const [draft, setDraft] = useState<GeographicBounds | null>(value)
-  const [message, setMessage] = useState('A valid 5° × 5° area is ready. Drag the blue center handle to move it.')
+  const [message, setMessage] = useState('A valid 5° × 5° area is ready. Click and hold the rectangle to move it.')
   const [tilesUnavailable, setTilesUnavailable] = useState(false)
   const width = draft ? draft.east - draft.west : null
   const height = draft ? draft.north - draft.south : null
@@ -193,7 +161,7 @@ export function MapSelector({ center, value, onChange, onValidationChange }: Map
     <section id="region" aria-labelledby="map-title" className="surface-panel scroll-mt-6 border-accent/20 bg-linear-to-br from-accent-soft/35 via-surface to-surface p-5 sm:p-6">
       <div className="mb-4">
         <h2 id="map-title" className="text-xl font-bold">Where should we investigate?</h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted">A valid NASA POWER rectangle is created for you. Click and hold the rectangle or its blue center handle, then drag to move it.</p>
+        <p className="mt-1 text-sm leading-relaxed text-muted">A valid NASA POWER rectangle is created for you. Click and hold the rectangle, then drag to move it.</p>
       </div>
       <div className="mb-4">
         <p className="mb-2 text-sm font-semibold text-ink">Choose a valid rectangle size</p>
@@ -218,7 +186,6 @@ export function MapSelector({ center, value, onChange, onValidationChange }: Map
           <MapController center={center} bounds={value} />
           {value && <>
             <DraggableRectangle bounds={value} onChange={(bounds) => { setDraft(bounds); onChange(bounds); setMessage('Area moved. It remains a valid NASA POWER rectangle.') }} />
-            <RectangleMoveHandle bounds={value} onChange={(bounds) => { setDraft(bounds); onChange(bounds); setMessage('Area moved. It remains a valid NASA POWER rectangle.') }} />
           </>}
         </MapContainer>
       </div>

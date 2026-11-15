@@ -5,11 +5,22 @@ import { regions, variables } from '../../data/mockData'
 import { runRegionComparison } from '../../services/api'
 import type { RegionId, SpatialInterpretation, TimeSeriesDataset, VariableId } from '../../types'
 import { getLatestCompleteMonthEnd, validateConfiguration } from '../../utils/configuration'
-import { variableChartPoints } from '../../utils/chartData'
+import { centeredZoomPoints, variableChartPoints } from '../../utils/chartData'
 
 const shortDate = new Intl.DateTimeFormat('es', { month: 'short', year: '2-digit', timeZone: 'UTC' })
 const formatDate = (date: string) => shortDate.format(new Date(`${date}T00:00:00Z`))
 const formatValue = (value: number | null | undefined, digits = 2) => (value === null || value === undefined ? '—' : new Intl.NumberFormat('es', { maximumFractionDigits: digits }).format(value))
+
+function ComparisonZoom({ level, onChange }: { level: number; onChange: (level: number) => void }) {
+  return (
+    <aside className="flex shrink-0 flex-col items-center justify-center gap-1 rounded-md border border-line bg-surface p-1" aria-label="Controles de zoom de comparación">
+      <span className="text-[10px] font-semibold text-muted">Zoom</span>
+      <button type="button" className="flex size-7 items-center justify-center rounded border border-line text-lg hover:border-accent hover:text-accent disabled:opacity-40" aria-label="Acercar gráfica" onClick={() => onChange(level + 1)} disabled={level >= 4}>+</button>
+      <span className="text-[10px] tabular-nums text-muted">{level === 0 ? '1×' : `${(1.5 ** level).toFixed(1)}×`}</span>
+      <button type="button" className="flex size-7 items-center justify-center rounded border border-line text-lg hover:border-accent hover:text-accent disabled:opacity-40" aria-label="Alejar gráfica" onClick={() => onChange(level - 1)} disabled={level <= 0}>−</button>
+    </aside>
+  )
+}
 
 export function RegionComparison() {
   const [variableId, setVariableId] = useState<VariableId>('precipitation')
@@ -25,6 +36,7 @@ export function RegionComparison() {
   const [datasetA, setDatasetA] = useState<TimeSeriesDataset | null>(null)
   const [datasetB, setDatasetB] = useState<TimeSeriesDataset | null>(null)
   const [spatialInterpretation, setSpatialInterpretation] = useState<SpatialInterpretation | null>(null)
+  const [zoomLevel, setZoomLevel] = useState(0)
 
   const selectedVar = variables.find((v) => v.id === variableId) ?? variables[0]
   const regionA = regions.find((r) => r.id === regionAId) ?? regions[0]
@@ -54,6 +66,7 @@ export function RegionComparison() {
       setDatasetA(comparison.datasets[0])
       setDatasetB(comparison.datasets[1])
       setSpatialInterpretation(comparison.interpretation)
+      setZoomLevel(0)
       setResultKey(configurationKey)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -228,9 +241,10 @@ export function RegionComparison() {
               <strong>Unidad: {selectedVar.unit}</strong>
               <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
             </div>
-            <div className="h-56 w-full">
+            <div className="flex h-56 w-full items-stretch gap-2">
+            <div className="min-w-0 flex-1">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart syncId="region-comparison" data={resultA ? variableChartPoints(datasetA.points, resultA) : []} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
+                <ComposedChart syncId="region-comparison" data={resultA ? variableChartPoints(centeredZoomPoints(datasetA.points, zoomLevel), resultA) : []} margin={{ top: 8, right: 14, bottom: 4, left: 14 }}>
                   <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
                   <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} label={{ value: selectedVar.unit, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 10, fill: 'var(--color-muted)' } }} />
@@ -240,6 +254,8 @@ export function RegionComparison() {
                   <Line dataKey={`trend_${variableId}`} stroke="#0284c7" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Tendencia (${selectedVar.unit})`} />
                 </ComposedChart>
               </ResponsiveContainer>
+            </div>
+            <ComparisonZoom level={zoomLevel} onChange={setZoomLevel} />
             </div>
             <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
               <span>OLS p = {formatValue(resultA?.trend.p_value, 4)} · MK p = {formatValue(resultA?.trend.mann_kendall?.p_value, 4)}</span>
@@ -264,9 +280,10 @@ export function RegionComparison() {
               <strong>Unidad: {selectedVar.unit}</strong>
               <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
             </div>
-            <div className="h-56 w-full">
+            <div className="flex h-56 w-full items-stretch gap-2">
+            <div className="min-w-0 flex-1">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart syncId="region-comparison" data={resultB ? variableChartPoints(datasetB.points, resultB) : []} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
+                <ComposedChart syncId="region-comparison" data={resultB ? variableChartPoints(centeredZoomPoints(datasetB.points, zoomLevel), resultB) : []} margin={{ top: 8, right: 14, bottom: 4, left: 14 }}>
                   <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
                   <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} label={{ value: selectedVar.unit, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 10, fill: 'var(--color-muted)' } }} />
@@ -276,6 +293,8 @@ export function RegionComparison() {
                   <Line dataKey={`trend_${variableId}`} stroke="#e11d48" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Tendencia (${selectedVar.unit})`} />
                 </ComposedChart>
               </ResponsiveContainer>
+            </div>
+            <ComparisonZoom level={zoomLevel} onChange={setZoomLevel} />
             </div>
             <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
               <span>OLS p = {formatValue(resultB?.trend.p_value, 4)} · MK p = {formatValue(resultB?.trend.mann_kendall?.p_value, 4)}</span>

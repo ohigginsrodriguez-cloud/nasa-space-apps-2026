@@ -19,3 +19,13 @@ export function zoomPoints(points: TimeSeriesPoint[], start: string, end: string
   return points.filter((point) => (!start || point.date.slice(0, 7) >= start)
     && (!end || point.date.slice(0, 7) <= end))
 }
+
+/** Returns a centered temporal window. Level 0 is the complete series. */
+export function centeredZoomPoints(points: TimeSeriesPoint[], level: number): TimeSeriesPoint[] {
+  if (level <= 0 || points.length < 2) return points
+  const ordered = [...points].sort((a, b) => a.date.localeCompare(b.date))
+  const windowSize = Math.max(12, Math.ceil(ordered.length / (1.5 ** level)))
+  if (windowSize >= ordered.length) return ordered
+  const start = Math.max(0, Math.floor((ordered.length - windowSize) / 2))
+  return ordered.slice(start, start + windowSize)
+}

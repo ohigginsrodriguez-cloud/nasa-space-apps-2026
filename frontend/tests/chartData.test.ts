@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { variableChartPoints, zoomPoints } from '../src/utils/chartData.ts'
+import { centeredZoomPoints, variableChartPoints, zoomPoints } from '../src/utils/chartData.ts'
 import type { BackendResult } from '../src/types/index.ts'
 
 test('precipitación: observado mensual intacto; tendencia y banda en la misma escala', () => {
@@ -18,6 +18,17 @@ test('zoom inclusivo por mes y sin alterar la serie original', () => {
   assert.deepEqual(zoomPoints(points, '2020-02', '2020-02'), [points[1]])
   assert.deepEqual(zoomPoints(points, '', ''), points)
   assert.deepEqual(zoomPoints(points, '2021-01', ''), [])
+})
+
+test('zoom con botones mantiene el centro y amplía o reduce la ventana', () => {
+  const points = Array.from({ length: 24 }, (_, index) => ({
+    date: `2020-${String(index + 1).padStart(2, '0')}-01`,
+  }))
+  assert.equal(centeredZoomPoints(points, 0).length, 24)
+  assert.equal(centeredZoomPoints(points, 1).length, 16)
+  assert.equal(centeredZoomPoints(points, 2).length, 12)
+  assert.equal(centeredZoomPoints(points, 1)[0].date, '2020-05-01')
+  assert.equal(points.length, 24)
 })
 
 test('variables de media conservan escala, ordenan fechas y preservan faltantes', () => {

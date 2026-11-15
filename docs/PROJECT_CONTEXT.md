@@ -287,6 +287,19 @@ o visual ni convierte la tabla histórica en una auditoría exhaustiva.
 - Verificación: 53 pruebas backend, 11 frontend y build aprobados; E2E Chromium
   aprobado contra la API HTTP 200. Advertencia conocida de Starlette/httpx.
 
+### Simplificación de pantalla solicitada
+
+- `Dashboard.tsx`: se retiró la sección «Start with a question» y sus tarjetas
+  visibles. El encabezado conduce directamente al flujo de investigación. Los
+  datos de ejemplos permanecen en código para no romper contratos históricos,
+  pero ya no se ofrecen como accesos directos en esa pantalla.
+- `TimeSeriesChart.tsx`: se retiró únicamente la barra informativa «Chart zoom»
+  y su ayuda desplegable; los controles de zoom, visibilidad, vista y altura
+  siguen funcionando y ocupan el espacio restante.
+- `scripts/verify_chart_ui.mjs`: comprueba la ausencia de ambos bloques y que
+  los controles de las gráficas sigan operativos. E2E Chromium, 11 pruebas
+  frontend y build aprobados.
+
 Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 `feature/scientific-interpretation-and-audit`.
 

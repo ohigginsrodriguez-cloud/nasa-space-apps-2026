@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
-import { Download, ExternalLink, HelpCircle, Info, Link2, Minus, SlidersHorizontal } from 'lucide-react'
+import { Download, ExternalLink, Info, Link2, Minus, SlidersHorizontal } from 'lucide-react'
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from 'recharts'
 import { regions, variables } from '../../data/mockData'
 import type { DataConfiguration, TimeSeriesDataset, TimeSeriesPoint } from '../../types'
@@ -91,7 +91,6 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   const panFrameRef = useRef<number | null>(null)
   const [layout, setLayout] = useState<'separate' | 'combined'>('separate')
   const [expanded, setExpanded] = useState(false)
-  const [showZoomHelp, setShowZoomHelp] = useState(false)
   useEffect(() => {
     setLayout(configuration?.chartLayout ?? 'separate')
   }, [configuration])
@@ -326,14 +325,6 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
           </div>
 
           <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-line p-3 text-xs">
-             <div className="flex w-full items-center gap-2 rounded-md border border-accent/15 bg-accent-soft px-3 py-2 text-accent">
-               <strong>{language === 'en' ? 'Chart zoom' : 'Zoom de la gráfica'}</strong>
-               <span className="text-muted">{language === 'en' ? 'Use − and + beside each chart and drag to browse the data.' : 'Usa − y + al lado de cada gráfica y arrastra con el mouse para recorrer los datos.'}</span>
-              <button type="button" className="ml-auto inline-flex items-center gap-1 rounded border border-accent/30 px-2 py-1 font-medium hover:bg-surface" aria-expanded={showZoomHelp} onClick={() => setShowZoomHelp(!showZoomHelp)}>
-                 <HelpCircle size={14} aria-hidden="true" /> {language === 'en' ? 'How does it work?' : '¿Cómo se usa?'}
-              </button>
-            </div>
-             {showZoomHelp && <p role="note" className="w-full rounded-md border border-accent/20 bg-surface p-2 text-muted">{language === 'en' ? <>Press <strong>+</strong> to zoom in and <strong>−</strong> to zoom out. Above 1×, hold the left mouse button and drag horizontally. “Reset” returns to the full view.</> : <>Pulsa <strong>+</strong> para acercar y <strong>−</strong> para alejar. Cuando el zoom sea mayor que 1×, mantén presionado el botón izquierdo y arrastra horizontalmente sobre la gráfica. “Restablecer” vuelve a centrar la vista completa.</>}</p>}
               <button type="button" className="rounded-lg border border-line px-3 py-2 font-semibold transition-colors hover:border-accent hover:text-accent" onClick={() => setHiddenVariables([])}>{language === 'en' ? 'Show all' : 'Mostrar todas'}</button>
             {selectedVariables.length >= 2 && <label>Vista
                 <select aria-label="Chart view" className="ml-2 rounded-lg border border-line bg-surface p-2 font-semibold transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" value={layout} onChange={(event) => setLayout(event.target.value as 'separate' | 'combined')}>

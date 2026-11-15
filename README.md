@@ -51,14 +51,13 @@ metadata where available.
 
 ## What a judge can see in one run
 
-Use one of the built-in long-period examples, or configure an investigation
-manually:
+Configure an investigation manually:
 
 1. select a variable from the dropdown;
 2. select a region;
 3. keep the automatically created 5° × 5° rectangle or choose another valid
    size;
-4. use the 1991–2023 example period;
+4. select a long period, for example 1991–2023;
 5. generate the series; and
 6. read the finding, trend rate, confidence interval, OLS result,
    Mann–Kendall result, and limitations.

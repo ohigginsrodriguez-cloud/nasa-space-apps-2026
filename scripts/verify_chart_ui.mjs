@@ -15,6 +15,7 @@ try {
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.goto('http://localhost:5173')
+  assert.equal(await page.getByRole('heading', { name: 'Start with a question' }).count(), 0)
   await page.getByRole('button', { name: 'Choose a NASA POWER variable' }).click()
   const variables = page.getByRole('listbox', { name: 'NASA POWER variables' }).getByRole('button').filter({ hasText: /temperature|Precipitation|moisture|humidity|radiation|pressure|Wind speed/i })
   assert.equal(await variables.count(), 7)
@@ -92,6 +93,7 @@ try {
   await page.getByRole('button', { name: 'Generate series and analyze' }).click()
   assert.equal((await response).status(), 200)
   await page.getByText('Choose visible series', { exact: true }).click()
+  assert.equal(await page.getByText('Chart zoom', { exact: true }).count(), 0)
   await page.getByRole('button', { name: 'Hide Air temperature', exact: true }).waitFor()
   const panels = page.locator('article[aria-label^="Panel for"]')
   assert.equal(await panels.count(), 7)

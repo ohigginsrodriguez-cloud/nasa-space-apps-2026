@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { centeredZoomPoints, variableChartPoints, zoomPoints } from '../src/utils/chartData.ts'
+import { centeredZoomPoints, variableChartPoints, zoomPoints, zoomedPoints } from '../src/utils/chartData.ts'
 import type { BackendResult } from '../src/types/index.ts'
 
 test('precipitación: observado mensual intacto; tendencia y banda en la misma escala', () => {
@@ -28,6 +28,8 @@ test('zoom con botones mantiene el centro y amplía o reduce la ventana', () => 
   assert.equal(centeredZoomPoints(points, 1).length, 16)
   assert.equal(centeredZoomPoints(points, 2).length, 12)
   assert.equal(centeredZoomPoints(points, 1)[0].date, '2020-05-01')
+  assert.equal(zoomedPoints(points, 1, 5)[0].date, '2020-09-01')
+  assert.equal(zoomedPoints(points, 1, -5)[0].date, '2020-01-01')
   assert.equal(points.length, 24)
 })
 

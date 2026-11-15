@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Download, HelpCircle, Info, Link2, Minus, SlidersHorizontal, XCircle } from 'lucide-react'
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from 'recharts'
 import { regions, variables } from '../../data/mockData'
 import type { BackendResult, DataConfiguration, TimeSeriesDataset, TimeSeriesPoint } from '../../types'
 import { SectionTitle } from '../common/SectionTitle'
-import { centeredZoomPoints, variableChartPoints } from '../../utils/chartData'
+import { variableChartPoints, zoomWindowSize, zoomedPoints } from '../../utils/chartData'
 
 interface TimeSeriesChartProps {
   configuration: DataConfiguration | null
@@ -277,6 +277,8 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   const [showConfidenceBands, setShowConfidenceBands] = useState(true)
   const [hiddenVariables, setHiddenVariables] = useState<string[]>([])
   const [zoomLevel, setZoomLevel] = useState(0)
+  const [panOffset, setPanOffset] = useState(0)
+  const panRef = useRef<{ startX: number; startOffset: number } | null>(null)
   const [layout, setLayout] = useState<'separate' | 'combined'>('separate')
   const [expanded, setExpanded] = useState(false)
   const [showZoomHelp, setShowZoomHelp] = useState(false)
@@ -286,6 +288,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   useEffect(() => {
     setHiddenVariables([])
     setZoomLevel(0)
+    setPanOffset(0)
   }, [dataset])
 
   const selectedVariables = variables.filter((variable) => configuration?.variableIds.includes(variable.id))
@@ -294,13 +297,35 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   const results = dataset?.results ?? []
   const visibleVariables = selectedVariables.filter((variable) => !hiddenVariables.includes(variable.id))
   const regionName = dataset?.region?.name ?? region?.name ?? 'la región'
-  const chartPoints: TimeSeriesPoint[] = centeredZoomPoints(points, zoomLevel)
+  const chartPoints: TimeSeriesPoint[] = zoomedPoints(points, zoomLevel, panOffset)
   const combinedPoints = visibleVariables.reduce(
     (data, variable) => {
       const result = results.find((item) => item.variable.id === variable.id)
       return result ? variableChartPoints(data, result) : data
     }, chartPoints,
   )
+  const maxPanOffset = Math.max(0, points.length - zoomWindowSize(points, zoomLevel))
+  function changeZoom(level: number) {
+    setZoomLevel(Math.max(0, Math.min(4, level)))
+    setPanOffset(0)
+  }
+  function startPan(event: PointerEvent<HTMLDivElement>) {
+    if (zoomLevel <= 0 || maxPanOffset <= 0) return
+    event.currentTarget.setPointerCapture(event.pointerId)
+    panRef.current = { startX: event.clientX, startOffset: panOffset }
+  }
+  function movePan(event: PointerEvent<HTMLDivElement>) {
+    if (!panRef.current || maxPanOffset <= 0) return
+    const width = Math.max(1, event.currentTarget.clientWidth)
+    const delta = (panRef.current.startX - event.clientX) / width * maxPanOffset
+    setPanOffset(Math.max(-Math.floor(maxPanOffset / 2), Math.min(Math.ceil(maxPanOffset / 2), panRef.current.startOffset + delta)))
+  }
+  function stopPan(event: PointerEvent<HTMLDivElement>) {
+    if (panRef.current && event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    panRef.current = null
+  }
 
   function downloadExport(format: 'json' | 'csv') {
     if (!dataset || !configuration) return
@@ -434,11 +459,12 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
           <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-line p-3 text-xs">
             <div className="flex w-full items-center gap-2 rounded-md bg-accent-soft px-3 py-2 text-accent">
               <strong>Zoom de la gráfica</strong>
-              <span className="text-muted">Usa − y + al lado de cada gráfica para ver más o menos detalle.</span>
+              <span className="text-muted">Usa − y + al lado de cada gráfica y arrastra con el mouse para recorrer los datos.</span>
               <button type="button" className="ml-auto inline-flex items-center gap-1 rounded border border-accent/30 px-2 py-1 font-medium hover:bg-surface" aria-expanded={showZoomHelp} onClick={() => setShowZoomHelp(!showZoomHelp)}>
                 <HelpCircle size={14} aria-hidden="true" /> ¿Cómo se usa?
               </button>
             </div>
+            {showZoomHelp && <p role="note" className="w-full rounded-md border border-accent/20 bg-surface p-2 text-muted">Pulsa <strong>+</strong> para acercar y <strong>−</strong> para alejar. Cuando el zoom sea mayor que 1×, mantén presionado el botón izquierdo y arrastra horizontalmente sobre la gráfica. “Restablecer” vuelve a centrar la vista completa.</p>}
             <button type="button" className="rounded border border-line p-2" onClick={() => setHiddenVariables([])}>Mostrar todas</button>
             {selectedVariables.length >= 2 && <label>Vista
               <select aria-label="Vista de gráficas" className="ml-2 rounded border border-line bg-surface p-2" value={layout} onChange={(event) => setLayout(event.target.value as 'separate' | 'combined')}>
@@ -461,7 +487,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                 <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
               </div>
               <div className="flex w-full items-stretch gap-2 overflow-x-auto">
-                <div className="min-w-0 flex-1" style={{ height: expanded ? 700 : 420 }}>
+                <div className={`min-w-0 flex-1 ${zoomLevel > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`} style={{ height: expanded ? 700 : 420, touchAction: zoomLevel > 0 ? 'none' : 'auto' }} onPointerDown={startPan} onPointerMove={movePan} onPointerUp={stopPan} onPointerCancel={stopPan}>
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={combinedPoints} margin={{ top: 25, right: 24, bottom: 10, left: 24 }} accessibilityLayer>
                       <CartesianGrid strokeDasharray="3 5" />
@@ -474,7 +500,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
-                <ZoomControls level={zoomLevel} onChange={setZoomLevel} />
+                <ZoomControls level={zoomLevel} onChange={changeZoom} />
               </div>
               {visibleVariables.map((variable) => {
                 const result = results.find((item) => item.variable.id === variable.id)
@@ -492,9 +518,13 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               {result.variable.aggregation === 'sum' && <p className="mb-2 text-xs text-muted">Observado: total mensual. Tendencia y banda: equivalente mensual del ajuste anual (÷12). Las tarjetas reportan el cambio del total anual.</p>}
            <div className="flex min-w-0 items-stretch gap-2">
            <div
-             className="h-72 min-w-0 flex-1 sm:h-96"
-            style={expanded ? { height: 700 } : undefined}
-            aria-label={`Gráfica de ${variable.name} en ${regionName}.`}
+             className={`h-72 min-w-0 flex-1 sm:h-96 ${zoomLevel > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+             style={{ ...(expanded ? { height: 700 } : {}), touchAction: zoomLevel > 0 ? 'none' : 'auto' }}
+             aria-label={`Gráfica de ${variable.name} en ${regionName}.`}
+             onPointerDown={startPan}
+             onPointerMove={movePan}
+             onPointerUp={stopPan}
+             onPointerCancel={stopPan}
           >
             <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 600, height: 360 }}>
              <ComposedChart syncId="variable-panels" data={variableChartPoints(chartPoints, result)} margin={{ top: 12, right: 24, bottom: 8, left: 24 }} accessibilityLayer>
@@ -591,7 +621,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               </ComposedChart>
             </ResponsiveContainer>
            </div>
-           <ZoomControls level={zoomLevel} onChange={setZoomLevel} />
+           <ZoomControls level={zoomLevel} onChange={changeZoom} />
            </div>
               <div
                 role="status"

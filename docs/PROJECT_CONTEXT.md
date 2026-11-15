@@ -315,6 +315,18 @@ o visual ni convierte la tabla histórica en una auditoría exhaustiva.
 - Los documentos históricos internos en español y los recursos del contexto
   de traducción se conservan; no se afirma que todo el repositorio esté traducido.
 
+### Definiciones de variables al pasar el cursor
+
+- `VariableSelector.tsx`: se eliminaron botones `?`. La definición aparece al
+  situar el cursor sobre el nombre o enfocar el botón de selección con teclado;
+  se oculta al salir del nombre o perder el foco. Incluye `aria-describedby`.
+- La explicación se superpone sin desplazar los botones de la lista, para que
+  mostrarla no interfiera al seleccionar múltiples variables.
+- E2E verifica hover, salida, foco por teclado, ausencia del botón `?` y el
+  flujo de selección de siete variables. 12 pruebas frontend y build aprobados.
+- La solicitud de geocodificación automática anterior quedó cancelada por el
+  usuario; no se integró ningún servicio geográfico nuevo.
+
 Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 `feature/scientific-interpretation-and-audit`.
 

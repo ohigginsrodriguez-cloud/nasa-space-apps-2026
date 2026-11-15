@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, ChevronDown, CircleHelp, X } from 'lucide-react'
+import { Check, ChevronDown, X } from 'lucide-react'
 import { variables } from '../../data/mockData'
 import { getVariables } from '../../services/api'
 import type { BackendVariable, VariableId } from '../../types'
@@ -41,7 +41,7 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
       <SectionTitle
         id="variables-title"
         title="Which Earth system variable should we investigate?"
-        description="Choose one or more variables from the NASA POWER catalog. Use the question-mark icon to learn what each variable measures."
+        description="Choose one or more variables from the NASA POWER catalog. Hover over a name or focus its selection button to read its definition."
       >
         <span className="text-sm font-semibold text-accent" aria-live="polite">{selectedIds.length} selected</span>
       </SectionTitle>
@@ -60,39 +60,32 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
 
         {menuOpen && (
           <div role="listbox" aria-label="NASA POWER variables" className="absolute z-30 mt-2 max-h-[min(28rem,60vh)] w-full overflow-y-auto rounded-lg border border-line bg-surface p-2 shadow-xl">
-            {variables.map((variable) => {
+            {variables.map((variable, index) => {
               const selected = selectedIds.includes(variable.id)
               const infoOpen = infoId === variable.id
               const metadata = catalog.find((item) => item.id === variable.id)
               return (
-                <div key={variable.id} role="option" aria-selected={selected} className="rounded-md">
+                <div key={variable.id} role="option" aria-selected={selected} className="relative rounded-md">
                   <div className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent-soft/50">
                     <button
                       type="button"
                       onClick={() => onToggle(variable.id)}
+                      onFocus={() => setInfoId(variable.id)}
+                      onBlur={() => setInfoId((current) => current === variable.id ? null : current)}
+                      aria-describedby={infoOpen ? `variable-description-${variable.id}` : undefined}
                       className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left text-sm font-semibold text-ink"
                     >
                       <span className={`flex size-5 shrink-0 items-center justify-center rounded border ${selected ? 'border-accent bg-accent text-white' : 'border-line bg-surface'}`}>
                         {selected && <Check size={14} aria-hidden="true" />}
                       </span>
                       <span className="min-w-0">
-                        <span className="block">{variable.name}</span>
+                        <span className="block" onMouseEnter={() => setInfoId(variable.id)} onMouseLeave={() => setInfoId((current) => current === variable.id ? null : current)}>{variable.name}</span>
                         <span className="block text-xs font-normal text-muted">{metadata?.unit ?? variable.unit}</span>
                       </span>
                     </button>
-                    <button
-                      type="button"
-                      title={`About ${variable.name}`}
-                      aria-label={`About ${variable.name}`}
-                      aria-expanded={infoOpen}
-                      onClick={() => setInfoId(infoOpen ? null : variable.id)}
-                      className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-accent/30 text-accent hover:bg-accent hover:text-white"
-                    >
-                      <CircleHelp size={17} aria-hidden="true" />
-                    </button>
                   </div>
                   {infoOpen && (
-                    <p className="mx-2 mb-2 rounded-md bg-accent-soft/50 px-3 py-2 text-sm leading-relaxed text-muted">
+                    <p id={`variable-description-${variable.id}`} role="tooltip" className={`pointer-events-none absolute left-12 z-40 w-[min(24rem,calc(100%-4rem))] rounded-md border border-line bg-surface px-3 py-2 text-sm leading-relaxed text-ink shadow-lg ${index >= variables.length - 2 ? 'bottom-full' : 'top-full'}`}>
                       {variable.description}
                     </p>
                   )}

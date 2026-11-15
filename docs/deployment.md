@@ -9,7 +9,7 @@ credentials.
 - **Frontend:** Vercel, Netlify, or another static-hosting provider.
 - **Backend:** Render, Railway, Fly.io, or another Python ASGI host.
 - **Frontend environment variable:** `VITE_API_URL=https://<public-backend>/`
-- **Backend environment variable:** `ALLOWED_ORIGINS=https://<public-frontend>`
+- **Backend environment variable:** `FRONTEND_ORIGINS=https://<public-frontend>`
 
 ## Backend
 
@@ -29,6 +29,13 @@ GET /health
 The backend needs outbound HTTPS access to NASA POWER. No NASA credential is
 required. Enable persistent storage for `data/cache` if the hosting provider
 supports it; the cache is an optimization, not a source of truth.
+
+### Render quick setup
+
+The repository includes `render.yaml`. In Render, create a Blueprint from the
+repository and set `FRONTEND_ORIGINS` to the final Netlify URL. The blueprint
+uses the `/health` endpoint and starts the API with the required `backend`
+application directory.
 
 ## Frontend
 
@@ -53,6 +60,9 @@ Publish the `frontend/dist` directory. Configure the host to serve
 - Confirm the browser console has no errors.
 - Confirm the backend health endpoint is public and returns HTTP 200.
 - Record both URLs in the NASA submission form.
+
+Netlify alone hosts only the React frontend. The FastAPI service must be
+deployed separately and its public URL must be assigned to `VITE_API_URL`.
 
 ## Submission evidence
 

@@ -74,6 +74,9 @@ The repository includes `netlify.toml`. Set `VITE_API_URL` in Netlify to the
 public URL of a separately hosted FastAPI backend. Netlify hosts the React
 frontend; it does not run the Python API.
 
+The repository also includes `render.yaml` for deploying the FastAPI backend on
+Render. Set `FRONTEND_ORIGINS` there to the final Netlify URL.
+
 Build settings: base directory `frontend`, command `npm run build`, publish
 directory `dist`. The SPA redirect is included so `/dashboard` and `/trends`
 work after refresh.

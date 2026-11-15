@@ -44,3 +44,8 @@ test('puntos y regiones predefinidas válidos; demo no tiene límite POWER', () 
   assert.equal(validateGeographicSelection('nasa-power', null, { latitude: 30, longitude: -110 }), null)
   assert.equal(validateGeographicSelection('local-demo', bounds(30, 30), null), null)
 })
+
+test('validation errors exposed to English UI are in English', () => {
+  assert.match(validateGeographicSelection('nasa-power', bounds(1, 5), null)!, /at least 2° high/)
+  assert.match(validateGeographicSelection('nasa-power', bounds(-1, 5), null)!, /South must be less/)
+})

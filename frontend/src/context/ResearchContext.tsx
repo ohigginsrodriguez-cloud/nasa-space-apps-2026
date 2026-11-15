@@ -18,6 +18,8 @@ interface ResearchContextValue {
   dataLoadState: DataLoadState
   dataLoadError: string | null
   geographicBounds: GeographicBounds | null
+  areaName: string
+  setAreaName: (name: string) => void
   selectedPoint: GeographicPoint | null
   notice: Notice | null
   timeError: string | null
@@ -49,6 +51,8 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
   const [dataLoadState, setDataLoadState] = useState<DataLoadState>('idle')
   const [dataLoadError, setDataLoadError] = useState<string | null>(null)
   const [geographicBounds, setGeographicBounds] = useState<GeographicBounds | null>(null)
+  const [areaName, setAreaName] = useState('')
+  const [visualizationAreaName, setVisualizationAreaName] = useState('')
   const [selectedPoint, setSelectedPoint] = useState<GeographicPoint | null>(null)
   const [visualizationBounds, setVisualizationBounds] = useState<GeographicBounds | null>(null)
   const [visualizationPoint, setVisualizationPoint] = useState<GeographicPoint | null>(null)
@@ -93,12 +97,13 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
     setNotice(null)
     try {
       const configuration = { ...draft, variableIds: [...draft.variableIds], timeRange: { ...draft.timeRange } }
-      const loadedDataset = await runAnalysis(configuration, geographicBounds, selectedPoint)
+      const loadedDataset = await runAnalysis(configuration, geographicBounds, selectedPoint, areaName)
        if (!loadedDataset.points.length) throw new Error('No data is available within the selected period.')
       setDataset(loadedDataset)
       setVisualization(configuration)
       setVisualizationBounds(geographicBounds)
       setVisualizationPoint(selectedPoint)
+      setVisualizationAreaName(areaName)
       setDataLoadState('success')
       setNotice({ text: 'Series loaded. Review the chart and trend analysis.', error: false })
       return true
@@ -122,6 +127,7 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
     setDataLoadState('idle')
     setDataLoadError(null)
     setGeographicBounds(null)
+    setAreaName('')
     setSelectedPoint(null)
     setTimeError(null)
     setNotice({ text: `Example loaded: ${example.title}`, error: false })
@@ -129,17 +135,18 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
 
   const isPending = visualization !== null
     && (!sameConfiguration(draft, visualization)
-      || !sameGeography(geographicBounds, selectedPoint, visualizationBounds, visualizationPoint))
+      || !sameGeography(geographicBounds, selectedPoint, visualizationBounds, visualizationPoint)
+      || areaName !== visualizationAreaName)
   const value = useMemo(() => ({
-    draft, visualization, dataset, dataLoadState, dataLoadError, geographicBounds, selectedPoint, notice, timeError, isPending,
+    draft, visualization, dataset, dataLoadState, dataLoadError, geographicBounds, selectedPoint, areaName, setAreaName, notice, timeError, isPending,
     updateDraft, toggleVariable, setGeographicBounds, setSelectedPoint, applyConfiguration, loadExample,
-  }), [draft, visualization, dataset, dataLoadState, dataLoadError, geographicBounds, selectedPoint, notice, timeError, isPending])
+  }), [draft, visualization, dataset, dataLoadState, dataLoadError, geographicBounds, selectedPoint, areaName, notice, timeError, isPending])
 
   return <ResearchContext.Provider value={value}>{children}</ResearchContext.Provider>
 }
 
 export function useResearch(): ResearchContextValue {
   const context = useContext(ResearchContext)
-  if (!context) throw new Error('useResearch debe utilizarse dentro de ResearchProvider.')
+  if (!context) throw new Error('useResearch must be used inside ResearchProvider.')
   return context
 }

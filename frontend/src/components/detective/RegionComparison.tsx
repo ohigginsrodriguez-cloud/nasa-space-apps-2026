@@ -22,6 +22,8 @@ export function RegionComparison() {
   const [variableId, setVariableId] = useState<VariableId>('precipitation')
   const [boundsA, setBoundsA] = useState<GeographicBounds | null>(null)
   const [boundsB, setBoundsB] = useState<GeographicBounds | null>(null)
+  const [nameA, setNameA] = useState('')
+  const [nameB, setNameB] = useState('')
   const [mapErrorA, setMapErrorA] = useState<string | null>(null)
   const [mapErrorB, setMapErrorB] = useState<string | null>(null)
   const [startDate, setStartDate] = useState('1995-01-01')
@@ -39,7 +41,7 @@ export function RegionComparison() {
   const selectedVar = variables.find((v) => v.id === variableId) ?? variables[0]
   const regionA = { name: datasetA?.region?.name ?? 'Area A' }
   const regionB = { name: datasetB?.region?.name ?? 'Area B' }
-  const configurationKey = JSON.stringify([variableId, boundsA, boundsB, startDate, endDate, sourceId])
+  const configurationKey = JSON.stringify([variableId, boundsA, boundsB, nameA, nameB, startDate, endDate, sourceId])
   const [resultKey, setResultKey] = useState<string | null>(null)
   const hasCurrentResults = resultKey === configurationKey
   const validationError = !boundsA || !boundsB ? 'Select two areas to compare.'
@@ -64,6 +66,7 @@ export function RegionComparison() {
         startDate,
         endDate,
         sourceId,
+        [nameA, nameB],
       )
       setDatasetA(comparison.datasets[0])
       setDatasetB(comparison.datasets[1])
@@ -164,9 +167,9 @@ export function RegionComparison() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <MapSelector id="comparison-area-a" title="Define area A" center={INITIAL_CENTER_A}
-          value={boundsA} onChange={setBoundsA} onValidationChange={setMapErrorA} />
+          value={boundsA} onChange={setBoundsA} onValidationChange={setMapErrorA} areaName={nameA} onAreaNameChange={setNameA} />
         <MapSelector id="comparison-area-b" title="Define area B" center={INITIAL_CENTER_B}
-          value={boundsB} onChange={setBoundsB} onValidationChange={setMapErrorB} />
+          value={boundsB} onChange={setBoundsB} onValidationChange={setMapErrorB} areaName={nameB} onAreaNameChange={setNameB} />
       </div>
 
       {validationError && <p role="alert" className="text-xs text-red-800">{validationError}</p>}

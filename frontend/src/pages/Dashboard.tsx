@@ -23,6 +23,8 @@ export function Dashboard() {
     toggleVariable,
     setGeographicBounds,
     geographicBounds,
+    areaName,
+    setAreaName,
     selectedPoint,
     applyConfiguration,
     notice,
@@ -151,6 +153,8 @@ export function Dashboard() {
                  value={geographicBounds}
                  onChange={setGeographicBounds}
                  onValidationChange={setMapDraftError}
+                 areaName={areaName}
+                 onAreaNameChange={setAreaName}
                />
             </div>
           )}
@@ -172,7 +176,7 @@ export function Dashboard() {
                   </div>
                   <div>
                      <dt className="text-muted">{t('studyRegion')}</dt>
-                    <dd className="mt-1 font-medium text-ink">{geographicBounds ? `Rectangle: ${geographicBounds.south.toFixed(2)}° to ${geographicBounds.north.toFixed(2)}° N, ${geographicBounds.west.toFixed(2)}° to ${geographicBounds.east.toFixed(2)}° E` : region.name}</dd>
+                    <dd className="mt-1 font-medium text-ink">{geographicBounds ? `${areaName.trim() || 'Selected area'} · Latitude ${geographicBounds.south.toFixed(2)}° to ${geographicBounds.north.toFixed(2)}°, longitude ${geographicBounds.west.toFixed(2)}° to ${geographicBounds.east.toFixed(2)}°` : region.name}</dd>
                   </div>
                   <div>
                      <dt className="text-muted">{t('dataProvider')}</dt>

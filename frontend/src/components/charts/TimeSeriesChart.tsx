@@ -105,7 +105,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   const points = dataset?.points ?? []
   const results = dataset?.results ?? []
   const visibleVariables = selectedVariables.filter((variable) => !hiddenVariables.includes(variable.id))
-  const regionName = dataset?.region?.name ?? region?.name ?? 'la región'
+  const regionName = dataset?.region?.name ?? region?.name ?? 'Selected area'
   const products = [...new Set(results.map((result) => result.variable.product).filter((product): product is string => Boolean(product)))]
   const chartPoints: TimeSeriesPoint[] = zoomedPoints(points, zoomLevel, panOffset)
   const combinedPoints = visibleVariables.reduce(
@@ -165,18 +165,18 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
       const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(dataset, null, 2))
       const downloadAnchor = document.createElement('a')
       downloadAnchor.setAttribute('href', dataStr)
-      downloadAnchor.setAttribute('download', `analisis_tendencia_${configuration.regionId}_${configuration.timeRange.startDate}_${configuration.timeRange.endDate}.json`)
+      downloadAnchor.setAttribute('download', `trend_analysis_${configuration.regionId}_${configuration.timeRange.startDate}_${configuration.timeRange.endDate}.json`)
       document.body.appendChild(downloadAnchor)
       downloadAnchor.click()
       downloadAnchor.remove()
     } else {
       // CSV format
-      const headers = ['fecha']
+      const headers = ['date']
       selectedVariables.forEach((v) => {
-        headers.push(`${v.id}_observado_${v.unit}`)
-        headers.push(`${v.id}_tendencia_${v.unit}`)
-        headers.push(`${v.id}_ic_inferior_${v.unit}`)
-        headers.push(`${v.id}_ic_superior_${v.unit}`)
+        headers.push(`${v.id}_observed_${v.unit}`)
+        headers.push(`${v.id}_trend_${v.unit}`)
+        headers.push(`${v.id}_ci_lower_${v.unit}`)
+        headers.push(`${v.id}_ci_upper_${v.unit}`)
       })
 
       const rows = points.map((pt) => {
@@ -193,7 +193,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
       const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent([headers.join(','), ...rows].join('\n'))
       const downloadAnchor = document.createElement('a')
       downloadAnchor.setAttribute('href', csvContent)
-      downloadAnchor.setAttribute('download', `serie_temporal_${configuration.regionId}_${configuration.timeRange.startDate}_${configuration.timeRange.endDate}.csv`)
+      downloadAnchor.setAttribute('download', `time_series_${configuration.regionId}_${configuration.timeRange.startDate}_${configuration.timeRange.endDate}.csv`)
       document.body.appendChild(downloadAnchor)
       downloadAnchor.click()
       downloadAnchor.remove()
@@ -326,13 +326,13 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
 
           <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-line p-3 text-xs">
               <button type="button" className="rounded-lg border border-line px-3 py-2 font-semibold transition-colors hover:border-accent hover:text-accent" onClick={() => setHiddenVariables([])}>{language === 'en' ? 'Show all' : 'Mostrar todas'}</button>
-            {selectedVariables.length >= 2 && <label>Vista
+            {selectedVariables.length >= 2 && <label>View
                 <select aria-label="Chart view" className="ml-2 rounded-lg border border-line bg-surface p-2 font-semibold transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" value={layout} onChange={(event) => setLayout(event.target.value as 'separate' | 'combined')}>
                  <option value="separate">Separate (recommended)</option>
                  <option value="combined">Combined in one chart</option>
               </select>
             </label>}
-             <button type="button" aria-pressed={expanded} className="rounded-lg border border-line px-3 py-2 font-semibold transition-colors hover:border-accent hover:text-accent" onClick={() => setExpanded(!expanded)}>{expanded ? 'Altura normal' : 'Ampliar altura para detalle'}</button>
+             <button type="button" aria-pressed={expanded} className="rounded-lg border border-line px-3 py-2 font-semibold transition-colors hover:border-accent hover:text-accent" onClick={() => setExpanded(!expanded)}>{expanded ? 'Normal height' : 'Expand chart height'}</button>
              <p className="w-full text-muted">Zoom centers the time window and does not change statistical tests or downloads.</p>
           </div>
            {!visibleVariables.length && <p role="status">All variables are hidden. Activate a variable or press “Show all”.</p>}
@@ -340,7 +340,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
           {/* Separate panels avoid overlapping variables and incompatible units. */}
           {layout === 'combined' && selectedVariables.length >= 2 && visibleVariables.length > 0 && (
               <article aria-label="Combined variable chart" className="mb-5 rounded-xl border border-line bg-canvas/35 p-3 shadow-sm">
-               <h3 className="font-semibold">Combined variables · independent scales</h3>
+               <h3 className="font-semibold">{regionName} · Combined variables · independent scales</h3>
                <p className="text-sm text-muted">Hover to inspect values and units. Rainfall: trend and band shown as monthly equivalents (÷12). Scales adapt to the visible period.</p>
                <div className="my-2 flex flex-wrap gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-xs" aria-label="Combined variable legend">
                 {visibleVariables.map((variable) => <span key={variable.id} className="flex items-center gap-1.5"><span className="size-2 rounded-full" style={{ backgroundColor: getVariableColor(variable.id) }} /><strong>{variable.name}</strong> · {variable.unit}</span>)}
@@ -372,7 +372,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
             const result = results.find((item) => item.variable.id === variable.id)
             if (!result) return null
               return <article key={variable.id} aria-label={`Panel for ${variable.name}`} className="mb-5 rounded-xl border border-line bg-canvas/35 p-3 shadow-sm">
-               <h3 className="font-semibold" style={{ color: getVariableColor(variable.id) }}>{variable.name} · {variable.unit}</h3>
+               <h3 className="font-semibold" style={{ color: getVariableColor(variable.id) }}>{regionName} · {variable.name} · {variable.unit}</h3>
                 <p className="mb-2 text-sm text-muted">Solid line: observed · dashed: trend · shaded: 95% CI of the estimated mean.</p>
                <ChartLegend variable={variable} />
               {result.variable.aggregation === 'sum' && <p className="mb-2 text-xs text-muted">Observed: monthly total. Trend and band: monthly equivalent of the annual fit (÷12). Summary cards report the change in annual totals.</p>}

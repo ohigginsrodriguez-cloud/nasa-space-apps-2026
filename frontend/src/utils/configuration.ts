@@ -1,7 +1,7 @@
 import type { DataConfiguration, GeographicBounds, GeographicPoint, TimeRange } from '../types'
 
 export function validateTimeRange(range: TimeRange): string | null {
-  if (!range.startDate || !range.endDate) return 'Indica una fecha inicial y una fecha final.'
+  if (!range.startDate || !range.endDate) return 'Enter a start date and an end date.'
   const isValidDate = (value: string) => {
     const parsed = new Date(`${value}T00:00:00Z`)
     return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
@@ -31,7 +31,7 @@ export function getLatestCompleteMonthEnd(now = new Date()): string {
 /**
  * Validates the geographic selection for a given data source.
  *
- * Returns a Spanish user-facing error string when the selection is invalid,
+ * Returns an English user-facing error string when the selection is invalid,
  * or null when it is acceptable.
  *
  * Rules for nasa-power:
@@ -57,7 +57,7 @@ export function validateGeographicSelection(
     return 'Invalid coordinates: latitudes must be between −90 and 90 and longitudes between −180 and 180.'
   }
   if (bounds.south >= bounds.north || bounds.west >= bounds.east) {
-    return 'Sur debe ser menor que norte y oeste menor que este; no cruces el antimeridiano.'
+    return 'South must be less than north and west less than east; rectangles cannot cross the antimeridian.'
   }
 
   if (sourceId === 'nasa-power') {
@@ -66,7 +66,7 @@ export function validateGeographicSelection(
     if (latSpan < 2 || lonSpan < 2) {
       return (
         'The selected area is too small for NASA POWER. ' +
-        'Necesita al menos 2° de alto y 2° de ancho. ' +
+        'It must be at least 2° high and 2° wide. ' +
         'Choose a larger rectangle size.'
       )
     }
@@ -81,7 +81,7 @@ export function validateGeographicSelection(
 export function validateConfiguration(configuration: DataConfiguration): string | null {
   const timeError = validateTimeRange(configuration.timeRange)
   if (timeError) return timeError
-  if (!configuration.variableIds.length) return 'Selecciona al menos una variable para continuar.'
+  if (!configuration.variableIds.length) return 'Select at least one variable to continue.'
   if (configuration.variableIds.length > 7) return 'Select no more than seven variables.'
   if (configuration.sourceId === 'nasa-power' && configuration.timeRange.startDate < '1981-01-01') {
     return 'NASA POWER monthly data begins in January 1981. Choose a later start date.'

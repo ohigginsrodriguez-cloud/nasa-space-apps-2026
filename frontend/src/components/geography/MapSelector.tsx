@@ -11,6 +11,8 @@ interface MapSelectorProps {
   onValidationChange?: (error: string | null) => void
   id?: string
   title?: string
+  areaName?: string
+  onAreaNameChange?: (name: string) => void
 }
 
 function MapController({ center, bounds }: { center: [number, number]; bounds: GeographicBounds | null }) {
@@ -123,7 +125,7 @@ function createBounds(center: [number, number], size = 5): GeographicBounds {
   }
 }
 
-export function MapSelector({ center, value, onChange, onValidationChange, id = 'region', title = 'Where should we investigate?' }: MapSelectorProps) {
+export function MapSelector({ center, value, onChange, onValidationChange, id = 'region', title = 'Where should we investigate?', areaName, onAreaNameChange }: MapSelectorProps) {
   const [draft, setDraft] = useState<GeographicBounds | null>(value)
   const [message, setMessage] = useState('A valid 5° × 5° area is ready. Click and hold the rectangle to move it.')
   const [tilesUnavailable, setTilesUnavailable] = useState(false)
@@ -165,6 +167,11 @@ export function MapSelector({ center, value, onChange, onValidationChange, id = 
         <h2 id={`${id}-map-title`} className="text-xl font-bold">{title}</h2>
         <p className="mt-1 text-sm leading-relaxed text-muted">A valid NASA POWER rectangle is created for you. Click and hold the rectangle, then drag to move it.</p>
       </div>
+      {onAreaNameChange && <label className="mb-4 block text-sm font-semibold">
+        Area name <span className="font-normal text-muted">(optional, chosen by you)</span>
+        <input type="text" maxLength={80} value={areaName ?? ''} onChange={(event) => onAreaNameChange(event.target.value)}
+          placeholder="e.g. Northern Mexico" className="mt-1 block w-full rounded-lg border border-line bg-surface p-2 font-normal" />
+      </label>}
       <div className="mb-4">
         <p className="mb-2 text-sm font-semibold text-ink">Choose a valid rectangle size</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">

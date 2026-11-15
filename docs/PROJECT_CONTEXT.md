@@ -300,6 +300,21 @@ o visual ni convierte la tabla histórica en una auditoría exhaustiva.
   los controles de las gráficas sigan operativos. E2E Chromium, 11 pruebas
   frontend y build aprobados.
 
+### Inglés y nombres de áreas en gráficas
+
+- Se tradujeron al inglés los textos visibles restantes de los controles de
+  gráficas, los mensajes de validación y encabezados de exportación CSV.
+- Cada mapa permite escribir un nombre opcional definido por el usuario. Se
+  envía junto con las coordenadas, se conserva en la respuesta y se muestra
+  sobre cada gráfica; por defecto se usa `Selected area`, `Area A` o `Area B`.
+  No se infiere automáticamente el nombre geográfico de un rectángulo amplio.
+- Cambiar el nombre después de analizar marca el resultado principal como
+  pendiente; en comparación oculta resultados anteriores hasta volver a ejecutar.
+- Pruebas: 53 backend, 12 frontend, build y E2E Chromium. El E2E verifica nombres
+  en solicitudes, respuestas y títulos para el análisis y la comparación.
+- Los documentos históricos internos en español y los recursos del contexto
+  de traducción se conservan; no se afirma que todo el repositorio esté traducido.
+
 Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 `feature/scientific-interpretation-and-audit`.
 

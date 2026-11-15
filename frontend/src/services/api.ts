@@ -27,9 +27,9 @@ interface BackendComparison {
   spatial_interpretation: SpatialInterpretation
 }
 
-function regionBody(regionId: RegionId, bounds: GeographicBounds | null, point: GeographicPoint | null) {
+function regionBody(regionId: RegionId, bounds: GeographicBounds | null, point: GeographicPoint | null, name = '') {
   if (point) return { type: 'point', latitude: point.latitude, longitude: point.longitude }
-  if (bounds) return { type: 'bbox', ...bounds }
+  if (bounds) return { type: 'bbox', name: name.trim() || 'Selected area', ...bounds }
   return { type: 'predefined', id: regionId }
 }
 
@@ -53,6 +53,7 @@ export async function runAnalysis(
   configuration: DataConfiguration,
   bounds: GeographicBounds | null,
   point: GeographicPoint | null,
+  areaName = '',
 ): Promise<TimeSeriesDataset> {
   const validationError = validateConfiguration(configuration)
     ?? validateGeographicSelection(configuration.sourceId, bounds, point)
@@ -64,7 +65,7 @@ export async function runAnalysis(
     method: 'POST',
     body: JSON.stringify({
       variable_ids: configuration.variableIds,
-      region: regionBody(configuration.regionId, bounds, point),
+      region: regionBody(configuration.regionId, bounds, point, areaName),
       start_date: configuration.timeRange.startDate,
       end_date: configuration.timeRange.endDate,
       provider,
@@ -119,6 +120,7 @@ export async function runRegionComparison(
   startDate: string,
   endDate: string,
   sourceId: string,
+  areaNames: [string, string] = ['', ''],
 ): Promise<{ datasets: [TimeSeriesDataset, TimeSeriesDataset]; interpretation: SpatialInterpretation }> {
   for (const bounds of regionBounds) {
     const error = validateGeographicSelection(sourceId, bounds, null)
@@ -132,7 +134,7 @@ export async function runRegionComparison(
     method: 'POST',
     body: JSON.stringify({
       variable_id: variableId,
-      regions: regionBounds.map((bounds, index) => ({ type: 'bbox', name: `Area ${index === 0 ? 'A' : 'B'}`, ...bounds })),
+      regions: regionBounds.map((bounds, index) => ({ type: 'bbox', name: areaNames[index].trim() || `Area ${index === 0 ? 'A' : 'B'}`, ...bounds })),
       start_date: startDate,
       end_date: endDate,
       provider,

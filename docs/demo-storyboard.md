@@ -22,7 +22,8 @@ Show the challenge title and the guided workflow.
 Choose a variable, region, and time period. Start with a long period so the
 trend has enough observations to evaluate.
 
-Show the variable cards, region selector, and period selector.
+Show the variable dropdown with its information icon, the region selector, and
+the period selector.
 
 ## Slide 4 — Use NASA data
 
@@ -50,5 +51,5 @@ Show warnings, uncertainty, and the glossary.
 Students, educators, citizen scientists, and environmental analysts can use
 the same guided workflow to investigate Earth system change.
 
-Show the public demo URL, repository URL, NASA POWER documentation link, and
-the project’s independent-project disclaimer.
+Show the public demo URL when deployed, repository URL, NASA POWER documentation
+link, and the project’s independent-project disclaimer.

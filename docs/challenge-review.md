@@ -1,59 +1,116 @@
-# Revisión del reto y visualización
+# Challenge alignment and judge review
 
-## Dictamen
+This document is a judge-facing review of the current MVP. It describes what
+is implemented, what evidence supports it, and what is still required for a
+strong final submission. It is not a guarantee of an award or a substitute
+for independent scientific review.
 
-El flujo implementado cubre los cuatro objetivos centrales del texto del reto.
-Esto no equivale a garantizar premios ni a ausencia de todo defecto. Los
-instrumentos y portales citados son recursos/ejemplos, no una lista de
-integraciones obligatorias. Tampoco se exige implementar a la vez todos los
-tests estadísticos, inteligencia artificial ni tendencias opuestas significativas.
+## Questions a judge is likely to ask
 
-| Requisito | Estado | Evidencia | Limitaciones / pendiente |
+### 1. What problem does this solve?
+
+It reduces the gap between accessing Earth data and interpreting it. The user
+gets a finding, rate of change, evidence status, and limitations instead of
+having to infer all four from a raw chart.
+
+### 2. Is the NASA data real?
+
+Yes, when the source is set to NASA POWER. The application calls the NASA POWER
+Monthly API and labels the source and product metadata. The synthetic provider
+is separate and explicitly labeled as a demo.
+
+### 3. Does it satisfy the challenge workflow?
+
+Yes. The core flow is variable → region → period → data → time series → rate →
+statistical evidence → limitations.
+
+### 4. What is scientifically different from a simple regression chart?
+
+The result combines OLS/t-test, Mann–Kendall, and Theil–Sen evidence; reports
+confidence intervals; checks missing and incomplete years; warns about
+autocorrelation; and explains disagreement between methods. It also avoids
+claiming causality.
+
+### 5. Can a judge reproduce the result?
+
+Yes locally, using the documented commands and the built-in 1991–2023 examples.
+The project includes backend, frontend, build, and browser tests. A stable
+public demo remains a submission priority.
+
+### 6. What can the tool not claim?
+
+It cannot identify causes, forecast the future, correct every statistical
+assumption, or replace a complete scientific analysis. The current regional MVP
+focuses on Mexico and uses NASA POWER products that may be model/reanalysis
+products rather than direct satellite observations.
+
+## Requirement matrix
+
+| Requirement | Status | Evidence | Honest limitation |
 | --- | --- | --- | --- |
-| Identificar variables del sistema Tierra | Cumplido | `catalog.py`, selector; siete variables POWER | Misiones adicionales en roadmap |
-| Adquirir datos de una región | Cumplido | Proveedor POWER, `regions.py`, puntos y cajas validadas | Las cajas no son polígonos administrativos; Lacandona y Centla son puntos representativos |
-| Generar y visualizar series suficientemente largas | Cumplido | Ejemplos 1991–2023, `TimeSeriesChart.tsx` | Menos de tres agregados anuales: no evaluable; menos de diez: advertencia |
-| Cuantificar tasa y significancia | Cumplido | OLS/t-test, IC, MK y Sen en `trend_stats.py` | Supuestos de independencia; autocorrelación advertida, no corregida |
-| Comprensión para estudiantes (opcional) | Implementado | Descripciones, glosario, tarjetas y ayuda | Validación con usuarios pendiente |
-| Flujo guiado y ejemplos (opcional) | Implementado | Asistente y tres ejemplos mexicanos | Ejemplos precargan configuración; no son videos |
-| Comparación regional (opcional) | Implementado | `RegionComparison.tsx`, gráficos sincronizados | No implica causa común ni garantiza signos opuestos |
-| Estacionalidad avanzada (opcional) | Parcial | Agregados anuales completos y Seasonal MK | El ajuste anual no elimina toda variabilidad interanual; años incompletos se excluyen |
+| Choose an Earth-system variable | Complete | Seven-variable NASA POWER catalog and dropdown | Additional NASA products are future work |
+| Choose a region | Complete | Four Mexican regions and movable rectangle | Current MVP is not global |
+| Use a sufficiently long period | Complete | 1991–2023 examples; date validation | Short periods can be low power |
+| Retrieve or load data | Complete | NASA POWER provider and labeled synthetic provider | Live NASA access needs Internet |
+| Visualize a time series | Complete | One panel per variable with trend and confidence band | Monthly display uses an annual trend estimate |
+| Measure rate of change | Complete | OLS and Theil–Sen rates, including per-decade rate | Rate depends on period and product |
+| Evaluate significance | Complete | OLS/t-test, Mann–Kendall, p-values, confidence intervals | Autocorrelation is warned about, not corrected |
+| Explain result and limitations | Complete | Findings-first result, glossary, warnings, provenance | Learner testing is still pending |
+| Explore regional contrast | Optional | Folded two-region comparison | It does not test causal differences between slopes |
 
-## Correcciones de esta revisión
+## Judge-oriented strengths
 
-- Panel independiente por variable, título/unidad, colores constantes y patrones
-  distintos para observación/tendencia. Sin acumulación de ejes ni curvas de
-  variables diferentes en el mismo espacio.
-- Botones accesibles para ocultar/mostrar variables (también sus tarjetas), estado
-  vacío comprensible y “Mostrar todas”.
-- Zoom por meses sincronizado entre paneles y botón de restablecimiento.
-  No cambia resultados, significancia ni exportación.
-- Totales anuales de precipitación ya no se superponen directamente con valores
-  mensuales: ajuste y banda se muestran como equivalente mensual (÷12).
-- Fechas ordenadas y ajuste centrado correctamente en cada año.
-- La API conserva la región realmente consultada en el dataset del frontend:
-  selecciones personalizadas no se titulan como la región predefinida.
-- Separación explícita entre significancia OLS y MK, estado “No evaluable”,
-  pendiente cero visible y definición frecuentista del intervalo de confianza.
-- Se corrigió la etiqueta `annual_anomalies`: el ajuste actual es `annual_values`.
-  Los años incompletos ya no se extrapolan y se informa su exclusión.
-- Cada gráfica muestra debajo el estado de significancia, p-values OLS/MK e
-  intervalo; los resultados no evaluables no se etiquetan como no significativos.
-- La API entrega JSON de veredicto, patrones multivariables y divergencia
-  espacial, con advertencias explícitas contra inferencias causales.
+- Direct alignment with the challenge rather than a generic dashboard.
+- Real NASA POWER integration with transparent provenance.
+- Scientific checks are visible to non-specialists.
+- Results do not overclaim causality.
+- The application has a guided path and reproducible examples.
+- The codebase has automated backend, frontend, build, and browser validation.
 
-## Pruebas ejecutadas
+## Remaining risks
 
-- `pytest -q`: **51 passed**, sin advertencias.
-- `npm --prefix frontend test`: **11 passed**; typecheck y build correctos.
-- `scripts/verify_analysis.py`: OLS, MK y Sen coinciden con SciPy/pymannkendall
-  en las series POWER 1991–2023 comprobadas.
-- `npm --prefix frontend run test:e2e`: PASS; siete paneles, ocultar/mostrar,
-  zoom con botones y arrastre, vista conjunta, estado vacío, móvil y API real.
-- Las pruebas unitarias del zoom verifican ventana centrada, desplazamiento y
-  que no se modifiquen observaciones ni resultados exportados.
+1. **Demo readiness:** a public URL and a short recorded walkthrough are not yet
+   part of the repository.
+2. **First-run complexity:** the application exposes many scientific options;
+   the showcase path should foreground one concrete finding.
+3. **Accessibility evidence:** automated browser coverage exists, but a complete
+   accessibility audit and learner usability study are still pending.
+4. **Documentation drift:** judge-facing documentation must remain consistent
+   with the current rectangle-only Mexico MVP.
 
-Las consultas reales pueden usar la caché POWER del proyecto. Los tests unitarios
-usan datos controlados; no se presentan como resultados ambientales reales.
-No existe un comando lint configurado. No se hizo una evaluación con estudiantes
-ni una auditoría completa de accesibilidad.
+## Prioritized next steps
+
+### P0 — before submission
+
+- Publish and smoke-test a stable demo URL.
+- Record the 30-second story using one reproducible result.
+- Verify the submission text, UI labels, screenshots, and repository all use the
+  same scope and terminology.
+
+### P1 — highest value improvement
+
+- Run a short learner/educator usability test.
+- Complete an accessibility pass for keyboard navigation, focus states,
+  contrast, map instructions, and chart alternatives.
+- Add a shareable result card or export containing source, region, period, rate,
+  evidence status, and limitations.
+
+### P2 — after the core experience
+
+- Reduce optional choices on the first run and make the showcase finding more
+  prominent.
+- Expand beyond the current Mexican regions.
+- Add carefully selected NASA Earthdata products only after documenting their
+  units, coverage, and statistical treatment.
+
+## Validation record
+
+- `pytest -q`: 51 passed.
+- `npm --prefix frontend test`: 11 passed.
+- Frontend typecheck and production build: passed.
+- `npm --prefix frontend run test:e2e`: passed with real HTTP analysis responses.
+- Numerical cross-checks against SciPy and pymannkendall: documented in
+  `docs/statistical-methodology.md`.
+
+These checks validate the current implementation; they do not constitute a
+complete accessibility audit, field study, or independent scientific review.

@@ -21,8 +21,9 @@ bloquea el desplazamiento de fondo y contiene el scroll para aislar el mapa.
 Verificación: 11 pruebas frontend, typecheck y build correctos.
 
 NASA Space Apps 2026: **Be An Earth System Trend Detective!**
-Flujo: variables → región/punto → periodo → serie temporal → tasa de cambio y
-significancia. Textos de interfaz en español; código en inglés.
+Flujo actual: variable → región → rectángulo válido → periodo → serie temporal
+→ tasa de cambio y significancia. La interfaz visible está en inglés; el código
+está en inglés.
 
 - Backend FastAPI: `backend/app`, entrada `main.py`.
 - Catálogo: `backend/app/catalog.py`; regiones: `backend/app/regions.py`.
@@ -190,8 +191,9 @@ ante solicitudes inválidas.
 Si se mantiene abierto un frontend antiguo, recargar la página. Si el backend
 no usa `--reload`, reiniciarlo para cargar el nuevo límite y catálogo.
 El aviso de React DevTools es normal en desarrollo.
-Los puntos del mapa personalizados siguen disponibles; solo el catálogo de
-regiones se restringió a México.
+La interfaz actual usa exclusivamente rectángulos regionales; los puntos
+permanecen en contratos históricos del backend para compatibilidad, pero no se
+ofrecen al usuario.
 Los antiguos pendientes del banner comparativo y `syncId` quedaron corregidos.
 La revisión actual no certifica ausencia de cualquier otro defecto científico
 o visual ni convierte la tabla histórica en una auditoría exhaustiva.

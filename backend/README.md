@@ -11,8 +11,8 @@ Los resultados `demo` nunca deben describirse como observaciones NASA.
 
 ## Fuente recomendada para el MVP
 
-NASA POWER ofrece una API REST mensual y consultas por punto y bounding box; no
-requiere procesar directamente archivos científicos grandes.
+NASA POWER offers a monthly REST API and regional bounding-box queries; the MVP
+does not need to process large scientific files directly.
 
 La API devuelve `PRECTOTCORR` en mm/day. Este backend convierte cada promedio
 mensual de tasa diaria a acumulado mensual multiplicando por los días del mes.
@@ -69,16 +69,17 @@ Ejemplo:
 ```json
 {
   "variable_ids": ["temperature", "precipitation"],
-  "region": {"type": "predefined", "id": "amazon-basin"},
+  "region": {"type": "predefined", "id": "sonoran-desert"},
   "start_date": "2001-01-01",
   "end_date": "2020-12-31",
   "provider": "nasa-power"
 }
 ```
 
-`region.type` acepta `predefined`, `bbox` o `point`. El cuerpo incluye
-`results[]`; cada elemento contiene metadata de variable, serie, tendencia y
-veredicto estadístico. La respuesta incluye el diagnóstico multivariable.
+`region.type` acepta `predefined` o `bbox` in the current user-facing MVP. The
+body includes `results[]`; each element contains variable metadata, the series,
+trend statistics, and an evidence verdict. The response also includes the
+exploratory multivariable diagnostic.
 
 ### Comparación espacial
 

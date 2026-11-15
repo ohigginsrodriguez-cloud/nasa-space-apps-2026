@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/common/Button'
 import { ProjectGuideModal } from '../components/common/ProjectGuideModal'
 import { MapSelector } from '../components/geography/MapSelector'
-import { RegionSelector } from '../components/regions/RegionSelector'
 import { TimeRangeSelector } from '../components/temporal/TimeRangeSelector'
 import { VariableSelector } from '../components/variables/VariableSelector'
 import { useResearch } from '../context/ResearchContext'
@@ -25,7 +24,6 @@ export function Dashboard() {
     setGeographicBounds,
     geographicBounds,
     selectedPoint,
-    setSelectedPoint,
     applyConfiguration,
     loadExample,
     notice,
@@ -180,16 +178,6 @@ export function Dashboard() {
           </>}
           {step === 1 && (
             <div className="space-y-4">
-              <RegionSelector
-                value={draft.regionId}
-                onChange={(regionId) => {
-                  setMapDraftError(null)
-                  setGeographicBounds(null)
-                  setSelectedPoint(null)
-                  updateDraft({ ...draft, regionId })
-                }}
-                onUseSuggestion={(variableIds) => updateDraft({ ...draft, variableIds })}
-              />
                <MapSelector
                  key={draft.regionId}
                  center={region.center}

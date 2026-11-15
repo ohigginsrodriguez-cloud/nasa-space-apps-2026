@@ -115,17 +115,24 @@ export async function runAnalysis(
 
 export async function runRegionComparison(
   variableId: string,
-  regionIds: [RegionId, RegionId],
+  regionBounds: [GeographicBounds, GeographicBounds],
   startDate: string,
   endDate: string,
   sourceId: string,
 ): Promise<{ datasets: [TimeSeriesDataset, TimeSeriesDataset]; interpretation: SpatialInterpretation }> {
+  for (const bounds of regionBounds) {
+    const error = validateGeographicSelection(sourceId, bounds, null)
+    if (error) throw new Error(error)
+  }
+  if (['south', 'north', 'west', 'east'].every((key) => regionBounds[0][key as keyof GeographicBounds] === regionBounds[1][key as keyof GeographicBounds])) {
+    throw new Error('Choose two different areas to compare.')
+  }
   const provider = sourceId === 'nasa-power' ? 'nasa-power' : 'demo'
   const response = await request<BackendComparison>('/api/v1/analysis/compare', {
     method: 'POST',
     body: JSON.stringify({
       variable_id: variableId,
-      regions: regionIds.map((id) => ({ type: 'predefined', id })),
+      regions: regionBounds.map((bounds, index) => ({ type: 'bbox', name: `Area ${index === 0 ? 'A' : 'B'}`, ...bounds })),
       start_date: startDate,
       end_date: endDate,
       provider,

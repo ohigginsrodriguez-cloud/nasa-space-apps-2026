@@ -37,12 +37,12 @@ trend → evidence → responsible interpretation**.
 - **Active source:** NASA POWER Monthly API.
 - **Active variables:** air temperature, precipitation, root-zone soil moisture,
   relative humidity, surface solar radiation, surface pressure, and wind speed.
-- **Geography:** four predefined Mexican regions plus a movable rectangle.
+- **Geography:** user-selected movable rectangles, with educational Mexican examples.
   Rectangle sizes are limited to valid NASA POWER spans of 2°–10° per axis.
 - **Time resolution:** monthly input with annual aggregation for the main trend
   estimate; incomplete calendar years are excluded from that estimate.
-- **Optional exploration:** compare the same variable across two predefined
-  regions. This does not test causality or the significance of a difference
+- **Optional exploration:** compare the same variable across two user-defined
+  rectangles. This does not test causality or the significance of a difference
   between slopes.
 
 NASA POWER products may be model or reanalysis products rather than direct

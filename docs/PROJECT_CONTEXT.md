@@ -269,6 +269,24 @@ o visual ni convierte la tabla histórica en una auditoría exhaustiva.
   comprobando que no haya desplazamiento adicional. También verifica zoom.
 - Validación: E2E Chromium con API HTTP 200, 11 pruebas frontend y build aprobados.
 
+### Áreas personalizadas en la investigación y comparación
+
+- Se retiró el desplegable de regiones predefinidas del flujo principal
+  (`Dashboard.tsx`); la ubicación se delimita mediante el rectángulo del mapa.
+  Los casos educativos existentes siguen siendo accesos rápidos precargados.
+- `RegionComparison.tsx` utiliza dos instancias independientes de `MapSelector`:
+  área A y área B. Cada una puede moverse y redimensionarse, y la validación
+  bloquea áreas idénticas o inválidas. Las gráficas muestran las coordenadas
+  devueltas por el servidor, y los resultados anteriores se ocultan al editar.
+- `services/api.ts` envía dos regiones `bbox` nombradas a la ruta de comparación;
+  `main.py` asigna identificadores distintos para evitar confundir resultados
+  o datos demo. No se han eliminado las regiones históricas del contrato de API.
+- `tests/test_custom_comparison.py` verifica geometría, identidad y rechazo de
+  áreas iguales. El E2E ajusta tamaños distintos, mueve el área B y verifica
+  que las coordenadas enviadas coincidan con las devueltas por la API.
+- Verificación: 53 pruebas backend, 11 frontend y build aprobados; E2E Chromium
+  aprobado contra la API HTTP 200. Advertencia conocida de Starlette/httpx.
+
 Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 `feature/scientific-interpretation-and-audit`.
 

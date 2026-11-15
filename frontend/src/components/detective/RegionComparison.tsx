@@ -1,21 +1,29 @@
 import { useState } from 'react'
 import { GitCompare, LoaderCircle, TrendingDown, TrendingUp } from 'lucide-react'
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { regions, variables } from '../../data/mockData'
+import { variables } from '../../data/mockData'
 import { runRegionComparison } from '../../services/api'
-import type { RegionId, SpatialInterpretation, TimeSeriesDataset, VariableId } from '../../types'
-import { getLatestCompleteMonthEnd, validateConfiguration } from '../../utils/configuration'
+import type { GeographicBounds, SpatialInterpretation, TimeSeriesDataset, VariableId } from '../../types'
+import { getLatestCompleteMonthEnd, validateConfiguration, validateGeographicSelection } from '../../utils/configuration'
 import { centeredZoomPoints, variableChartPoints } from '../../utils/chartData'
 import { ChartZoomControls } from '../charts/ChartZoomControls'
+import { MapSelector } from '../geography/MapSelector'
+
+const INITIAL_CENTER_A: [number, number] = [23.5, -102]
+const INITIAL_CENTER_B: [number, number] = [18, -92]
 
 const shortDate = new Intl.DateTimeFormat('en', { month: 'short', year: '2-digit', timeZone: 'UTC' })
 const formatDate = (date: string) => shortDate.format(new Date(`${date}T00:00:00Z`))
 const formatValue = (value: number | null | undefined, digits = 2) => (value === null || value === undefined ? '—' : new Intl.NumberFormat('en', { maximumFractionDigits: digits }).format(value))
+const formatBounds = (bounds: GeographicBounds) =>
+  `Lat ${bounds.south.toFixed(2)}° to ${bounds.north.toFixed(2)}°, lon ${bounds.west.toFixed(2)}° to ${bounds.east.toFixed(2)}°`
 
 export function RegionComparison() {
   const [variableId, setVariableId] = useState<VariableId>('precipitation')
-  const [regionAId, setRegionAId] = useState<RegionId>('sonoran-desert')
-  const [regionBId, setRegionBId] = useState<RegionId>('lacandon-jungle')
+  const [boundsA, setBoundsA] = useState<GeographicBounds | null>(null)
+  const [boundsB, setBoundsB] = useState<GeographicBounds | null>(null)
+  const [mapErrorA, setMapErrorA] = useState<string | null>(null)
+  const [mapErrorB, setMapErrorB] = useState<string | null>(null)
   const [startDate, setStartDate] = useState('1995-01-01')
   const [endDate, setEndDate] = useState('2023-12-01')
   const maxDate = getLatestCompleteMonthEnd()
@@ -29,26 +37,30 @@ export function RegionComparison() {
   const [zoomLevel, setZoomLevel] = useState(0)
 
   const selectedVar = variables.find((v) => v.id === variableId) ?? variables[0]
-  const regionA = regions.find((r) => r.id === regionAId) ?? regions[0]
-  const regionB = regions.find((r) => r.id === regionBId) ?? regions[1]
-  const configurationKey = JSON.stringify([variableId, regionAId, regionBId, startDate, endDate, sourceId])
+  const regionA = { name: datasetA?.region?.name ?? 'Area A' }
+  const regionB = { name: datasetB?.region?.name ?? 'Area B' }
+  const configurationKey = JSON.stringify([variableId, boundsA, boundsB, startDate, endDate, sourceId])
   const [resultKey, setResultKey] = useState<string | null>(null)
   const hasCurrentResults = resultKey === configurationKey
-  const validationError = regionAId === regionBId
-    ? 'Selecciona dos regiones diferentes para comparar.'
-    : validateConfiguration({
-      variableIds: [variableId], regionId: regionAId, sourceId,
+  const validationError = !boundsA || !boundsB ? 'Select two areas to compare.'
+    : mapErrorA ?? mapErrorB
+    ?? validateGeographicSelection(sourceId, boundsA, null)
+    ?? validateGeographicSelection(sourceId, boundsB, null)
+    ?? (['south', 'north', 'west', 'east'].every((key) => boundsA[key as keyof GeographicBounds] === boundsB[key as keyof GeographicBounds])
+      ? 'Choose two different areas to compare.' : null)
+    ?? validateConfiguration({
+      variableIds: [variableId], regionId: 'sonoran-desert', sourceId,
       timeRange: { startDate, endDate, interval: 'monthly' },
     })
 
   async function handleCompare() {
-    if (validationError) return
+    if (validationError || !boundsA || !boundsB) return
     setLoading(true)
     setError(null)
     try {
       const comparison = await runRegionComparison(
         variableId,
-        [regionAId, regionBId],
+        [boundsA, boundsB],
         startDate,
         endDate,
         sourceId,
@@ -84,7 +96,7 @@ export function RegionComparison() {
                 NASA challenge: contrasting responses
               </span>
             </h2>
-            <p className="text-sm leading-relaxed text-muted">Compare one variable across two regions of Mexico over the same period. Lacandon and Centla use representative points; Sonora and Mexico City use approximate rectangles.</p>
+            <p className="text-sm leading-relaxed text-muted">Define two study areas on the maps and compare the same variable over the same period.</p>
           </div>
         </div>
 
@@ -110,32 +122,6 @@ export function RegionComparison() {
           >
             {variables.map((v) => (
               <option key={v.id} value={v.id}>{v.name} ({v.unit})</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block font-medium text-muted mb-1">Region A</label>
-          <select
-            value={regionAId}
-            onChange={(e) => setRegionAId(e.target.value as RegionId)}
-            className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink font-medium focus:border-accent"
-          >
-            {regions.map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block font-medium text-muted mb-1">Region B</label>
-          <select
-            value={regionBId}
-            onChange={(e) => setRegionBId(e.target.value as RegionId)}
-            className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink font-medium focus:border-accent"
-          >
-            {regions.map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
             ))}
           </select>
         </div>
@@ -176,6 +162,13 @@ export function RegionComparison() {
         </div>
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-2">
+        <MapSelector id="comparison-area-a" title="Define area A" center={INITIAL_CENTER_A}
+          value={boundsA} onChange={setBoundsA} onValidationChange={setMapErrorA} />
+        <MapSelector id="comparison-area-b" title="Define area B" center={INITIAL_CENTER_B}
+          value={boundsB} onChange={setBoundsB} onValidationChange={setMapErrorB} />
+      </div>
+
       {validationError && <p role="alert" className="text-xs text-red-800">{validationError}</p>}
       {sourceId === 'local-demo' && <p role="status" className="text-sm text-muted">DEMO / SYNTHETIC: these observations are not NASA measurements.</p>}
       {error && (
@@ -196,8 +189,8 @@ export function RegionComparison() {
                <p className="mt-1 text-xs leading-relaxed text-ink">
                 {spatialInterpretation.summary}
               </p>
-              {spatialInterpretation.regions?.map((item) => (
-                 <p key={item.id} className="mt-1 text-[11px] text-ink">
+              {spatialInterpretation.regions?.map((item, index) => (
+                 <p key={`${item.id}-${index}`} className="mt-1 text-[11px] text-ink">
                    <strong>{item.name}:</strong> {item.direction} · {formatValue(item.change_per_decade)} {selectedVar.unit}/decade ·{' '}
                    {item.significant === true ? 'significant' : item.significant === false ? 'not significant' : 'not evaluable'}
                 </p>
@@ -227,9 +220,10 @@ export function RegionComparison() {
                 {formatValue(slopeA)} {selectedVar.unit}/decade
               </span>
             </div>
-            <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Legend for ${regionA.name}`}>
+              <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Legend for ${regionA.name}`}>
               <strong>Unit: {selectedVar.unit}</strong>
               <span className="text-muted">Solid line: observed · dashed: trend · shaded: 95% CI</span>
+              {datasetA.region && <span className="w-full text-muted">{formatBounds(datasetA.region)}</span>}
             </div>
             <div className="flex h-56 w-full items-stretch gap-2">
             <div className="min-w-0 flex-1">
@@ -266,9 +260,10 @@ export function RegionComparison() {
                 {formatValue(slopeB)} {selectedVar.unit}/decade
               </span>
             </div>
-            <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Legend for ${regionB.name}`}>
+             <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Legend for ${regionB.name}`}>
               <strong>Unit: {selectedVar.unit}</strong>
               <span className="text-muted">Solid line: observed · dashed: trend · shaded: 95% CI</span>
+              {datasetB.region && <span className="w-full text-muted">{formatBounds(datasetB.region)}</span>}
             </div>
             <div className="flex h-56 w-full items-stretch gap-2">
             <div className="min-w-0 flex-1">

@@ -9,6 +9,8 @@ interface MapSelectorProps {
   value: GeographicBounds | null
   onChange: (bounds: GeographicBounds | null) => void
   onValidationChange?: (error: string | null) => void
+  id?: string
+  title?: string
 }
 
 function MapController({ center, bounds }: { center: [number, number]; bounds: GeographicBounds | null }) {
@@ -121,7 +123,7 @@ function createBounds(center: [number, number], size = 5): GeographicBounds {
   }
 }
 
-export function MapSelector({ center, value, onChange, onValidationChange }: MapSelectorProps) {
+export function MapSelector({ center, value, onChange, onValidationChange, id = 'region', title = 'Where should we investigate?' }: MapSelectorProps) {
   const [draft, setDraft] = useState<GeographicBounds | null>(value)
   const [message, setMessage] = useState('A valid 5° × 5° area is ready. Click and hold the rectangle to move it.')
   const [tilesUnavailable, setTilesUnavailable] = useState(false)
@@ -158,9 +160,9 @@ export function MapSelector({ center, value, onChange, onValidationChange }: Map
   }
 
   return (
-    <section id="region" aria-labelledby="map-title" className="surface-panel scroll-mt-6 border-accent/20 bg-linear-to-br from-accent-soft/35 via-surface to-surface p-5 sm:p-6">
+    <section id={id} aria-labelledby={`${id}-map-title`} className="surface-panel scroll-mt-6 border-accent/20 bg-linear-to-br from-accent-soft/35 via-surface to-surface p-5 sm:p-6">
       <div className="mb-4">
-        <h2 id="map-title" className="text-xl font-bold">Where should we investigate?</h2>
+        <h2 id={`${id}-map-title`} className="text-xl font-bold">{title}</h2>
         <p className="mt-1 text-sm leading-relaxed text-muted">A valid NASA POWER rectangle is created for you. Click and hold the rectangle, then drag to move it.</p>
       </div>
       <div className="mb-4">
@@ -181,7 +183,7 @@ export function MapSelector({ center, value, onChange, onValidationChange }: Map
         <p className="mt-1 text-xs leading-relaxed">Every available size stays within NASA POWER’s 2°–10° limit on each axis.</p>
       </div>
       <div className="overflow-hidden rounded-lg border border-line shadow-inner">
-        <MapContainer center={center} zoom={4} scrollWheelZoom={false} className="h-72 w-full sm:h-96" aria-label="Map for selecting a research area">
+          <MapContainer center={center} zoom={4} scrollWheelZoom={false} className="h-72 w-full sm:h-96" aria-label={`Map for ${title}`}>
           <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" eventHandlers={{ tileerror: () => setTilesUnavailable(true) }} />
           <MapController center={center} bounds={value} />
           {value && <>

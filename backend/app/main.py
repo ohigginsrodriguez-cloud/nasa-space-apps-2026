@@ -158,8 +158,10 @@ def compare_regions(request: RegionComparisonRequest) -> RegionComparisonRespons
     try:
         provider = get_provider(request.provider)
         region_results = []
-        for region_request in request.regions:
+        for index, region_request in enumerate(request.regions):
             region = resolve_region(region_request)
+            if region_request.type == "bbox":
+                region = region.model_copy(update={"id": f"comparison-area-{index + 1}"})
             series = provider.get_series(
                 variable, region, request.start_date, request.end_date
             )

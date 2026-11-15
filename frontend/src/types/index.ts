@@ -84,6 +84,7 @@ export interface GeographicPoint {
 }
 
 export interface DataConfiguration {
+  chartLayout?: 'separate' | 'combined'
   variableIds: VariableId[]
   regionId: RegionId
   timeRange: TimeRange

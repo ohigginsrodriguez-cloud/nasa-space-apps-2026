@@ -182,7 +182,17 @@ export function Dashboard() {
         </nav>
 
         <div className="mt-4">
-          {step === 0 && <VariableSelector selectedIds={draft.variableIds} onToggle={toggleVariable} />}
+          {step === 0 && <>
+            <VariableSelector selectedIds={draft.variableIds} onToggle={toggleVariable} />
+            {draft.variableIds.length >= 2 && <label className="mt-4 block text-sm">
+              Presentación de las gráficas
+              <select className="ml-2 rounded border border-line bg-surface p-2" value={draft.chartLayout ?? 'separate'} onChange={(event) => updateDraft({ ...draft, chartLayout: event.target.value as 'separate' | 'combined' })}>
+                <option value="separate">Separadas (recomendado)</option>
+                <option value="combined">Juntas en una gráfica</option>
+              </select>
+              <p className="mt-2 text-xs text-muted">Las separadas facilitan leer unidades distintas. También podrás cambiar la vista y ampliar detalles en los resultados.</p>
+            </label>}
+          </>}
           {step === 1 && (
             <div className="space-y-4">
               <RegionSelector

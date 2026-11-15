@@ -9,6 +9,17 @@ pruebas ejecutadas y pendientes. El historial Git conserva el detalle exacto.
 
 ## Objetivo y arquitectura
 
+### Vista múltiple y glosario
+
+Al seleccionar dos o más variables se permite elegir paneles separados
+(predeterminado) o una gráfica conjunta con ejes independientes en unidades
+originales. Los resultados permiten alternar vistas, ocultar variables, acotar
+meses, ajustar límites verticales por variable y ampliar la altura. El zoom
+no recalcula significancia ni modifica las exportaciones.
+El glosario usa un diálogo modal nativo en la capa superior del navegador,
+bloquea el desplazamiento de fondo y contiene el scroll para aislar el mapa.
+Verificación: 11 pruebas frontend, typecheck y build correctos.
+
 NASA Space Apps 2026: **Be An Earth System Trend Detective!**
 Flujo: variables → región/punto → periodo → serie temporal → tasa de cambio y
 significancia. Textos de interfaz en español; código en inglés.

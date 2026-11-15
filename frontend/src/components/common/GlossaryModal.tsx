@@ -1,4 +1,6 @@
 import { BookOpen, X } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 interface GlossaryModalProps {
   isOpen: boolean
@@ -51,18 +53,30 @@ const terms = [
 ]
 
 export function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
+  const dialog = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    if (!isOpen) return
+    const overflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    dialog.current?.showModal()
+    return () => {
+      document.body.style.overflow = overflow
+      dialog.current?.close()
+    }
+  }, [isOpen])
   if (!isOpen) return null
 
-  return (
-    <div
-      role="dialog"
+  return createPortal(
+    <dialog
+      ref={dialog}
       aria-modal="true"
       aria-labelledby="glossary-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs"
-      onClick={onClose}
+      className="fixed inset-0 m-auto max-h-[90vh] w-[90vw] max-w-2xl overflow-hidden rounded-2xl bg-surface p-0 backdrop:bg-black/50"
+      onCancel={onClose}
+      onWheel={(event) => event.stopPropagation()}
     >
       <div
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-2xl"
+        className="max-h-[90vh] w-full overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-line pb-4">
@@ -109,6 +123,7 @@ export function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
           </button>
         </div>
       </div>
-    </div>
+    </dialog>,
+    document.body,
   )
 }

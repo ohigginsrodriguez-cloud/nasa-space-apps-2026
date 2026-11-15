@@ -214,7 +214,7 @@ export function RegionComparison() {
           {/* Tarjeta Región A */}
           <div className="rounded-xl border border-line bg-canvas/40 p-4">
             <div className="flex items-center justify-between border-b border-line pb-2 mb-3">
-              <h3 className="text-xs font-bold text-ink">{regionA.name}</h3>
+                <h3 className="text-xs font-bold text-ink">{regionA.name} · {selectedVar.name}</h3>
               <span className="flex items-center gap-1 text-xs font-semibold">
                 {slopeA !== undefined && slopeA !== null && slopeA > 0 ? (
                   <TrendingUp size={14} className="text-rose-600" />
@@ -224,16 +224,20 @@ export function RegionComparison() {
                 {formatValue(slopeA)} {selectedVar.unit}/década
               </span>
             </div>
+            <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Leyenda de ${regionA.name}`}>
+              <strong>Unidad: {selectedVar.unit}</strong>
+              <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
+            </div>
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart syncId="region-comparison" data={resultA ? variableChartPoints(datasetA.points, resultA) : []} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
                   <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
                   <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} label={{ value: selectedVar.unit, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 10, fill: 'var(--color-muted)' } }} />
                   <Tooltip labelFormatter={(l) => formatDate(String(l))} />
                   <Area dataKey={`band_${variableId}`} stroke="none" fill="#0284c7" fillOpacity={0.12} isAnimationActive={false} />
-                  <Line dataKey={variableId} stroke="#0284c7" strokeWidth={1.3} dot={false} isAnimationActive={false} name="Observado" />
-                  <Line dataKey={`trend_${variableId}`} stroke="#0284c7" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name="Tendencia" />
+                  <Line dataKey={variableId} stroke="#0284c7" strokeWidth={1.3} dot={false} isAnimationActive={false} name={`Observado (${selectedVar.unit})`} />
+                  <Line dataKey={`trend_${variableId}`} stroke="#0284c7" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Tendencia (${selectedVar.unit})`} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
@@ -246,7 +250,7 @@ export function RegionComparison() {
           {/* Tarjeta Región B */}
           <div className="rounded-xl border border-line bg-canvas/40 p-4">
             <div className="flex items-center justify-between border-b border-line pb-2 mb-3">
-              <h3 className="text-xs font-bold text-ink">{regionB.name}</h3>
+                <h3 className="text-xs font-bold text-ink">{regionB.name} · {selectedVar.name}</h3>
               <span className="flex items-center gap-1 text-xs font-semibold">
                 {slopeB !== undefined && slopeB !== null && slopeB > 0 ? (
                   <TrendingUp size={14} className="text-rose-600" />
@@ -256,16 +260,20 @@ export function RegionComparison() {
                 {formatValue(slopeB)} {selectedVar.unit}/década
               </span>
             </div>
+            <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Leyenda de ${regionB.name}`}>
+              <strong>Unidad: {selectedVar.unit}</strong>
+              <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
+            </div>
             <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart syncId="region-comparison" data={resultB ? variableChartPoints(datasetB.points, resultB) : []} margin={{ top: 8, right: 8, bottom: 4, left: -10 }}>
                   <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 5" />
                   <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} label={{ value: selectedVar.unit, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 10, fill: 'var(--color-muted)' } }} />
                   <Tooltip labelFormatter={(l) => formatDate(String(l))} />
                   <Area dataKey={`band_${variableId}`} stroke="none" fill="#e11d48" fillOpacity={0.12} isAnimationActive={false} />
-                  <Line dataKey={variableId} stroke="#e11d48" strokeWidth={1.3} dot={false} isAnimationActive={false} name="Observado" />
-                  <Line dataKey={`trend_${variableId}`} stroke="#e11d48" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name="Tendencia" />
+                  <Line dataKey={variableId} stroke="#e11d48" strokeWidth={1.3} dot={false} isAnimationActive={false} name={`Observado (${selectedVar.unit})`} />
+                  <Line dataKey={`trend_${variableId}`} stroke="#e11d48" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Tendencia (${selectedVar.unit})`} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>

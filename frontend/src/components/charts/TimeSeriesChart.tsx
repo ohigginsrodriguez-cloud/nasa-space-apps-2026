@@ -65,6 +65,19 @@ function ChartTooltip({ active, payload, label }: TooltipContentProps<TooltipVal
   )
 }
 
+function ChartLegend({ variable }: { variable: { name: string; unit: string; id: string } }) {
+  const color = getVariableColor(variable.id)
+  return (
+    <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Leyenda de ${variable.name}`}>
+      <span className="font-semibold text-ink">{variable.name}</span>
+      <span className="text-muted">Unidad: <strong className="text-ink">{variable.unit}</strong></span>
+      <span className="flex items-center gap-1.5 text-muted"><span className="h-0.5 w-5" style={{ backgroundColor: color }} /> Observado</span>
+      <span className="flex items-center gap-1.5 text-muted"><span className="w-5 border-t-2 border-dashed" style={{ borderColor: color }} /> Tendencia</span>
+      <span className="flex items-center gap-1.5 text-muted"><span className="size-3 rounded-sm opacity-30" style={{ backgroundColor: color }} /> IC 95%</span>
+    </div>
+  )
+}
+
 function TermHelp({ term, explanation }: { term: string; explanation: string }) {
   const [open, setOpen] = useState(false)
   return (
@@ -253,10 +266,18 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   const [hiddenVariables, setHiddenVariables] = useState<string[]>([])
   const [zoomStart, setZoomStart] = useState('')
   const [zoomEnd, setZoomEnd] = useState('')
+  const [layout, setLayout] = useState<'separate' | 'combined'>('separate')
+  const [verticalRanges, setVerticalRanges] = useState<Record<string, { min: string; max: string }>>({})
+  const [expanded, setExpanded] = useState(false)
+  const [showZoomHelp, setShowZoomHelp] = useState(false)
+  useEffect(() => {
+    setLayout(configuration?.chartLayout ?? 'separate')
+  }, [configuration])
   useEffect(() => {
     setHiddenVariables([])
     setZoomStart('')
     setZoomEnd('')
+    setVerticalRanges({})
   }, [dataset])
 
   const selectedVariables = variables.filter((variable) => configuration?.variableIds.includes(variable.id))
@@ -267,6 +288,21 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   const regionName = dataset?.region?.name ?? region?.name ?? 'la región'
   const zoomError = zoomStart && zoomEnd && zoomStart > zoomEnd
   const chartPoints: TimeSeriesPoint[] = zoomError ? [] : zoomPoints(points, zoomStart, zoomEnd)
+  const combinedPoints = visibleVariables.reduce(
+    (data, variable) => {
+      const result = results.find((item) => item.variable.id === variable.id)
+      return result ? variableChartPoints(data, result) : data
+    }, chartPoints,
+  )
+  function verticalDomain(id: string): [number | 'auto', number | 'auto'] {
+    const range = verticalRanges[id]
+    if (!range) return ['auto', 'auto']
+    const min = range.min === '' ? 'auto' : Number(range.min)
+    const max = range.max === '' ? 'auto' : Number(range.max)
+    if ((typeof min === 'number' && !Number.isFinite(min)) || (typeof max === 'number' && !Number.isFinite(max))
+      || (typeof min === 'number' && typeof max === 'number' && min >= max)) return ['auto', 'auto']
+    return [min, max]
+  }
 
   function downloadExport(format: 'json' | 'csv') {
     if (!dataset || !configuration) return
@@ -398,29 +434,89 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
           </div>
 
           <div className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-line p-3 text-xs">
-            <label>Zoom: desde
+            <div className="flex w-full items-center gap-2 rounded-md bg-accent-soft px-3 py-2 text-accent">
+              <strong>Zoom de la gráfica</strong>
+              <span className="text-muted">Elige el mes inicial y final para acercarte a un periodo.</span>
+              <button type="button" className="ml-auto inline-flex items-center gap-1 rounded border border-accent/30 px-2 py-1 font-medium hover:bg-surface" aria-expanded={showZoomHelp} onClick={() => setShowZoomHelp(!showZoomHelp)}>
+                <HelpCircle size={14} aria-hidden="true" /> ¿Cómo se usa?
+              </button>
+            </div>
+            {showZoomHelp && <p role="note" className="w-full rounded-md border border-accent/20 bg-surface p-2 text-muted">Selecciona <strong>Desde</strong> y <strong>Hasta</strong>. Para acercar aún más la escala vertical, abre “Zoom vertical detallado por variable” y escribe un mínimo y máximo. “Restablecer zoom” vuelve a mostrar todos los datos.</p>}
+            <label>Desde (mes)
               <input aria-label="Zoom desde" type="month" min={points[0]?.date.slice(0, 7)} max={points.at(-1)?.date.slice(0, 7)} value={zoomStart} onChange={(event) => setZoomStart(event.target.value)} className="ml-2 rounded border border-line bg-surface p-2" />
             </label>
-            <label>Hasta
+            <label>Hasta (mes)
               <input aria-label="Zoom hasta" type="month" min={points[0]?.date.slice(0, 7)} max={points.at(-1)?.date.slice(0, 7)} value={zoomEnd} onChange={(event) => setZoomEnd(event.target.value)} className="ml-2 rounded border border-line bg-surface p-2" />
             </label>
-            <button type="button" className="rounded border border-line p-2" onClick={() => { setZoomStart(''); setZoomEnd('') }}>Restablecer zoom</button>
+            <button type="button" className="rounded border border-line p-2" onClick={() => { setZoomStart(''); setZoomEnd(''); setVerticalRanges({}) }}>Restablecer zoom</button>
             <button type="button" className="rounded border border-line p-2" onClick={() => setHiddenVariables([])}>Mostrar todas</button>
-            <p className="w-full text-muted">Cada variable tiene su propio panel y escala. El zoom es visual: las pruebas estadísticas y descargas conservan el periodo completo.</p>
+            {selectedVariables.length >= 2 && <label>Vista
+              <select aria-label="Vista de gráficas" className="ml-2 rounded border border-line bg-surface p-2" value={layout} onChange={(event) => setLayout(event.target.value as 'separate' | 'combined')}>
+                <option value="separate">Separadas (recomendado)</option>
+                <option value="combined">Juntas en una gráfica</option>
+              </select>
+            </label>}
+            <button type="button" aria-pressed={expanded} className="rounded border border-line p-2" onClick={() => setExpanded(!expanded)}>{expanded ? 'Altura normal' : 'Ampliar altura para detalle'}</button>
+            <p className="w-full text-muted">Cada variable conserva una escala independiente. El zoom es visual: las pruebas estadísticas y descargas conservan el periodo completo. En la vista conjunta, la altura de curvas con unidades diferentes no representa cantidades equivalentes.</p>
+            <details className="w-full">
+              <summary className="cursor-pointer">Zoom vertical detallado por variable</summary>
+              <p className="my-2 text-muted">Indica límites en las unidades originales; deja vacío para ajustar al periodo visible. Los valores fuera de los límites se recortan.</p>
+              {visibleVariables.map((variable) => {
+                const range = verticalRanges[variable.id] ?? { min: '', max: '' }
+                return <fieldset key={variable.id} className="my-2 flex flex-wrap gap-2">
+                  <legend style={{ color: getVariableColor(variable.id) }}>{variable.name} ({variable.unit})</legend>
+                  {(['min', 'max'] as const).map((bound) => <label key={bound}>{bound === 'min' ? 'Mínimo' : 'Máximo'}
+                    <input type="number" step="any" aria-label={`${bound === 'min' ? 'Mínimo' : 'Máximo'} de ${variable.name}`} className="ml-2 w-28 rounded border border-line bg-surface p-2" value={range[bound]} placeholder="Auto" onChange={(event) => setVerticalRanges((current) => ({ ...current, [variable.id]: { ...range, [bound]: event.target.value } }))} />
+                  </label>)}
+                  {range.min !== '' && range.max !== '' && Number(range.min) >= Number(range.max) && <p role="alert">El mínimo debe ser menor que el máximo; se usa escala automática.</p>}
+                </fieldset>
+              })}
+            </details>
           </div>
           {zoomError && <p role="alert">El inicio del zoom debe ser anterior o igual al final.</p>}
           {!visibleVariables.length && <p role="status">Todas las variables están ocultas. Activa una variable o pulsa “Mostrar todas”.</p>}
           {!zoomError && !chartPoints.length && <p role="status">No hay observaciones dentro del zoom seleccionado.</p>}
           {/* Separate panels avoid overlapping variables and incompatible units. */}
-          {visibleVariables.map((variable) => {
+          {layout === 'combined' && selectedVariables.length >= 2 && visibleVariables.length > 0 && (
+            <article aria-label="Gráfica conjunta de variables" className="mb-5 rounded-xl border border-line p-3">
+              <h3 className="font-semibold">Variables juntas · escalas independientes</h3>
+              <p className="text-xs text-muted">Consulta valores y unidades al pasar el puntero. Lluvia: tendencia y banda en equivalente mensual (÷12). Las escalas se ajustan al periodo visible.</p>
+              <div className="my-2 flex flex-wrap gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label="Leyenda de variables juntas">
+                {visibleVariables.map((variable) => <span key={variable.id} className="flex items-center gap-1.5"><span className="size-2 rounded-full" style={{ backgroundColor: getVariableColor(variable.id) }} /><strong>{variable.name}</strong> · {variable.unit}</span>)}
+                <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
+              </div>
+              <div className="w-full overflow-x-auto">
+                <div style={{ height: expanded ? 700 : 420, minWidth: 500 + visibleVariables.length * 65 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={combinedPoints} margin={{ top: 25, right: 10, bottom: 10, left: 10 }} accessibilityLayer>
+                      <CartesianGrid strokeDasharray="3 5" />
+                      <XAxis dataKey="date" tickFormatter={(value: string) => formatDate(value)} minTickGap={35} />
+                      {visibleVariables.map((variable, index) => <YAxis key={variable.id} yAxisId={variable.id} orientation={index % 2 ? 'right' : 'left'} width={65} stroke={getVariableColor(variable.id)} domain={verticalDomain(variable.id)} allowDataOverflow label={{ value: variable.unit, position: 'top', fontSize: 10 }} />)}
+                      <Tooltip content={ChartTooltip} isAnimationActive={false} />
+                      {visibleVariables.map((variable) => <Area key={`band_${variable.id}`} hide={!showConfidenceBands} yAxisId={variable.id} dataKey={`band_${variable.id}`} name={`IC 95% ${variable.name}`} unit={variable.unit} fill={getVariableColor(variable.id)} fillOpacity={0.08} stroke="none" isAnimationActive={false} />)}
+                      {visibleVariables.map((variable) => <Line key={variable.id} yAxisId={variable.id} dataKey={variable.id} name={variable.name} unit={variable.unit} stroke={getVariableColor(variable.id)} dot={false} isAnimationActive={false} />)}
+                      {visibleVariables.map((variable) => <Line key={`trend_${variable.id}`} hide={!showTrendLines} yAxisId={variable.id} dataKey={`trend_${variable.id}`} name={`Tendencia: ${variable.name}`} unit={variable.unit} stroke={getVariableColor(variable.id)} strokeDasharray="6 4" dot={false} isAnimationActive={false} />)}
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              {visibleVariables.map((variable) => {
+                const result = results.find((item) => item.variable.id === variable.id)
+                return <p key={variable.id} role="status" className="mt-2 text-xs"><strong>{variable.name}:</strong> {result?.interpretation?.title ?? 'Significancia no evaluable'} · OLS p = {formatValue(result?.trend.p_value, 4)} · MK p = {formatValue(result?.trend.mann_kendall?.p_value, 4)} · IC 95% = {result?.trend.confidence_interval_per_decade?.map((value) => formatValue(value)).join(' a ') ?? 'no disponible'} {variable.unit}/década</p>
+              })}
+            </article>
+          )}
+          {(layout === 'separate' || selectedVariables.length < 2) && visibleVariables.map((variable) => {
             const result = results.find((item) => item.variable.id === variable.id)
             if (!result) return null
-            return <article key={variable.id} aria-label={`Panel de ${variable.name}`} className="mb-5 rounded-xl border border-line p-3">
-              <h3 className="font-semibold" style={{ color: getVariableColor(variable.id) }}>{variable.name} · {variable.unit}</h3>
-              <p className="mb-2 text-xs text-muted">Línea continua: observado · discontinua: tendencia · sombreado: IC 95% de la media estimada.</p>
+             return <article key={variable.id} aria-label={`Panel de ${variable.name}`} className="mb-5 rounded-xl border border-line p-3">
+               <h3 className="font-semibold" style={{ color: getVariableColor(variable.id) }}>{variable.name} · {variable.unit}</h3>
+               <p className="mb-2 text-xs text-muted">Línea continua: observado · discontinua: tendencia · sombreado: IC 95% de la media estimada.</p>
+               <ChartLegend variable={variable} />
               {result.variable.aggregation === 'sum' && <p className="mb-2 text-xs text-muted">Observado: total mensual. Tendencia y banda: equivalente mensual del ajuste anual (÷12). Las tarjetas reportan el cambio del total anual.</p>}
           <div
             className="h-72 min-w-0 w-full sm:h-96"
+            style={expanded ? { height: 700 } : undefined}
             aria-label={`Gráfica de ${variable.name} en ${regionName}.`}
           >
             <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 600, height: 360 }}>
@@ -445,7 +541,9 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                     tickLine={false}
                     tickCount={5}
                     tick={{ fill: 'var(--color-muted)', fontSize: 11 }}
-                    domain={['auto', 'auto']}
+                    domain={verticalDomain(variable.id)}
+                    allowDataOverflow
+                    label={{ value: `Valor (${variable.unit})`, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: 'var(--color-muted)', fontSize: 11 } }}
                   />
                 ))}
               <Tooltip

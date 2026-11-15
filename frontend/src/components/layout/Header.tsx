@@ -1,19 +1,30 @@
 import { useLocation } from 'react-router-dom'
 import { navigation } from './navigation'
 import { useResearch } from '../../context/ResearchContext'
+import { useLanguage, type Language } from '../../context/LanguageContext'
 
 export function Header() {
   const { pathname } = useLocation()
   const { draft } = useResearch()
+  const { language, setLanguage, t } = useLanguage()
   const section = navigation.find((item) => item.path === pathname) ?? navigation[0]
 
   return (
     <header className="flex min-h-24 flex-wrap items-center justify-between gap-4 border-b border-line bg-surface px-5 py-5 shadow-[0_1px_0_rgb(16_35_63_/_0.02)] sm:px-8 xl:px-10">
       <div>
-        <p className="text-sm font-bold tracking-tight">{section.label}</p>
-        <p className="mt-1 text-xs leading-relaxed text-muted sm:text-sm">{section.description}</p>
+        <p className="text-sm font-bold tracking-tight">{section.id === 'investigation' ? t('investigation') : t('trends')}</p>
+        <p className="mt-1 text-xs leading-relaxed text-muted sm:text-sm">{section.id === 'investigation' ? t('investigationDescription') : t('trendsDescription')}</p>
       </div>
-      <span className="status-pill" data-demo={draft.sourceId === 'local-demo'}>{draft.sourceId === 'local-demo' ? 'Demo local · sintético' : 'NASA POWER · MVP'}</span>
+      <div className="flex items-center gap-3">
+        <span className="status-pill" data-demo={draft.sourceId === 'local-demo'}>{draft.sourceId === 'local-demo' ? (language === 'en' ? 'Local demo · synthetic' : 'Demo local · sintético') : 'NASA POWER · MVP'}</span>
+        <label className="flex items-center gap-1.5 text-xs font-semibold text-muted">
+          <span className="sr-only">{t('language')}</span>
+          <select aria-label={t('language')} value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="rounded-md border border-line bg-surface px-2 py-1.5 text-xs font-semibold text-ink">
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+          </select>
+        </label>
+      </div>
     </header>
   )
 }

@@ -242,6 +242,13 @@ acciones.
 Verificación final de esta fase: backend **51 passed**, frontend **11 passed**,
 typecheck, build y E2E correctos.
 
+Segunda fase de submission: se añadió `LanguageContext.tsx` con inglés por
+defecto, selector EN/ES persistente y traducción del flujo principal, guía,
+glosario, fechas, regiones y resultados clave. `docs/submission.md` contiene el
+texto en inglés para la página de proyecto, uso de SI, referencias, disclaimer
+y guion de demo de 30 segundos. El E2E se actualizó para validar la interfaz
+inglesa; también se verificó el cambio EN/ES manualmente.
+
 La limpieza de ramas solo debe borrar ramas ya fusionadas; se preservan las que
 tienen commits exclusivos.
 

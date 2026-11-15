@@ -1,20 +1,19 @@
 import { BookOpen, Database, ExternalLink, FlaskConical, X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { useLanguage } from '../../context/LanguageContext'
 
 interface ProjectGuideModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-const steps = [
-  ['01', 'Formula una pregunta', 'Elige una variable del sistema Tierra y una región de interés.'],
-  ['02', 'Construye la evidencia', 'Selecciona un periodo suficientemente largo y consulta una serie mensual.'],
-  ['03', 'Interpreta con cuidado', 'Compara la tasa de cambio, los métodos estadísticos, la incertidumbre y las limitaciones.'],
-]
-
 export function ProjectGuideModal({ isOpen, onClose }: ProjectGuideModalProps) {
   const dialog = useRef<HTMLDialogElement>(null)
+  const { language } = useLanguage()
+  const steps = language === 'en'
+    ? [['01', 'Ask a question', 'Choose an Earth system variable and a region of interest.'], ['02', 'Build the evidence', 'Select a sufficiently long period and retrieve a monthly time series.'], ['03', 'Interpret carefully', 'Compare the rate of change, statistical methods, uncertainty, and limitations.']]
+    : [['01', 'Formula una pregunta', 'Elige una variable del sistema Tierra y una región de interés.'], ['02', 'Construye la evidencia', 'Selecciona un periodo suficientemente largo y consulta una serie mensual.'], ['03', 'Interpreta con cuidado', 'Compara la tasa de cambio, los métodos estadísticos, la incertidumbre y las limitaciones.']]
 
   useEffect(() => {
     if (!isOpen) return
@@ -44,16 +43,16 @@ export function ProjectGuideModal({ isOpen, onClose }: ProjectGuideModalProps) {
               <BookOpen size={20} aria-hidden="true" />
             </span>
             <div>
-              <p className="eyebrow">Guía rápida</p>
+              <p className="eyebrow">{language === 'en' ? 'QUICK GUIDE' : 'GUÍA RÁPIDA'}</p>
               <h2 id="project-guide-title" className="mt-1 text-xl font-bold tracking-tight">
-                De una pregunta a evidencia
+                {language === 'en' ? 'From a question to evidence' : 'De una pregunta a evidencia'}
               </h2>
               <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted">
-                Esta herramienta ayuda a explorar tendencias ambientales; no reemplaza una revisión científica completa ni demuestra causalidad.
+                {language === 'en' ? 'This tool helps explore environmental trends; it does not replace a complete scientific review or demonstrate causality.' : 'Esta herramienta ayuda a explorar tendencias ambientales; no reemplaza una revisión científica completa ni demuestra causalidad.'}
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-2 text-muted transition-colors hover:bg-accent-soft hover:text-accent" aria-label="Cerrar guía">
+          <button type="button" onClick={onClose} className="rounded-lg p-2 text-muted transition-colors hover:bg-accent-soft hover:text-accent" aria-label={language === 'en' ? 'Close guide' : 'Cerrar guía'}>
             <X size={19} aria-hidden="true" />
           </button>
         </header>
@@ -72,10 +71,10 @@ export function ProjectGuideModal({ isOpen, onClose }: ProjectGuideModalProps) {
           <section className="rounded-xl border border-accent/20 bg-accent-soft/65 p-4">
             <h3 className="flex items-center gap-2 text-sm font-bold text-accent">
               <Database size={16} aria-hidden="true" />
-              Datos y método
+              {language === 'en' ? 'Data and method' : 'Datos y método'}
             </h3>
             <p className="mt-2 text-xs leading-relaxed text-ink">
-              La fuente activa es NASA POWER Monthly API. El análisis usa agregados anuales de series mensuales, OLS, Mann-Kendall, Theil-Sen e intervalos de confianza del 95%.
+              {language === 'en' ? 'The active source is the NASA POWER Monthly API. The analysis uses annual aggregates of monthly series, OLS, Mann-Kendall, Theil-Sen, and 95% confidence intervals.' : 'La fuente activa es NASA POWER Monthly API. El análisis usa agregados anuales de series mensuales, OLS, Mann-Kendall, Theil-Sen e intervalos de confianza del 95%.'}
             </p>
             <a
               href="https://power.larc.nasa.gov/docs/services/api/temporal/monthly/"
@@ -83,30 +82,30 @@ export function ProjectGuideModal({ isOpen, onClose }: ProjectGuideModalProps) {
               rel="noreferrer"
               className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-accent underline decoration-accent/30 underline-offset-4 hover:decoration-accent"
             >
-              Documentación de NASA POWER <ExternalLink size={12} aria-hidden="true" />
+              {language === 'en' ? 'NASA POWER documentation' : 'Documentación de NASA POWER'} <ExternalLink size={12} aria-hidden="true" />
             </a>
           </section>
 
           <section className="rounded-xl border border-line bg-canvas/55 p-4">
             <h3 className="flex items-center gap-2 text-sm font-bold">
               <FlaskConical size={16} className="text-signal" aria-hidden="true" />
-              Cómo leer el resultado
+              {language === 'en' ? 'How to read the result' : 'Cómo leer el resultado'}
             </h3>
             <ul className="mt-2 space-y-2 text-xs leading-relaxed text-muted">
-              <li><strong className="text-ink">Cambio por década:</strong> magnitud estimada del cambio.</li>
-              <li><strong className="text-ink">p-value e intervalo:</strong> fuerza y precisión de la evidencia bajo el método elegido.</li>
-              <li><strong className="text-ink">Advertencias:</strong> datos faltantes, autocorrelación o desacuerdo entre métodos.</li>
+              <li><strong className="text-ink">{language === 'en' ? 'Change per decade:' : 'Cambio por década:'}</strong> {language === 'en' ? 'estimated magnitude of change.' : 'magnitud estimada del cambio.'}</li>
+              <li><strong className="text-ink">{language === 'en' ? 'p-value and interval:' : 'p-value e intervalo:'}</strong> {language === 'en' ? 'strength and precision of the evidence under the selected method.' : 'fuerza y precisión de la evidencia bajo el método elegido.'}</li>
+              <li><strong className="text-ink">{language === 'en' ? 'Warnings:' : 'Advertencias:'}</strong> {language === 'en' ? 'missing data, autocorrelation, or disagreement between methods.' : 'datos faltantes, autocorrelación o desacuerdo entre métodos.'}</li>
             </ul>
           </section>
         </div>
 
         <p className="mt-5 border-t border-line pt-4 text-[11px] leading-relaxed text-muted">
-          NASA no respalda ninguna entidad no gubernamental de Estados Unidos ni es responsable de la información contenida en sitios web no gubernamentales. Este es un proyecto educativo independiente para NASA Space Apps Challenge; deben respetarse las condiciones de uso de cada fuente.
+          {language === 'en' ? 'NASA does not endorse any non-U.S. Government entity and is not responsible for information contained on non-U.S. Government websites. This is an independent educational project for the NASA Space Apps Challenge; each source’s terms of use must be respected.' : 'NASA no respalda ninguna entidad no gubernamental de Estados Unidos ni es responsable de la información contenida en sitios web no gubernamentales. Este es un proyecto educativo independiente para NASA Space Apps Challenge; deben respetarse las condiciones de uso de cada fuente.'}
         </p>
 
         <footer className="mt-5 flex justify-end border-t border-line pt-4">
           <button type="button" onClick={onClose} className="rounded-lg bg-accent px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-accent-hover">
-            Entendido
+            {language === 'en' ? 'Got it' : 'Entendido'}
           </button>
         </footer>
       </div>

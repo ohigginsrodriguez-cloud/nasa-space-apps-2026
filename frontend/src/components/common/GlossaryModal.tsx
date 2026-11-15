@@ -1,6 +1,7 @@
 import { BookOpen, X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { useLanguage } from '../../context/LanguageContext'
 
 interface GlossaryModalProps {
   isOpen: boolean
@@ -54,6 +55,18 @@ const terms = [
 
 export function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
   const dialog = useRef<HTMLDialogElement>(null)
+  const { language } = useLanguage()
+  const displayTerms = language === 'en'
+    ? [
+      ['Trend', 'A consistent direction in which a variable changes over time, beyond random or seasonal fluctuations.', 'It helps identify whether an Earth system is undergoing sustained change.'],
+      ['Statistical significance (α = 0.05)', 'A quantitative criterion for judging whether an observed change is unlikely to be due only to chance.', 'A visual trend over a short period may not be statistically conclusive.'],
+      ['p-value', 'The probability of observing a trend at least as extreme as the calculated one under the null hypothesis of no change.', 'A p-value below 0.05 is evidence against the no-change hypothesis under the selected method.'],
+      ['95% confidence interval', 'An estimated range describing the uncertainty around the rate of change under the method assumptions.', 'If it includes zero, the direction of change is not conclusive.'],
+      ['Mann-Kendall test', 'A non-parametric test for detecting monotonic trends without assuming a normal distribution.', 'It does not require the change to follow a straight line.'],
+      ['Theil-Sen slope', 'A robust rate-of-change estimator based on the median of all pairwise slopes.', 'It is less sensitive to outliers such as record storms or droughts.'],
+      ['Anomaly and deseasonalization', 'The difference between a monthly value and the historical average for that same month.', 'It helps reveal long-term signals beyond the natural seasonal cycle.'],
+    ]
+    : terms.map((item) => [item.term, item.definition, item.relevance])
   useEffect(() => {
     if (!isOpen) return
     const overflow = document.body.style.overflow
@@ -86,28 +99,28 @@ export function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
             </span>
             <div>
               <h2 id="glossary-title" className="text-base font-bold text-ink">
-                Glosario del Detective de Datos
+                 {language === 'en' ? 'Data Detective glossary' : 'Glosario del Detective de Datos'}
               </h2>
-              <p className="text-xs text-muted">Conceptos clave de ciencias de la Tierra y estadística</p>
+               <p className="text-xs text-muted">{language === 'en' ? 'Key Earth science and statistics concepts' : 'Conceptos clave de ciencias de la Tierra y estadística'}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
              className="rounded-lg p-1.5 text-muted transition-colors hover:bg-accent-soft hover:text-accent focus:outline-none"
-            aria-label="Cerrar glosario"
+             aria-label={language === 'en' ? 'Close glossary' : 'Cerrar glosario'}
           >
             <X size={18} />
           </button>
         </div>
 
         <div className="mt-5 space-y-4">
-          {terms.map((item) => (
-             <div key={item.term} className="rounded-xl border border-line bg-canvas/55 p-3.5 text-xs transition-colors hover:border-accent/35">
-              <h3 className="font-semibold text-accent text-sm">{item.term}</h3>
-              <p className="mt-1 text-ink leading-relaxed">{item.definition}</p>
+           {displayTerms.map(([term, definition, relevance]) => (
+              <div key={term} className="rounded-xl border border-line bg-canvas/55 p-3.5 text-xs transition-colors hover:border-accent/35">
+               <h3 className="font-semibold text-accent text-sm">{term}</h3>
+               <p className="mt-1 text-ink leading-relaxed">{definition}</p>
               <p className="mt-2 text-[11px] text-muted italic border-t border-line/50 pt-1.5">
-                💡 <strong>¿Por qué importa?</strong> {item.relevance}
+                 💡 <strong>{language === 'en' ? 'Why does it matter?' : '¿Por qué importa?'}</strong> {relevance}
               </p>
             </div>
           ))}
@@ -119,7 +132,7 @@ export function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
             onClick={onClose}
             className="rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover"
           >
-            Entendido, volver al análisis
+             {language === 'en' ? 'Got it, return to analysis' : 'Entendido, volver al análisis'}
           </button>
         </div>
       </div>

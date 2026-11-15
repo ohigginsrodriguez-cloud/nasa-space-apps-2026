@@ -14,8 +14,7 @@ import { useResearch } from '../context/ResearchContext'
 import { demoExamples, regions, variables } from '../data/mockData'
 import type { DataConfiguration } from '../types'
 import { validateGeographicSelection } from '../utils/configuration'
-
-const steps = ['Variable', 'Ubicación', 'Periodo']
+import { useLanguage } from '../context/LanguageContext'
 
 export function Dashboard() {
   const [step, setStep] = useState(0)
@@ -42,6 +41,8 @@ export function Dashboard() {
     dataLoadError,
   } = useResearch()
   const navigate = useNavigate()
+  const { t } = useLanguage()
+  const steps = [t('variable'), t('location'), t('period')]
 
   const region = regions.find((item) => item.id === draft.regionId) ?? regions[0]
   const selectedVariableNames = draft.variableIds
@@ -74,9 +75,9 @@ export function Dashboard() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <PageIntro
-          eyebrow="INVESTIGACIÓN GUIADA"
-          title="Detective del Sistema Tierra"
-          description="Formula una hipótesis ambiental, elige variables, región y periodo, y comprueba si la tendencia es estadísticamente significativa."
+          eyebrow={t('guidedResearch')}
+          title={t('earthDetective')}
+          description={t('guidedDescription')}
         />
         <div className="flex items-center gap-2">
           <button
@@ -85,7 +86,7 @@ export function Dashboard() {
             className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-accent hover:text-accent hover:shadow-md"
           >
             <BookOpen size={14} className="text-accent" />
-            <span>Cómo funciona</span>
+            <span>{t('howItWorks')}</span>
           </button>
           <button
             type="button"
@@ -93,7 +94,7 @@ export function Dashboard() {
              className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-accent hover:text-accent hover:shadow-md"
           >
             <BookOpen size={14} className="text-accent" />
-            <span>Glosario del Detective</span>
+            <span>{t('glossary')}</span>
           </button>
           <button
             type="button"
@@ -105,7 +106,7 @@ export function Dashboard() {
             }`}
           >
             <Compass size={14} />
-            <span>{showWizard ? 'Cerrar Asistente' : 'Asistente Guiado (3 pasos)'}</span>
+            <span>{showWizard ? t('closeWizard') : t('guidedWizard')}</span>
           </button>
         </div>
       </div>
@@ -125,11 +126,11 @@ export function Dashboard() {
         <FlaskConical size={18} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
         <p className="text-xs leading-relaxed text-muted">
           <strong className="font-semibold text-ink">
-            {isDemo ? 'Modo Sintético Demostrativo (DEMO).' : 'Fuente activa: NASA POWER; los productos varían por variable.'}
+             {isDemo ? t('syntheticMode') : t('activeSource')}
           </strong>{' '}
           {isDemo
-            ? 'Las observaciones se generan con algoritmos matemáticos deterministas reproducibles (offline).'
-            : 'Las observaciones mensuales se consultan en tiempo real vía API de NASA POWER y se evalúan mediante OLS, Mann-Kendall y Sen.'}
+             ? t('syntheticDescription')
+             : t('nasaDescription')}
         </p>
       </div>
 
@@ -138,10 +139,10 @@ export function Dashboard() {
          <details className="surface-panel p-4">
           <summary className="flex min-h-9 cursor-pointer list-none items-center gap-2 text-sm font-medium [&::-webkit-details-marker]:hidden">
             <Sparkles size={16} className="text-accent" aria-hidden="true" />
-            Ver ejemplos demostrativos de 1 clic (periodos largos ≥ 20 años)
+             {t('examples')}
           </summary>
           <p className="mt-2 text-xs text-muted">
-            Carga un caso de estudio real con periodo largo para observar tendencias con alta potencia estadística:
+             {t('examplesDescription')}
           </p>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             {demoExamples.map((example) => (
@@ -196,12 +197,12 @@ export function Dashboard() {
           {step === 0 && <>
             <VariableSelector selectedIds={draft.variableIds} onToggle={toggleVariable} />
             {draft.variableIds.length >= 2 && <label className="mt-4 block text-sm">
-              Presentación de las gráficas
+               {t('chartPresentation')}
                <select className="ml-2 rounded-lg border border-line bg-surface p-2 text-xs font-semibold transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" value={draft.chartLayout ?? 'separate'} onChange={(event) => updateDraft({ ...draft, chartLayout: event.target.value as 'separate' | 'combined' })}>
-                <option value="separate">Separadas (recomendado)</option>
-                <option value="combined">Juntas en una gráfica</option>
+                 <option value="separate">{t('separateRecommended')}</option>
+                 <option value="combined">{t('combined')}</option>
               </select>
-              <p className="mt-2 text-xs text-muted">Las separadas facilitan leer unidades distintas. También podrás cambiar la vista y ampliar detalles en los resultados.</p>
+               <p className="mt-2 text-xs text-muted">{t('separateHelp')}</p>
             </label>}
           </>}
           {step === 1 && (
@@ -236,34 +237,34 @@ export function Dashboard() {
               />
                <section aria-labelledby="review-title" className="surface-panel p-4 sm:p-5">
                 <h2 id="review-title" className="text-sm font-semibold text-ink">
-                  Resumen de la configuración
+                   {t('configurationSummary')}
                 </h2>
                 <dl className="mt-3 grid gap-3 text-xs sm:grid-cols-2">
                   <div>
-                    <dt className="text-muted">Variable(s) seleccionadas</dt>
-                    <dd className="mt-1 font-medium text-ink">{selectedVariableNames.join(', ') || 'Sin selección'}</dd>
+                     <dt className="text-muted">{t('selectedVariables')}</dt>
+                     <dd className="mt-1 font-medium text-ink">{selectedVariableNames.join(', ') || t('noSelection')}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted">Región de estudio</dt>
+                     <dt className="text-muted">{t('studyRegion')}</dt>
                     <dd className="mt-1 font-medium text-ink">{region.name}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted">Proveedor de datos</dt>
+                     <dt className="text-muted">{t('dataProvider')}</dt>
                     <dd className="mt-1 font-medium">
                       <select
                         value={draft.sourceId}
                         onChange={(event) => updateDraft({ ...draft, sourceId: event.target.value })}
                          className="rounded-lg border border-line bg-surface px-2.5 py-1 text-xs text-ink transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
                       >
-                        <option value="nasa-power">NASA POWER (datos reales)</option>
-                        <option value="local-demo">Datos Sintéticos (Demo reproducible)</option>
+                         <option value="nasa-power">{t('realData')}</option>
+                         <option value="local-demo">{t('reproducibleDemo')}</option>
                       </select>
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-muted">Periodo de observación</dt>
+                     <dt className="text-muted">{t('observationPeriod')}</dt>
                     <dd className="mt-1 font-medium text-ink">
-                      {draft.timeRange.startDate || '—'} a {draft.timeRange.endDate || '—'} (Frecuencia mensual)
+                       {draft.timeRange.startDate || '—'} to {draft.timeRange.endDate || '—'} ({t('monthlyFrequency')})
                     </dd>
                   </div>
                 </dl>
@@ -306,7 +307,7 @@ export function Dashboard() {
 
       {visualization && isPending && (
         <p role="status" className="text-xs text-muted">
-          Hay cambios en la configuración pendientes de analizar. Genera de nuevo el análisis para actualizar.
+           {t('pendingChanges')}
         </p>
       )}
 
@@ -317,7 +318,7 @@ export function Dashboard() {
           onClick={() => setStep((current) => Math.max(0, current - 1))}
         >
           <ArrowLeft size={15} aria-hidden="true" />
-          Anterior
+           {t('previous')}
         </Button>
 
         {step < steps.length - 1 ? (
@@ -326,7 +327,7 @@ export function Dashboard() {
             disabled={!canContinue || isLoading}
             onClick={() => setStep((current) => Math.min(steps.length - 1, current + 1))}
           >
-            Siguiente
+             {t('next')}
             <ArrowRight size={15} aria-hidden="true" />
           </Button>
         ) : (
@@ -334,11 +335,11 @@ export function Dashboard() {
             {isLoading ? (
               <>
                 <LoaderCircle size={15} className="animate-spin" aria-hidden="true" />
-                Analizando tendencia…
+                 {t('analyzing')}
               </>
             ) : (
               <>
-                Generar serie y analizar
+                 {t('generateAnalysis')}
                 <ArrowRight size={15} aria-hidden="true" />
               </>
             )}

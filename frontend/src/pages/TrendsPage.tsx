@@ -7,20 +7,22 @@ import { PageIntro } from '../components/common/PageIntro'
 import { ProjectGuideModal } from '../components/common/ProjectGuideModal'
 import { RegionComparison } from '../components/detective/RegionComparison'
 import { useResearch } from '../context/ResearchContext'
+import { useLanguage } from '../context/LanguageContext'
 
 export function TrendsPage() {
   const { visualization, dataset, isPending, dataLoadState, dataLoadError } = useResearch()
   const [activeTab, setActiveTab] = useState<'single' | 'compare'>('single')
   const [showGlossary, setShowGlossary] = useState(false)
   const [showProjectGuide, setShowProjectGuide] = useState(false)
+  const { t } = useLanguage()
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <PageIntro
-          eyebrow="ANÁLISIS ESTADÍSTICO"
-          title="Detective de Tendencias Ambientales"
-          description="Inferencia multi-método (Regresión OLS, Mann-Kendall, Sen) con detección de tendencias opuestas y bandas de confianza al 95%."
+          eyebrow={t('statisticalAnalysis')}
+          title={t('trendDetective')}
+          description={t('trendDescription')}
         />
         <div className="flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
           <button
@@ -29,7 +31,7 @@ export function TrendsPage() {
             className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-accent hover:text-accent hover:shadow-md"
           >
             <BookOpen size={14} className="text-accent" />
-            <span>Cómo funciona</span>
+            <span>{t('howItWorks')}</span>
           </button>
           <button
             type="button"
@@ -37,7 +39,7 @@ export function TrendsPage() {
              className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-accent hover:text-accent hover:shadow-md"
           >
             <BookOpen size={14} className="text-accent" />
-            <span>Glosario Científico</span>
+            <span>{t('glossary')}</span>
           </button>
             <div className="flex min-w-0 max-w-full flex-wrap rounded-lg border border-line bg-surface p-1 shadow-sm">
             <button
@@ -50,7 +52,7 @@ export function TrendsPage() {
               }`}
             >
               <ChartIcon size={14} />
-              <span>Análisis Principal</span>
+              <span>{t('primaryAnalysis')}</span>
             </button>
             <button
               type="button"
@@ -62,7 +64,7 @@ export function TrendsPage() {
               }`}
             >
               <GitCompare size={14} />
-              <span>Comparar 2 Regiones</span>
+              <span>{t('compareRegions')}</span>
             </button>
           </div>
         </div>
@@ -77,7 +79,7 @@ export function TrendsPage() {
         <>
           {dataLoadState === 'loading' && (
             <p role="status" aria-live="polite" className="rounded-lg border border-accent/20 bg-accent-soft/65 p-3 text-xs font-medium text-accent shadow-sm">
-              Cargando la serie temporal y calculando inferencia estadística…
+              {t('loadingSeries')}
             </p>
           )}
 
@@ -92,15 +94,15 @@ export function TrendsPage() {
           ) : (
             dataLoadState !== 'loading' && (
               <section className="surface-panel border-dashed p-6 text-center">
-                <p className="text-sm font-medium text-ink">Primero configura tu investigación</p>
+                <p className="text-sm font-medium text-ink">{t('configureFirst')}</p>
                 <p className="mt-2 text-xs text-muted">
-                  Elige variables, región y periodo en el panel de investigación para calcular las tendencias.
+                  {t('configureDescription')}
                 </p>
                 <Link
                   to="/dashboard"
                   className="mt-4 inline-flex min-h-10 items-center rounded-lg bg-accent px-4 text-xs font-semibold text-white hover:bg-accent-hover"
                 >
-                  Configurar investigación
+                  {t('configureInvestigation')}
                 </Link>
               </section>
             )

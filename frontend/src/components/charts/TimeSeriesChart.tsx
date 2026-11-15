@@ -4,6 +4,7 @@ import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip,
 import { regions, variables } from '../../data/mockData'
 import type { BackendResult, DataConfiguration, TimeSeriesDataset, TimeSeriesPoint } from '../../types'
 import { SectionTitle } from '../common/SectionTitle'
+import { useLanguage } from '../../context/LanguageContext'
 import { ChartZoomControls } from './ChartZoomControls'
 import { variableChartPoints, zoomWindowSize, zoomedPoints } from '../../utils/chartData'
 
@@ -109,7 +110,7 @@ function TermHelp({ term, explanation }: { term: string; explanation: string }) 
   )
 }
 
-function TrendSummary({ result, regionName }: { result: BackendResult | undefined; regionName: string }) {
+function TrendSummary({ result, regionName, language }: { result: BackendResult | undefined; regionName: string; language: 'en' | 'es' }) {
   if (!result) return null
   const { variable, trend } = result
   const isConstant = trend.status === 'constant_series'
@@ -120,24 +121,30 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
 
   let naturalLanguage = ''
   if (isConstant) {
-    naturalLanguage = `Los agregados anuales de ${variable.name} son constantes en ${regionName}. No hay tendencia anual que evaluar; los valores mensuales pueden variar.`
+     naturalLanguage = language === 'en'
+       ? `The annual aggregates of ${variable.name} are constant in ${regionName}. There is no annual trend to evaluate; monthly values may still vary.`
+       : `Los agregados anuales de ${variable.name} son constantes en ${regionName}. No hay tendencia anual que evaluar; los valores mensuales pueden variar.`
   } else if (
     result.interpretation?.status === 'conflicting_evidence'
     || result.interpretation?.status === 'insufficient_data'
   ) {
     naturalLanguage = result.interpretation.summary
   } else if (slopeDecade !== null) {
-    const dirVerb = isUp ? 'aumentó' : isDown ? 'disminuyó' : 'se mantuvo sin cambio lineal'
+     const dirVerb = language === 'en' ? (isUp ? 'increased' : isDown ? 'decreased' : 'showed no linear change') : (isUp ? 'aumentó' : isDown ? 'disminuyó' : 'se mantuvo sin cambio lineal')
     const absChange = Math.abs(slopeDecade)
     const ciText = trend.confidence_interval_per_decade
-      ? ` (IC 95%: [${formatValue(trend.confidence_interval_per_decade[0])}, ${formatValue(trend.confidence_interval_per_decade[1])}] ${variable.unit}/década)`
+       ? ` (${language === 'en' ? '95% CI' : 'IC 95%'}: [${formatValue(trend.confidence_interval_per_decade[0])}, ${formatValue(trend.confidence_interval_per_decade[1])}] ${variable.unit}/${language === 'en' ? 'decade' : 'década'})`
       : ''
     const mkP = trend.mann_kendall?.p_value ?? trend.p_value
 
     if (isSig) {
-      naturalLanguage = `${variable.name} en ${regionName} ${dirVerb} ${formatValue(absChange)} ${variable.unit} por década${ciText}. Significativa según OLS (p=${formatValue(trend.p_value, 4)}). Mann-Kendall p=${formatValue(mkP, 4)}: ${mkP !== null && mkP < 0.05 ? 'significativa' : 'sin evidencia suficiente de significancia'}.`
+       naturalLanguage = language === 'en'
+         ? `${variable.name} in ${regionName} ${dirVerb} ${formatValue(absChange)} ${variable.unit} per decade${ciText}. Significant under OLS (p=${formatValue(trend.p_value, 4)}). Mann-Kendall p=${formatValue(mkP, 4)}: ${mkP !== null && mkP < 0.05 ? 'significant' : 'insufficient evidence of significance'}.`
+         : `${variable.name} en ${regionName} ${dirVerb} ${formatValue(absChange)} ${variable.unit} por década${ciText}. Significativa según OLS (p=${formatValue(trend.p_value, 4)}). Mann-Kendall p=${formatValue(mkP, 4)}: ${mkP !== null && mkP < 0.05 ? 'significativa' : 'sin evidencia suficiente de significancia'}.`
     } else {
-      naturalLanguage = `Hay una tendencia de ${formatValue(absChange)} ${variable.unit}/década, pero aún no es estadísticamente significativa (p=${formatValue(trend.p_value, 3)} ≥ 0,05). Un periodo más largo podría cambiar esto.`
+       naturalLanguage = language === 'en'
+         ? `There is a trend of ${formatValue(absChange)} ${variable.unit}/decade, but it is not yet statistically significant (p=${formatValue(trend.p_value, 3)} ≥ 0.05). A longer period could change this.`
+         : `Hay una tendencia de ${formatValue(absChange)} ${variable.unit}/década, pero aún no es estadísticamente significativa (p=${formatValue(trend.p_value, 3)} ≥ 0,05). Un periodo más largo podría cambiar esto.`
     }
   } else if (result.interpretation) {
     naturalLanguage = result.interpretation.summary
@@ -262,6 +269,7 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
 }
 
 export function TimeSeriesChart({ configuration, dataset, pendingChanges }: TimeSeriesChartProps) {
+  const { language } = useLanguage()
   const [showTrendLines, setShowTrendLines] = useState(true)
   const [showConfidenceBands, setShowConfidenceBands] = useState(true)
   const [hiddenVariables, setHiddenVariables] = useState<string[]>([])
@@ -393,12 +401,12 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
      <section id="analysis" aria-labelledby="chart-title" className="surface-panel min-w-0 scroll-mt-6 p-5 sm:p-6">
       <SectionTitle
         id="chart-title"
-        title="Serie temporal y análisis de tendencias"
-        description={configuration ? `${regionName} · ${configuration.timeRange.startDate} a ${configuration.timeRange.endDate}` : 'Elige una región, variables y periodo para iniciar.'}
+         title={language === 'en' ? 'Time series and trend analysis' : 'Serie temporal y análisis de tendencias'}
+         description={configuration ? `${regionName} · ${configuration.timeRange.startDate} ${language === 'en' ? 'to' : 'a'} ${configuration.timeRange.endDate}` : (language === 'en' ? 'Choose a region, variables, and period to begin.' : 'Elige una región, variables y periodo para iniciar.')}
       >
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
-            {pendingChanges ? 'Cambios sin analizar' : dataset?.isDemonstration ? 'DEMO / SINTÉTICO' : 'NASA POWER'}
+             {pendingChanges ? (language === 'en' ? 'Changes not analyzed' : 'Cambios sin analizar') : dataset?.isDemonstration ? (language === 'en' ? 'DEMO / SYNTHETIC' : 'DEMO / SINTÉTICO') : 'NASA POWER'}
           </span>
           {points.length > 0 && (
             <div className="flex items-center gap-1.5">
@@ -406,7 +414,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                 type="button"
                 onClick={() => downloadExport('csv')}
                  className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1 text-xs font-semibold text-muted transition-colors hover:border-accent hover:text-accent"
-                title="Descargar datos en CSV"
+                 title={language === 'en' ? 'Download data as CSV' : 'Descargar datos en CSV'}
               >
                 <Download size={13} aria-hidden="true" />
                 <span>CSV</span>
@@ -415,7 +423,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                 type="button"
                 onClick={() => downloadExport('json')}
                  className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1 text-xs font-semibold text-muted transition-colors hover:border-accent hover:text-accent"
-                title="Descargar resultados en JSON"
+                 title={language === 'en' ? 'Download results as JSON' : 'Descargar resultados en JSON'}
               >
                 <Download size={13} aria-hidden="true" />
                 <span>JSON</span>
@@ -429,37 +437,37 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
         <>
           <details className="mb-5 rounded-xl border border-line bg-canvas/35 p-4">
             <summary className="cursor-pointer text-sm font-bold text-accent">
-              Cómo se obtuvo este resultado
+              {language === 'en' ? 'How this result was obtained' : 'Cómo se obtuvo este resultado'}
             </summary>
             <div className="mt-4 grid gap-3 border-t border-line pt-4 text-xs sm:grid-cols-2">
               <div>
-                <dt className="font-bold text-ink">Fuente</dt>
-                <dd className="mt-1 text-muted">{dataset.isDemonstration ? 'Datos sintéticos reproducibles (demo)' : 'NASA POWER Monthly API'}</dd>
+                <dt className="font-bold text-ink">{language === 'en' ? 'Source' : 'Fuente'}</dt>
+                <dd className="mt-1 text-muted">{dataset.isDemonstration ? (language === 'en' ? 'Reproducible synthetic demo data' : 'Datos sintéticos reproducibles (demo)') : 'NASA POWER Monthly API'}</dd>
               </div>
               <div>
-                <dt className="font-bold text-ink">Región consultada</dt>
+                <dt className="font-bold text-ink">{language === 'en' ? 'Region queried' : 'Región consultada'}</dt>
                 <dd className="mt-1 text-muted">{regionName}</dd>
               </div>
               <div>
-                <dt className="font-bold text-ink">Periodo y frecuencia</dt>
-                <dd className="mt-1 text-muted">{configuration.timeRange.startDate} a {configuration.timeRange.endDate} · mensual</dd>
+                <dt className="font-bold text-ink">{language === 'en' ? 'Period and frequency' : 'Periodo y frecuencia'}</dt>
+                <dd className="mt-1 text-muted">{configuration.timeRange.startDate} {language === 'en' ? 'to' : 'a'} {configuration.timeRange.endDate} · {language === 'en' ? 'monthly' : 'mensual'}</dd>
               </div>
               <div>
-                <dt className="font-bold text-ink">Método principal</dt>
-                <dd className="mt-1 text-muted">Valores anuales completos · OLS + intervalo de confianza del 95%</dd>
+                <dt className="font-bold text-ink">{language === 'en' ? 'Primary method' : 'Método principal'}</dt>
+                <dd className="mt-1 text-muted">{language === 'en' ? 'Complete annual values · OLS + 95% confidence interval' : 'Valores anuales completos · OLS + intervalo de confianza del 95%'}</dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="font-bold text-ink">Productos y modelos</dt>
-                <dd className="mt-1 text-muted">{products.length > 0 ? products.join(' · ') : 'Metadatos no disponibles en esta respuesta.'}</dd>
+                <dt className="font-bold text-ink">{language === 'en' ? 'Products and models' : 'Productos y modelos'}</dt>
+                <dd className="mt-1 text-muted">{products.length > 0 ? products.join(' · ') : (language === 'en' ? 'Metadata unavailable in this response.' : 'Metadatos no disponibles en esta respuesta.')}</dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="font-bold text-ink">Calidad de datos</dt>
-                <dd className="mt-1 text-muted">{dataset.missingValueCount > 0 ? `${dataset.missingValueCount} observaciones faltantes; revisa las advertencias de cada variable.` : 'No se detectaron observaciones faltantes en la serie consultada.'}</dd>
+                <dt className="font-bold text-ink">{language === 'en' ? 'Data quality' : 'Calidad de datos'}</dt>
+                <dd className="mt-1 text-muted">{dataset.missingValueCount > 0 ? `${dataset.missingValueCount} ${language === 'en' ? 'missing observations; review each variable’s warnings.' : 'observaciones faltantes; revisa las advertencias de cada variable.'}` : (language === 'en' ? 'No missing observations were detected in the queried series.' : 'No se detectaron observaciones faltantes en la serie consultada.')}</dd>
               </div>
             </div>
             {dataset.sourceUrl && (
               <a href={dataset.sourceUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center text-xs font-bold text-accent underline underline-offset-4">
-                Abrir documentación de la fuente <ExternalLink size={12} className="ml-1" aria-hidden="true" />
+                {language === 'en' ? 'Open source documentation' : 'Abrir documentación de la fuente'} <ExternalLink size={12} className="ml-1" aria-hidden="true" />
               </a>
             )}
           </details>
@@ -479,8 +487,8 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                       <Minus size={18} strokeWidth={3} aria-hidden="true" />
                       <span>{variable.name}</span>
                     </span>
-                    <span className="text-[11px] text-muted">
-                      {hiddenVariables.includes(variable.id) ? 'Oculta · mostrar' : 'Visible · ocultar'}
+                   <span className="text-[11px] text-muted">
+                       {hiddenVariables.includes(variable.id) ? (language === 'en' ? 'Hidden · show' : 'Oculta · mostrar') : (language === 'en' ? 'Visible · hide' : 'Visible · ocultar')}
                     </span>
                   </button>
                 )
@@ -490,7 +498,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
             <div className="flex items-center gap-3 text-xs text-muted">
               <span className="flex items-center gap-1 text-[11px] font-medium text-ink">
                 <SlidersHorizontal size={13} aria-hidden="true" />
-                Capas:
+                 {language === 'en' ? 'Layers:' : 'Capas:'}
               </span>
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input
@@ -499,7 +507,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                   onChange={(e) => setShowTrendLines(e.target.checked)}
                   className="rounded border-line text-accent focus:ring-accent"
                 />
-                <span>Recta de tendencia</span>
+                 <span>{language === 'en' ? 'Trend line' : 'Recta de tendencia'}</span>
               </label>
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input
@@ -508,21 +516,21 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                   onChange={(e) => setShowConfidenceBands(e.target.checked)}
                   className="rounded border-line text-accent focus:ring-accent"
                 />
-                <span>Banda IC 95%</span>
+                 <span>{language === 'en' ? '95% CI band' : 'Banda IC 95%'}</span>
               </label>
             </div>
           </div>
 
           <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-line p-3 text-xs">
              <div className="flex w-full items-center gap-2 rounded-md border border-accent/15 bg-accent-soft px-3 py-2 text-accent">
-              <strong>Zoom de la gráfica</strong>
-              <span className="text-muted">Usa − y + al lado de cada gráfica y arrastra con el mouse para recorrer los datos.</span>
+               <strong>{language === 'en' ? 'Chart zoom' : 'Zoom de la gráfica'}</strong>
+               <span className="text-muted">{language === 'en' ? 'Use − and + beside each chart and drag to browse the data.' : 'Usa − y + al lado de cada gráfica y arrastra con el mouse para recorrer los datos.'}</span>
               <button type="button" className="ml-auto inline-flex items-center gap-1 rounded border border-accent/30 px-2 py-1 font-medium hover:bg-surface" aria-expanded={showZoomHelp} onClick={() => setShowZoomHelp(!showZoomHelp)}>
-                <HelpCircle size={14} aria-hidden="true" /> ¿Cómo se usa?
+                 <HelpCircle size={14} aria-hidden="true" /> {language === 'en' ? 'How does it work?' : '¿Cómo se usa?'}
               </button>
             </div>
-            {showZoomHelp && <p role="note" className="w-full rounded-md border border-accent/20 bg-surface p-2 text-muted">Pulsa <strong>+</strong> para acercar y <strong>−</strong> para alejar. Cuando el zoom sea mayor que 1×, mantén presionado el botón izquierdo y arrastra horizontalmente sobre la gráfica. “Restablecer” vuelve a centrar la vista completa.</p>}
-             <button type="button" className="rounded-lg border border-line px-3 py-2 font-semibold transition-colors hover:border-accent hover:text-accent" onClick={() => setHiddenVariables([])}>Mostrar todas</button>
+             {showZoomHelp && <p role="note" className="w-full rounded-md border border-accent/20 bg-surface p-2 text-muted">{language === 'en' ? <>Press <strong>+</strong> to zoom in and <strong>−</strong> to zoom out. Above 1×, hold the left mouse button and drag horizontally. “Reset” returns to the full view.</> : <>Pulsa <strong>+</strong> para acercar y <strong>−</strong> para alejar. Cuando el zoom sea mayor que 1×, mantén presionado el botón izquierdo y arrastra horizontalmente sobre la gráfica. “Restablecer” vuelve a centrar la vista completa.</>}</p>}
+              <button type="button" className="rounded-lg border border-line px-3 py-2 font-semibold transition-colors hover:border-accent hover:text-accent" onClick={() => setHiddenVariables([])}>{language === 'en' ? 'Show all' : 'Mostrar todas'}</button>
             {selectedVariables.length >= 2 && <label>Vista
                <select aria-label="Vista de gráficas" className="ml-2 rounded-lg border border-line bg-surface p-2 font-semibold transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" value={layout} onChange={(event) => setLayout(event.target.value as 'separate' | 'combined')}>
                 <option value="separate">Separadas (recomendado)</option>
@@ -731,6 +739,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                   key={variable.id}
                   result={results.find((item) => item.variable.id === variable.id)}
                   regionName={regionName}
+                  language={language}
                 />
               ))}
             </div>

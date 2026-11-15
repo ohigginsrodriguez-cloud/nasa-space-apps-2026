@@ -461,7 +461,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                 <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
               </div>
               <div className="flex w-full items-stretch gap-2 overflow-x-auto">
-                <div style={{ height: expanded ? 700 : 420, minWidth: 500 + visibleVariables.length * 65 }}>
+                <div className="min-w-0 flex-1" style={{ height: expanded ? 700 : 420 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={combinedPoints} margin={{ top: 25, right: 24, bottom: 10, left: 24 }} accessibilityLayer>
                       <CartesianGrid strokeDasharray="3 5" />

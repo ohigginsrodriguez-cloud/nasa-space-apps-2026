@@ -6,13 +6,13 @@ export function validateTimeRange(range: TimeRange): string | null {
     const parsed = new Date(`${value}T00:00:00Z`)
     return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
   }
-  if (!isValidDate(range.startDate) || !isValidDate(range.endDate)) return 'Introduce fechas válidas.'
+  if (!isValidDate(range.startDate) || !isValidDate(range.endDate)) return 'Enter valid dates.'
   const latestCompleteMonthEnd = getLatestCompleteMonthEnd()
   if (range.endDate > latestCompleteMonthEnd) {
-    return `La fecha final no puede superar el último mes completo (${latestCompleteMonthEnd}).`
+    return `The end date cannot exceed the last complete month (${latestCompleteMonthEnd}).`
   }
   if (range.startDate > latestCompleteMonthEnd || range.startDate > range.endDate) {
-    return 'El periodo seleccionado no contiene meses completos válidos.'
+    return 'The selected period does not contain valid complete months.'
   }
   return null
 }
@@ -48,13 +48,13 @@ export function validateGeographicSelection(
   if (point !== null) {
     return Number.isFinite(point.latitude) && Number.isFinite(point.longitude)
       && Math.abs(point.latitude) <= 90 && Math.abs(point.longitude) <= 180
-      ? null : 'Punto inválido: latitud entre −90 y 90 y longitud entre −180 y 180.'
+      ? null : 'Invalid point: latitude must be between −90 and 90 and longitude between −180 and 180.'
   }
   if (bounds === null) return null
   if (!Object.values(bounds).every(Number.isFinite)
     || Math.abs(bounds.south) > 90 || Math.abs(bounds.north) > 90
     || Math.abs(bounds.west) > 180 || Math.abs(bounds.east) > 180) {
-    return 'Coordenadas inválidas: latitudes entre −90 y 90 y longitudes entre −180 y 180.'
+    return 'Invalid coordinates: latitudes must be between −90 and 90 and longitudes between −180 and 180.'
   }
   if (bounds.south >= bounds.north || bounds.west >= bounds.east) {
     return 'Sur debe ser menor que norte y oeste menor que este; no cruces el antimeridiano.'
@@ -65,13 +65,13 @@ export function validateGeographicSelection(
     const lonSpan = bounds.east - bounds.west
     if (latSpan < 2 || lonSpan < 2) {
       return (
-        'El área seleccionada es demasiado pequeña para NASA POWER. ' +
+        'The selected area is too small for NASA POWER. ' +
         'Necesita al menos 2° de alto y 2° de ancho. ' +
-        'Amplía el rectángulo o cambia a modo "Seleccionar punto".'
+        'Expand the rectangle or switch to point selection mode.'
       )
     }
     if (latSpan > 10 || lonSpan > 10) {
-      return 'El área es demasiado grande para NASA POWER. Reduce el rectángulo: cada lado debe medir entre 2° y 10°.'
+      return 'The area is too large for NASA POWER. Reduce the rectangle: each side must measure between 2° and 10°.'
     }
   }
 
@@ -82,9 +82,9 @@ export function validateConfiguration(configuration: DataConfiguration): string 
   const timeError = validateTimeRange(configuration.timeRange)
   if (timeError) return timeError
   if (!configuration.variableIds.length) return 'Selecciona al menos una variable para continuar.'
-  if (configuration.variableIds.length > 7) return 'Selecciona como máximo siete variables.'
+  if (configuration.variableIds.length > 7) return 'Select no more than seven variables.'
   if (configuration.sourceId === 'nasa-power' && configuration.timeRange.startDate < '1981-01-01') {
-    return 'NASA POWER mensual ofrece datos meteorológicos desde enero de 1981. Elige un inicio posterior.'
+    return 'NASA POWER monthly data begins in January 1981. Choose a later start date.'
   }
   return null
 }

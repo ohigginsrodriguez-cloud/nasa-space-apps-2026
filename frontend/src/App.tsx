@@ -13,7 +13,7 @@ export default function App() {
       <LanguageProvider>
         <ResearchProvider>
           <MainLayout>
-          <Suspense fallback={<div role="status" className="rounded-xl border border-line bg-surface p-5 text-sm text-muted">Cargando esta sección…</div>}>
+          <Suspense fallback={<div role="status" className="rounded-xl border border-line bg-surface p-5 text-sm text-muted">Loading this section…</div>}>
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />

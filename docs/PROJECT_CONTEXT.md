@@ -249,6 +249,17 @@ texto en inglés para la página de proyecto, uso de SI, referencias, disclaimer
 y guion de demo de 30 segundos. El E2E se actualizó para validar la interfaz
 inglesa; también se verificó el cambio EN/ES manualmente.
 
+Tercera fase de presentación: la interfaz quedó únicamente en inglés, sin
+selector de idioma. Se tradujeron los nombres y descripciones de variables,
+ejemplos, asistente guiado, mapa, comparación regional, controles de zoom,
+errores y resultados visibles. Se aumentaron tamaños de texto en tarjetas de
+variables, asistente, mapa, comparación y controles de zoom; se actualizaron
+los selectores E2E y sus pruebas de mensajes al inglés.
+`docs/deployment.md` documenta el despliegue público y la verificación desde
+navegación privada; `docs/demo-storyboard.md` prepara una alternativa de siete
+diapositivas al video de 30 segundos. El despliegue real y los enlaces públicos
+siguen pendientes porque requieren credenciales/servicios de hosting.
+
 La limpieza de ramas solo debe borrar ramas ya fusionadas; se preservan las que
 tienen commits exclusivos.
 

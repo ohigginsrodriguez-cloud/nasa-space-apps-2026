@@ -173,34 +173,34 @@ function TrendSummary({ result, regionName, language }: { result: BackendResult 
         >
            {isSig ? <CheckCircle2 size={13} className="text-success" /> : <XCircle size={13} className="text-muted" />}
           {isConstant
-            ? 'Serie constante'
+             ? 'Constant series'
             : isSig
-            ? 'Significativa · OLS (α = 0,05)'
+             ? 'Significant · OLS (α = 0.05)'
             : result.interpretation?.status === 'insufficient_data'
             || result.interpretation?.status === 'conflicting_evidence'
             || trend.status === 'insufficient_data' || trend.status === 'calculation_error'
-            ? 'No evaluable'
-            : 'No significativa · OLS (α = 0,05)'}
+             ? 'Not evaluable'
+             : 'Not significant · OLS (α = 0.05)'}
         </span>
       </div>
 
       <div className="mt-4 flex flex-wrap items-baseline gap-3">
         <div className="flex items-center gap-1.5">
           {isUp ? (
-             <ArrowUpRight size={26} className="text-signal" aria-label="Aumento" />
+              <ArrowUpRight size={26} className="text-signal" aria-label="Increase" />
           ) : isDown ? (
-             <ArrowDownRight size={26} className="text-accent" aria-label="Disminución" />
+              <ArrowDownRight size={26} className="text-accent" aria-label="Decrease" />
           ) : (
-            <ArrowRight size={24} className="text-muted" aria-label="Sin cambio" />
+            <ArrowRight size={24} className="text-muted" aria-label="No change" />
           )}
           <span className="text-2xl font-bold tabular-nums text-ink">
             {slopeDecade !== null ? (slopeDecade > 0 ? `+${formatValue(slopeDecade)}` : formatValue(slopeDecade)) : '—'}
           </span>
-          <span className="text-xs font-medium text-muted">{variable.unit} / década</span>
+           <span className="text-xs font-medium text-muted">{variable.unit} / decade</span>
         </div>
         {trend.slope_per_year !== null && (
           <span className="text-xs text-muted">
-            ({trend.slope_per_year > 0 ? `+${formatValue(trend.slope_per_year, 3)}` : formatValue(trend.slope_per_year, 3)} {variable.unit}/año)
+             ({trend.slope_per_year > 0 ? `+${formatValue(trend.slope_per_year, 3)}` : formatValue(trend.slope_per_year, 3)} {variable.unit}/year)
           </span>
         )}
       </div>
@@ -214,10 +214,10 @@ function TrendSummary({ result, regionName, language }: { result: BackendResult 
         {/* OLS Linear Regression */}
         <div className="rounded-lg border border-line bg-surface p-2.5">
           <p className="font-semibold text-ink flex items-center">
-            Regresión OLS
-            <TermHelp term="Regresión OLS" explanation="Ajuste de mínimos cuadrados ordinarios para estimar la tasa de cambio lineal a lo largo del tiempo." />
+             OLS regression
+             <TermHelp term="OLS regression" explanation="Ordinary least-squares fit used to estimate the linear rate of change over time." />
           </p>
-          <p className="mt-1 text-muted">Pendiente: <span className="font-mono text-ink">{formatValue(ols?.slope_per_decade)}</span> {variable.unit}/década</p>
+           <p className="mt-1 text-muted">Slope: <span className="font-mono text-ink">{formatValue(ols?.slope_per_decade)}</span> {variable.unit}/decade</p>
           <p className="text-muted">p-value: <span className="font-mono text-ink">{ols?.p_value !== undefined && ols?.p_value !== null ? formatValue(ols.p_value, 4) : '—'}</span></p>
           <p className="text-muted">R²: <span className="font-mono text-ink">{ols?.r_squared !== undefined ? formatValue(ols.r_squared, 3) : '—'}</span></p>
         </div>
@@ -226,31 +226,31 @@ function TrendSummary({ result, regionName, language }: { result: BackendResult 
         <div className="rounded-lg border border-line bg-surface p-2.5">
           <p className="font-semibold text-ink flex items-center">
             Test Mann-Kendall
-            <TermHelp term="Mann-Kendall" explanation="Prueba estadística no paramétrica recomendada por NASA para detectar tendencias monótonas sin asumir normalidad." />
+             <TermHelp term="Mann-Kendall" explanation="A non-parametric test recommended by NASA for detecting monotonic trends without assuming normality." />
           </p>
-          <p className="mt-1 text-muted">Estadístico Z: <span className="font-mono text-ink">{mk?.z !== undefined && mk?.z !== null ? formatValue(mk.z, 2) : '—'}</span></p>
+           <p className="mt-1 text-muted">Z statistic: <span className="font-mono text-ink">{mk?.z !== undefined && mk?.z !== null ? formatValue(mk.z, 2) : '—'}</span></p>
           <p className="text-muted">p-value: <span className="font-mono text-ink">{mk?.p_value !== undefined && mk?.p_value !== null ? formatValue(mk.p_value, 4) : '—'}</span></p>
-          <p className="text-muted">Tau de Kendall: <span className="font-mono text-ink">{mk?.tau !== undefined ? formatValue(mk.tau, 3) : '—'}</span></p>
+           <p className="text-muted">Kendall tau: <span className="font-mono text-ink">{mk?.tau !== undefined ? formatValue(mk.tau, 3) : '—'}</span></p>
         </div>
 
         {/* Sen's Slope */}
         <div className="rounded-lg border border-line bg-surface p-2.5">
           <p className="font-semibold text-ink flex items-center">
-            Pendiente de Sen
-            <TermHelp term="Pendiente de Sen" explanation="Estimador de la mediana de todas las pendientes por pares; altamente robusto frente a valores atípicos y extremos." />
+             Theil–Sen slope
+             <TermHelp term="Theil–Sen slope" explanation="Median estimator of all pairwise slopes; highly robust to outliers and extremes." />
           </p>
-          <p className="mt-1 text-muted">Mediana: <span className="font-mono text-ink">{sen?.slope_per_decade !== undefined && sen?.slope_per_decade !== null ? formatValue(sen.slope_per_decade) : '—'}</span> {variable.unit}/década</p>
+           <p className="mt-1 text-muted">Median: <span className="font-mono text-ink">{sen?.slope_per_decade !== undefined && sen?.slope_per_decade !== null ? formatValue(sen.slope_per_decade) : '—'}</span> {variable.unit}/decade</p>
           <p className="text-muted">IC 95%: <span className="font-mono text-ink">{sen?.ci95_per_decade ? `[${formatValue(sen.ci95_per_decade[0])}, ${formatValue(sen.ci95_per_decade[1])}]` : '—'}</span></p>
         </div>
 
         {/* Observaciones y Muestra */}
         <div className="rounded-lg border border-line bg-surface p-2.5">
           <p className="font-semibold text-ink flex items-center">
-            Incertidumbre (IC 95%)
-            <TermHelp term="Intervalo de Confianza" explanation="Si repitiéramos el muestreo y este procedimiento muchas veces, aproximadamente el 95% de los intervalos contendría la tasa verdadera, bajo los supuestos del método." />
+             Uncertainty (95% CI)
+             <TermHelp term="Confidence interval" explanation="If we repeated the sampling and procedure many times, approximately 95% of intervals would contain the true rate under the method assumptions." />
           </p>
-          <p className="mt-1 text-muted">Rango: <span className="font-mono text-ink">{trend.confidence_interval_per_decade ? `[${formatValue(trend.confidence_interval_per_decade[0])}, ${formatValue(trend.confidence_interval_per_decade[1])}]` : '—'}</span></p>
-          <p className="text-muted">Años analizados: <span className="font-mono text-ink">{trend.n_observations}</span></p>
+           <p className="mt-1 text-muted">Range: <span className="font-mono text-ink">{trend.confidence_interval_per_decade ? `[${formatValue(trend.confidence_interval_per_decade[0])}, ${formatValue(trend.confidence_interval_per_decade[1])}]` : '—'}</span></p>
+           <p className="text-muted">Years analyzed: <span className="font-mono text-ink">{trend.n_observations}</span></p>
         </div>
       </div>
 
@@ -480,7 +480,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                 return (
                   <button type="button" key={variable.id}
                     aria-pressed={!hiddenVariables.includes(variable.id)}
-                    aria-label={`${hiddenVariables.includes(variable.id) ? 'Mostrar' : 'Ocultar'} ${variable.name}`}
+                    aria-label={`${hiddenVariables.includes(variable.id) ? 'Show' : 'Hide'} ${variable.name}`}
                     onClick={() => setHiddenVariables((current) => current.includes(variable.id) ? current.filter((id) => id !== variable.id) : [...current, variable.id])}
                      className="flex items-center gap-2 rounded-lg border border-line p-2 text-xs transition-colors hover:border-accent/40 hover:bg-accent-soft/35">
                     <span className="flex items-center gap-1 font-medium" style={{ color }}>
@@ -532,24 +532,24 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
              {showZoomHelp && <p role="note" className="w-full rounded-md border border-accent/20 bg-surface p-2 text-muted">{language === 'en' ? <>Press <strong>+</strong> to zoom in and <strong>−</strong> to zoom out. Above 1×, hold the left mouse button and drag horizontally. “Reset” returns to the full view.</> : <>Pulsa <strong>+</strong> para acercar y <strong>−</strong> para alejar. Cuando el zoom sea mayor que 1×, mantén presionado el botón izquierdo y arrastra horizontalmente sobre la gráfica. “Restablecer” vuelve a centrar la vista completa.</>}</p>}
               <button type="button" className="rounded-lg border border-line px-3 py-2 font-semibold transition-colors hover:border-accent hover:text-accent" onClick={() => setHiddenVariables([])}>{language === 'en' ? 'Show all' : 'Mostrar todas'}</button>
             {selectedVariables.length >= 2 && <label>Vista
-               <select aria-label="Vista de gráficas" className="ml-2 rounded-lg border border-line bg-surface p-2 font-semibold transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" value={layout} onChange={(event) => setLayout(event.target.value as 'separate' | 'combined')}>
-                <option value="separate">Separadas (recomendado)</option>
-                <option value="combined">Juntas en una gráfica</option>
+                <select aria-label="Chart view" className="ml-2 rounded-lg border border-line bg-surface p-2 font-semibold transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" value={layout} onChange={(event) => setLayout(event.target.value as 'separate' | 'combined')}>
+                 <option value="separate">Separate (recommended)</option>
+                 <option value="combined">Combined in one chart</option>
               </select>
             </label>}
              <button type="button" aria-pressed={expanded} className="rounded-lg border border-line px-3 py-2 font-semibold transition-colors hover:border-accent hover:text-accent" onClick={() => setExpanded(!expanded)}>{expanded ? 'Altura normal' : 'Ampliar altura para detalle'}</button>
-            <p className="w-full text-muted">El zoom centra la ventana temporal y no cambia las pruebas estadísticas ni las descargas.</p>
+             <p className="w-full text-muted">Zoom centers the time window and does not change statistical tests or downloads.</p>
           </div>
-          {!visibleVariables.length && <p role="status">Todas las variables están ocultas. Activa una variable o pulsa “Mostrar todas”.</p>}
-          {!chartPoints.length && <p role="status">No hay observaciones dentro del zoom seleccionado.</p>}
+           {!visibleVariables.length && <p role="status">All variables are hidden. Activate a variable or press “Show all”.</p>}
+           {!chartPoints.length && <p role="status">There are no observations within the selected zoom window.</p>}
           {/* Separate panels avoid overlapping variables and incompatible units. */}
           {layout === 'combined' && selectedVariables.length >= 2 && visibleVariables.length > 0 && (
-             <article aria-label="Gráfica conjunta de variables" className="mb-5 rounded-xl border border-line bg-canvas/35 p-3 shadow-sm">
-              <h3 className="font-semibold">Variables juntas · escalas independientes</h3>
-              <p className="text-xs text-muted">Consulta valores y unidades al pasar el puntero. Lluvia: tendencia y banda en equivalente mensual (÷12). Las escalas se ajustan al periodo visible.</p>
-              <div className="my-2 flex flex-wrap gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label="Leyenda de variables juntas">
+              <article aria-label="Combined variable chart" className="mb-5 rounded-xl border border-line bg-canvas/35 p-3 shadow-sm">
+               <h3 className="font-semibold">Combined variables · independent scales</h3>
+               <p className="text-sm text-muted">Hover to inspect values and units. Rainfall: trend and band shown as monthly equivalents (÷12). Scales adapt to the visible period.</p>
+               <div className="my-2 flex flex-wrap gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-xs" aria-label="Combined variable legend">
                 {visibleVariables.map((variable) => <span key={variable.id} className="flex items-center gap-1.5"><span className="size-2 rounded-full" style={{ backgroundColor: getVariableColor(variable.id) }} /><strong>{variable.name}</strong> · {variable.unit}</span>)}
-                <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
+                 <span className="text-muted">Solid line: observed · dashed: trend · shaded: 95% CI</span>
               </div>
               <div className="flex w-full items-stretch gap-2 overflow-x-auto">
                 <div className={`min-w-0 flex-1 select-none ${zoomLevel > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`} style={{ height: expanded ? 700 : 420, touchAction: zoomLevel > 0 ? 'none' : 'auto' }} onPointerDown={startPan} onPointerMove={movePan} onPointerUp={stopPan} onPointerCancel={stopPan}>
@@ -569,7 +569,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               </div>
               {visibleVariables.map((variable) => {
                 const result = results.find((item) => item.variable.id === variable.id)
-                return <p key={variable.id} role="status" className="mt-2 text-xs"><strong>{variable.name}:</strong> {result?.interpretation?.title ?? 'Significancia no evaluable'} · OLS p = {formatValue(result?.trend.p_value, 4)} · MK p = {formatValue(result?.trend.mann_kendall?.p_value, 4)} · IC 95% = {result?.trend.confidence_interval_per_decade?.map((value) => formatValue(value)).join(' a ') ?? 'no disponible'} {variable.unit}/década</p>
+                 return <p key={variable.id} role="status" className="mt-2 text-sm"><strong>{variable.name}:</strong> {result?.interpretation?.title ?? 'Significance not evaluable'} · OLS p = {formatValue(result?.trend.p_value, 4)} · MK p = {formatValue(result?.trend.mann_kendall?.p_value, 4)} · 95% CI = {result?.trend.confidence_interval_per_decade?.map((value) => formatValue(value)).join(' to ') ?? 'not available'} {variable.unit}/decade</p>
               })}
             </article>
           )}
@@ -578,7 +578,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
             if (!result) return null
               return <article key={variable.id} aria-label={`Panel de ${variable.name}`} className="mb-5 rounded-xl border border-line bg-canvas/35 p-3 shadow-sm">
                <h3 className="font-semibold" style={{ color: getVariableColor(variable.id) }}>{variable.name} · {variable.unit}</h3>
-               <p className="mb-2 text-xs text-muted">Línea continua: observado · discontinua: tendencia · sombreado: IC 95% de la media estimada.</p>
+                <p className="mb-2 text-sm text-muted">Solid line: observed · dashed: trend · shaded: 95% CI of the estimated mean.</p>
                <ChartLegend variable={variable} />
               {result.variable.aggregation === 'sum' && <p className="mb-2 text-xs text-muted">Observado: total mensual. Tendencia y banda: equivalente mensual del ajuste anual (÷12). Las tarjetas reportan el cambio del total anual.</p>}
            <div className="flex min-w-0 items-stretch gap-2">
@@ -701,23 +701,23 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               >
                 <strong>
                   {result.interpretation?.significant === true || (!result.interpretation && result.trend.significant === true)
-                    ? 'Tendencia significativa'
+                     ? 'Significant trend'
                     : result.interpretation?.significant === false || (!result.interpretation && result.trend.significant === false)
-                      ? result.trend.status === 'constant_series' ? 'Serie constante; sin cambio lineal' : 'Tendencia no significativa'
-                      : 'Significancia no evaluable'}
+                       ? result.trend.status === 'constant_series' ? 'Constant series; no linear change' : 'Not significant trend'
+                       : 'Significance not evaluable'}
                 </strong>
                 {' · '}OLS p = {formatValue(result.trend.p_value, 4)}
                 {' · '}Mann–Kendall p = {formatValue(result.trend.mann_kendall?.p_value, 4)}
                 {' · '}IC 95% = {result.trend.confidence_interval_per_decade
-                  ? `[${formatValue(result.trend.confidence_interval_per_decade[0])}, ${formatValue(result.trend.confidence_interval_per_decade[1])}] ${variable.unit}/década`
-                  : 'no disponible'}
+                   ? `[${formatValue(result.trend.confidence_interval_per_decade[0])}, ${formatValue(result.trend.confidence_interval_per_decade[1])}] ${variable.unit}/decade`
+                   : 'not available'}
               </div>
             </article>
           })}
 
           <p className="mt-2 text-center text-xs text-muted flex items-center justify-center gap-1">
             <Info size={13} aria-hidden="true" />
-            La línea continua representa las mediciones mensuales; la línea punteada muestra la tendencia lineal estimada y el sombreado el intervalo del 95%.
+             Solid lines represent monthly observations; dashed lines show the estimated linear trend; shading shows the 95% interval.
           </p>
 
           {/* Tarjetas de resultados estadísticos */}
@@ -725,10 +725,10 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 id="trend-summary-title" className="text-sm font-semibold text-ink">
-                  ¿Cuánto cambia y es estadísticamente significativo?
+                  How much does it change, and is the evidence statistically significant?
                 </h2>
                 <p className="mt-1 text-xs text-muted">
-                  Evaluación multi-método con Regresión OLS, Test de Mann-Kendall y Pendiente de Sen (α = 0,05).
+                   Multi-method evaluation using OLS regression, the Mann-Kendall test, and Theil-Sen slope (α = 0.05).
                 </p>
               </div>
             </div>
@@ -748,7 +748,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
              <section aria-labelledby="processes-title" className="mt-5 rounded-xl border border-accent/25 bg-accent-soft/65 p-4">
                <h2 id="processes-title" className="flex items-center gap-2 text-sm font-bold text-accent">
                 <Link2 size={16} aria-hidden="true" />
-                Interpretación conjunta de las variables
+                 Joint interpretation of the variables
               </h2>
                <p className="mt-2 text-xs text-ink">{dataset.multivariateInterpretation.summary}</p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -777,12 +777,12 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
       ) : (
         <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-line bg-canvas/50 px-5 text-center">
           <p className="text-sm font-medium text-ink">
-            {configuration ? 'No hay registros en este periodo' : 'Tu análisis aparecerá aquí'}
+             {configuration ? 'No records are available for this period' : 'Your analysis will appear here'}
           </p>
           <p className="max-w-md text-xs leading-relaxed text-muted">
             {configuration
-              ? 'La cobertura y disponibilidad dependen del proveedor seleccionado. Revisa los valores faltantes antes de interpretar la tendencia.'
-              : 'Selecciona variables, región y periodo; después genera la serie temporal y su análisis.'}
+               ? 'Coverage and availability depend on the selected provider. Review missing values before interpreting the trend.'
+               : 'Select variables, a region, and a period, then generate the time series and analysis.'}
           </p>
         </div>
       )}
@@ -790,9 +790,9 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
       <div className="mt-5 border-t border-line pt-4 text-xs leading-relaxed text-muted flex flex-wrap items-center justify-between gap-2">
         <p>
           {dataset?.isDemonstration
-            ? 'Datos sintéticos de demostración (DEMO / SINTÉTICO); no son observaciones reales de satélites.'
-            : 'Datos obtenidos vía API NASA POWER; el producto de origen depende de la variable y puede ser modelado o satelital.'}
-          {dataset?.missingValueCount ? ` Valores faltantes: ${dataset.missingValueCount}.` : ''}
+             ? 'Synthetic demonstration data (DEMO / SYNTHETIC); these are not real satellite observations.'
+             : 'Data retrieved through the NASA POWER API; the source product depends on the variable and may be modeled or satellite-derived.'}
+           {dataset?.missingValueCount ? ` Missing values: ${dataset.missingValueCount}.` : ''}
         </p>
         <span className="font-mono text-[11px] text-muted">NASA Space Apps Challenge 2026</span>
       </div>

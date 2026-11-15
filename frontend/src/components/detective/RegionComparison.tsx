@@ -79,12 +79,12 @@ export function RegionComparison() {
           </span>
           <div>
             <h2 className="text-sm font-bold text-ink flex items-center gap-2">
-              Modo Comparación Bi-Regional
-              <span className="rounded-full border border-accent/20 bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">
-                Reto NASA: Respuestas Contrastantes
+              Bi-regional comparison mode
+              <span className="rounded-full border border-accent/20 bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent">
+                NASA challenge: contrasting responses
               </span>
             </h2>
-            <p className="text-xs text-muted">Contrasta una misma variable en dos regiones de México bajo el mismo periodo temporal. Lacandona y Centla usan puntos representativos; Sonora y Valle de México, rectángulos aproximados.</p>
+            <p className="text-sm leading-relaxed text-muted">Compare one variable across two regions of Mexico over the same period. Lacandon and Centla use representative points; Sonora and Mexico City use approximate rectangles.</p>
           </div>
         </div>
 
@@ -95,7 +95,7 @@ export function RegionComparison() {
           className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-accent-hover hover:shadow-md disabled:opacity-60"
         >
           {loading ? <LoaderCircle size={14} className="animate-spin" /> : <GitCompare size={14} />}
-          <span>{loading ? 'Consultando datos…' : 'Ejecutar Comparación'}</span>
+          <span>{loading ? 'Querying data…' : 'Run comparison'}</span>
         </button>
       </div>
 
@@ -115,7 +115,7 @@ export function RegionComparison() {
         </div>
 
         <div>
-          <label className="block font-medium text-muted mb-1">Región A</label>
+          <label className="block font-medium text-muted mb-1">Region A</label>
           <select
             value={regionAId}
             onChange={(e) => setRegionAId(e.target.value as RegionId)}
@@ -128,7 +128,7 @@ export function RegionComparison() {
         </div>
 
         <div>
-          <label className="block font-medium text-muted mb-1">Región B</label>
+          <label className="block font-medium text-muted mb-1">Region B</label>
           <select
             value={regionBId}
             onChange={(e) => setRegionBId(e.target.value as RegionId)}
@@ -141,7 +141,7 @@ export function RegionComparison() {
         </div>
 
         <div>
-          <label className="block font-medium text-muted mb-1">Periodo (Inicio / Fin)</label>
+          <label className="block font-medium text-muted mb-1">Period (start / end)</label>
           <div className="flex items-center gap-1">
             <input
               type="date"
@@ -164,20 +164,20 @@ export function RegionComparison() {
         </div>
 
         <div>
-          <label className="block font-medium text-muted mb-1">Fuente de datos</label>
+          <label className="block font-medium text-muted mb-1">Data source</label>
           <select
             value={sourceId}
             onChange={(e) => setSourceId(e.target.value)}
             className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink font-medium focus:border-accent"
           >
             <option value="nasa-power">NASA POWER (Real)</option>
-            <option value="local-demo">Demo Sintético</option>
+            <option value="local-demo">Synthetic demo</option>
           </select>
         </div>
       </div>
 
       {validationError && <p role="alert" className="text-xs text-red-800">{validationError}</p>}
-      {sourceId === 'local-demo' && <p role="status" className="text-xs text-muted">DEMO / SINTÉTICO: estas observaciones no son mediciones de NASA.</p>}
+      {sourceId === 'local-demo' && <p role="status" className="text-sm text-muted">DEMO / SYNTHETIC: these observations are not NASA measurements.</p>}
       {error && (
         <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
           {error}
@@ -198,8 +198,8 @@ export function RegionComparison() {
               </p>
               {spatialInterpretation.regions?.map((item) => (
                  <p key={item.id} className="mt-1 text-[11px] text-ink">
-                  <strong>{item.name}:</strong> {item.direction} · {formatValue(item.change_per_decade)} {selectedVar.unit}/década ·{' '}
-                  {item.significant === true ? 'significativa' : item.significant === false ? 'no significativa' : 'no evaluable'}
+                   <strong>{item.name}:</strong> {item.direction} · {formatValue(item.change_per_decade)} {selectedVar.unit}/decade ·{' '}
+                   {item.significant === true ? 'significant' : item.significant === false ? 'not significant' : 'not evaluable'}
                 </p>
               ))}
               {spatialInterpretation.causality_warning && (
@@ -210,7 +210,7 @@ export function RegionComparison() {
         </div>
       )}
 
-      {variableId === 'precipitation' && <p className="text-xs text-muted">Observado: total mensual. Tendencia y banda: equivalente mensual del ajuste anual (÷12). Las tarjetas reportan el cambio del total anual.</p>}
+       {variableId === 'precipitation' && <p className="text-sm text-muted">Observed: monthly total. Trend and band: monthly equivalent of the annual fit (÷12). Cards report the change in the annual total.</p>}
       {/* Gráficas comparativas lado a lado */}
       {hasCurrentResults && datasetA && datasetB && (
         <div className="grid gap-5 lg:grid-cols-2 pt-2">
@@ -224,12 +224,12 @@ export function RegionComparison() {
                 ) : (
                    <TrendingDown size={14} className="text-accent" />
                 )}
-                {formatValue(slopeA)} {selectedVar.unit}/década
+                {formatValue(slopeA)} {selectedVar.unit}/decade
               </span>
             </div>
             <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Leyenda de ${regionA.name}`}>
-              <strong>Unidad: {selectedVar.unit}</strong>
-              <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
+              <strong>Unit: {selectedVar.unit}</strong>
+              <span className="text-muted">Solid line: observed · dashed: trend · shaded: 95% CI</span>
             </div>
             <div className="flex h-56 w-full items-stretch gap-2">
             <div className="min-w-0 flex-1">
@@ -249,7 +249,7 @@ export function RegionComparison() {
             </div>
             <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
               <span>OLS p = {formatValue(resultA?.trend.p_value, 4)} · MK p = {formatValue(resultA?.trend.mann_kendall?.p_value, 4)}</span>
-              <span>{resultA?.interpretation?.significant === null ? 'No evaluable' : resultA?.interpretation?.significant ? '✅ Significativo (α=0.05)' : 'No significativo (α=0.05)'}</span>
+               <span>{resultA?.interpretation?.significant === null ? 'Not evaluable' : resultA?.interpretation?.significant ? '✅ Significant (α=0.05)' : 'Not significant (α=0.05)'}</span>
             </div>
           </div>
 
@@ -263,12 +263,12 @@ export function RegionComparison() {
                 ) : (
                    <TrendingDown size={14} className="text-accent" />
                 )}
-                {formatValue(slopeB)} {selectedVar.unit}/década
+                {formatValue(slopeB)} {selectedVar.unit}/decade
               </span>
             </div>
             <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Leyenda de ${regionB.name}`}>
-              <strong>Unidad: {selectedVar.unit}</strong>
-              <span className="text-muted">Línea sólida: observado · discontinua: tendencia · sombreado: IC 95%</span>
+              <strong>Unit: {selectedVar.unit}</strong>
+              <span className="text-muted">Solid line: observed · dashed: trend · shaded: 95% CI</span>
             </div>
             <div className="flex h-56 w-full items-stretch gap-2">
             <div className="min-w-0 flex-1">
@@ -288,7 +288,7 @@ export function RegionComparison() {
             </div>
             <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
               <span>OLS p = {formatValue(resultB?.trend.p_value, 4)} · MK p = {formatValue(resultB?.trend.mann_kendall?.p_value, 4)}</span>
-              <span>{resultB?.interpretation?.significant === null ? 'No evaluable' : resultB?.interpretation?.significant ? '✅ Significativo (α=0.05)' : 'No significativo (α=0.05)'}</span>
+               <span>{resultB?.interpretation?.significant === null ? 'Not evaluable' : resultB?.interpretation?.significant ? '✅ Significant (α=0.05)' : 'Not significant (α=0.05)'}</span>
             </div>
           </div>
         </div>

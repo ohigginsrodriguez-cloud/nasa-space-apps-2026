@@ -15,7 +15,7 @@ test('el rango temporal se limita al último mes completo', () => {
     startDate: '2020-01-01',
     endDate: '2026-11-01',
     interval: 'monthly',
-  }) ?? '', /último mes completo/)
+  }) ?? '', /last complete month/)
 })
 
 test('NASA POWER admite los límites inclusivos de 2° y 10°', () => {

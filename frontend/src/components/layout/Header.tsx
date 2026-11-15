@@ -1,12 +1,12 @@
 import { useLocation } from 'react-router-dom'
 import { navigation } from './navigation'
 import { useResearch } from '../../context/ResearchContext'
-import { useLanguage, type Language } from '../../context/LanguageContext'
+import { useLanguage } from '../../context/LanguageContext'
 
 export function Header() {
   const { pathname } = useLocation()
   const { draft } = useResearch()
-  const { language, setLanguage, t } = useLanguage()
+  const { t } = useLanguage()
   const section = navigation.find((item) => item.path === pathname) ?? navigation[0]
 
   return (
@@ -16,14 +16,7 @@ export function Header() {
         <p className="mt-1 text-xs leading-relaxed text-muted sm:text-sm">{section.id === 'investigation' ? t('investigationDescription') : t('trendsDescription')}</p>
       </div>
       <div className="flex items-center gap-3">
-        <span className="status-pill" data-demo={draft.sourceId === 'local-demo'}>{draft.sourceId === 'local-demo' ? (language === 'en' ? 'Local demo · synthetic' : 'Demo local · sintético') : 'NASA POWER · MVP'}</span>
-        <label className="flex items-center gap-1.5 text-xs font-semibold text-muted">
-          <span className="sr-only">{t('language')}</span>
-          <select aria-label={t('language')} value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="rounded-md border border-line bg-surface px-2 py-1.5 text-xs font-semibold text-ink">
-            <option value="en">EN</option>
-            <option value="es">ES</option>
-          </select>
-        </label>
+        <span className="status-pill" data-demo={draft.sourceId === 'local-demo'}>{draft.sourceId === 'local-demo' ? 'Local demo · synthetic' : 'NASA POWER · MVP'}</span>
       </div>
     </header>
   )

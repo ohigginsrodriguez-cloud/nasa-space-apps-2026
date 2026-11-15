@@ -100,7 +100,7 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
       setVisualizationBounds(geographicBounds)
       setVisualizationPoint(selectedPoint)
       setDataLoadState('success')
-      setNotice({ text: 'Serie cargada. Revisa la gráfica y el análisis de tendencia.', error: false })
+      setNotice({ text: 'Series loaded. Review the chart and trend analysis.', error: false })
       return true
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error)

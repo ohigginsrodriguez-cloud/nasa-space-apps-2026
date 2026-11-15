@@ -10,37 +10,37 @@ interface DetectiveWizardProps {
 const phenomena = [
   {
     id: 'warming',
-    title: 'Calentamiento y Extremos Térmicos',
+    title: 'Warming and thermal extremes',
     icon: Flame,
-    desc: 'Investiga el alza de temperaturas y cambios en la presión atmosférica.',
+    desc: 'Investigate rising temperatures and changes in atmospheric pressure.',
     suggestedVars: ['temperature', 'surface_pressure'] as VariableId[],
   },
   {
     id: 'drought',
-    title: 'Lluvias, Sequías y Agua',
+    title: 'Rainfall, drought, and water',
     icon: Umbrella,
-    desc: 'Analiza si las lluvias acumuladas o la humedad del suelo se reducen.',
+    desc: 'Analyze whether accumulated rainfall or soil moisture is declining.',
     suggestedVars: ['precipitation', 'soil_moisture'] as VariableId[],
   },
   {
     id: 'solar',
-    title: 'Radiación Solar y Energía',
+    title: 'Solar radiation and energy',
     icon: Sun,
-    desc: 'Estudia cómo cambia la energía solar incidente en superficie.',
+    desc: 'Study how incident solar energy at the surface changes.',
     suggestedVars: ['solar_radiation', 'temperature'] as VariableId[],
   },
   {
     id: 'vegetation',
-    title: 'Humedad de Suelo y Vegetación',
+    title: 'Soil moisture and vegetation',
     icon: Leaf,
-    desc: 'Monitorea la disponibilidad de agua en la zona de raíces.',
+    desc: 'Monitor water availability in the root zone.',
     suggestedVars: ['soil_moisture', 'relative_humidity'] as VariableId[],
   },
   {
     id: 'urban',
-    title: 'Viento y Clima Urbano',
+    title: 'Wind and urban climate',
     icon: Wind,
-    desc: 'Evalúa la dinámica de viento y humedad relativa en metrópolis.',
+    desc: 'Evaluate wind and relative humidity dynamics in cities.',
     suggestedVars: ['wind_speed', 'relative_humidity'] as VariableId[],
   },
 ]
@@ -52,22 +52,22 @@ const locations = regions.map((region) => ({
 const timeSpans = [
   {
     id: '30yr',
-    label: '30 años (1995–2024)',
-    desc: 'Periodo largo para estudiar cambios; la significancia depende de los datos.',
+    label: '30 years (1995–2024)',
+    desc: 'A long period for studying change; significance depends on the data.',
     start: '1995-01-01',
     end: '2024-12-01',
   },
   {
     id: '20yr',
-    label: '20 años (2005–2024)',
-    desc: 'Periodo recomendado para identificar señales decadalmente robustas.',
+    label: '20 years (2005–2024)',
+    desc: 'Recommended period for identifying robust decadal signals.',
     start: '2005-01-01',
     end: '2024-12-01',
   },
   {
     id: '15yr',
-    label: '15 años (2010–2024)',
-    desc: 'Análisis de la última década y media reciente.',
+    label: '15 years (2010–2024)',
+    desc: 'Analysis of the most recent decade and a half.',
     start: '2010-01-01',
     end: '2024-12-01',
   },
@@ -102,10 +102,10 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
         </span>
         <div>
           <h2 className="text-sm font-bold text-ink flex items-center gap-1.5">
-            Asistente del Detective Ambiental
-            <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] text-accent">Modo Guiado</span>
+            Environmental detective wizard
+            <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs text-accent">Guided mode</span>
           </h2>
-          <p className="text-xs text-muted">Responde 3 preguntas guiadas para configurar una investigación científica lista.</p>
+          <p className="text-sm text-muted">Answer three guided questions to set up a ready-to-run investigation.</p>
         </div>
       </div>
 
@@ -124,7 +124,7 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
           >
             <span>{num}.</span>
             <span>
-              {num === 1 ? 'Fenómeno' : num === 2 ? 'Ecosistema' : 'Periodo temporal'}
+               {num === 1 ? 'Phenomenon' : num === 2 ? 'Ecosystem' : 'Time period'}
             </span>
           </div>
         ))}
@@ -134,7 +134,7 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
       {step === 1 && (
         <div className="mt-5 space-y-3">
           <p className="text-xs font-semibold text-ink">
-            1. ¿Qué tipo de proceso ambiental o cambio te interesa detectar?
+             1. What environmental process or change would you like to detect?
           </p>
           <div className="grid gap-2.5 sm:grid-cols-2">
             {phenomena.map((item) => {
@@ -155,8 +155,8 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
                     <Icon size={18} />
                   </span>
                   <div>
-                    <span className="block text-xs font-bold text-ink">{item.title}</span>
-                    <span className="mt-0.5 block text-[11px] text-muted">{item.desc}</span>
+                     <span className="block text-sm font-bold text-ink">{item.title}</span>
+                     <span className="mt-1 block text-sm leading-relaxed text-muted">{item.desc}</span>
                   </div>
                 </button>
               )
@@ -169,7 +169,7 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
       {step === 2 && (
         <div className="mt-5 space-y-3">
           <p className="text-xs font-semibold text-ink">
-            2. ¿En qué región o ecosistema deseas investigar la tendencia?
+             2. Which region or ecosystem would you like to investigate?
           </p>
           <div className="grid gap-2.5 sm:grid-cols-2">
             {locations.map((loc) => {
@@ -185,9 +185,9 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
                        : 'border-line bg-surface hover:border-accent/40 hover:shadow-sm'
                   }`}
                 >
-                  <span className="text-xs font-bold text-ink">{loc.name}</span>
-                  <span className="mt-0.5 text-[11px] font-medium text-accent">{loc.type}</span>
-                  <span className="mt-1 text-[11px] text-muted">{loc.desc}</span>
+                   <span className="text-sm font-bold text-ink">{loc.name}</span>
+                   <span className="mt-1 text-xs font-medium text-accent">{loc.type}</span>
+                   <span className="mt-1 text-sm leading-relaxed text-muted">{loc.desc}</span>
                 </button>
               )
             })}
@@ -199,7 +199,7 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
       {step === 3 && (
         <div className="mt-5 space-y-3">
           <p className="text-xs font-semibold text-ink">
-            3. ¿Cuántos años de observaciones deseas abarcar?
+             3. How many years of observations should we examine?
           </p>
           <div className="grid gap-2.5 sm:grid-cols-3">
             {timeSpans.map((span) => {
@@ -215,8 +215,8 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
                        : 'border-line bg-surface hover:border-accent/40 hover:shadow-sm'
                   }`}
                 >
-                  <span className="text-xs font-bold text-ink">{span.label}</span>
-                  <span className="mt-1 text-[11px] text-muted leading-relaxed">{span.desc}</span>
+                   <span className="text-sm font-bold text-ink">{span.label}</span>
+                   <span className="mt-1 text-sm leading-relaxed text-muted">{span.desc}</span>
                 </button>
               )
             })}
@@ -232,7 +232,7 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
             onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
              className="rounded-lg border border-line px-3.5 py-1.5 text-xs font-semibold text-muted transition-colors hover:border-accent hover:text-accent"
           >
-            Anterior
+             Back
           </button>
         ) : (
           <div />
@@ -244,7 +244,7 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
             onClick={() => setStep((s) => (s + 1) as 1 | 2 | 3)}
             className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover"
           >
-            <span>Continuar</span>
+             <span>Continue</span>
             <ArrowRight size={14} />
           </button>
         ) : (
@@ -254,7 +254,7 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
             className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover shadow-sm"
           >
             <Sparkles size={14} />
-            <span>Configurar investigación sugerida</span>
+             <span>Configure suggested investigation</span>
           </button>
         )}
       </div>

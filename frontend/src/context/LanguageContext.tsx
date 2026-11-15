@@ -1,6 +1,6 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
 
-export type Language = 'en' | 'es'
+export type Language = 'en'
 
 const translations: Record<string, [string, string]> = {
   investigation: ['Investigation', 'Investigar'],
@@ -63,28 +63,17 @@ const translations: Record<string, [string, string]> = {
 
 interface LanguageContextValue {
   language: Language
-  setLanguage: (language: Language) => void
   t: (key: string) => string
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null)
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>(() => {
-    const stored = window.localStorage.getItem('earth-trend-language')
-    return stored === 'es' ? 'es' : 'en'
-  })
-
-  function changeLanguage(next: Language) {
-    setLanguage(next)
-    window.localStorage.setItem('earth-trend-language', next)
-  }
-
+  const language: Language = 'en'
   const value = useMemo<LanguageContextValue>(() => ({
     language,
-    setLanguage: changeLanguage,
-    t: (key) => translations[key]?.[language === 'en' ? 0 : 1] ?? key,
-  }), [language])
+    t: (key) => translations[key]?.[0] ?? key,
+  }), [])
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }

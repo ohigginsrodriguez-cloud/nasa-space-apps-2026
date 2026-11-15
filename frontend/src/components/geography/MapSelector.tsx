@@ -64,10 +64,10 @@ function ResizeHandles({ bounds, onChange }: { bounds: GeographicBounds; onChang
 }
 
 const coordinateFields: Array<{ key: keyof GeographicBounds; label: string }> = [
-  { key: 'south', label: 'Latitud sur' },
-  { key: 'north', label: 'Latitud norte' },
-  { key: 'west', label: 'Longitud oeste' },
-  { key: 'east', label: 'Longitud este' },
+  { key: 'south', label: 'South latitude' },
+  { key: 'north', label: 'North latitude' },
+  { key: 'west', label: 'West longitude' },
+  { key: 'east', label: 'East longitude' },
 ]
 
 export function MapSelector({ center, value, point, onChange, onPointChange, onValidationChange }: MapSelectorProps) {
@@ -81,7 +81,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
   useEffect(() => {
     if (point) {
       setSelectionMode('point')
-       setMessage(`Punto seleccionado: ${point.latitude.toFixed(4)}, ${point.longitude.toFixed(4)}.`)
+        setMessage(`Point selected: ${point.latitude.toFixed(4)}, ${point.longitude.toFixed(4)}.`)
     }
   }, [point])
 
@@ -91,13 +91,13 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
       onValidationChange?.(null)
       onChange(null)
       onPointChange({ latitude, longitude })
-       setMessage(`Punto seleccionado: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}.`)
+       setMessage(`Point selected: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}.`)
       return
     }
     if (!firstCorner) {
-      onValidationChange?.('Completa el rectángulo seleccionando la segunda esquina.')
+       onValidationChange?.('Complete the rectangle by selecting the second corner.')
       setFirstCorner([latitude, longitude])
-      setMessage('Esquina inicial seleccionada. Haz clic en la esquina opuesta.')
+       setMessage('First corner selected. Click the opposite corner.')
       return
     }
     const bounds = {
@@ -111,7 +111,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
     setDraft(bounds)
     onPointChange(null)
     onChange(bounds)
-     setMessage('Área definida. Arrastra las esquinas azules o edita las coordenadas para ajustar el tamaño.')
+      setMessage('Area defined. Drag the blue corners or edit the coordinates to adjust its size.')
   }
 
   function updateCoordinate(key: keyof GeographicBounds, rawValue: string) {
@@ -120,24 +120,24 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
     setDraft(next)
     const coordinates = [next.south, next.north, next.west, next.east]
     if (coordinates.some((coordinate) => coordinate === undefined || !Number.isFinite(coordinate))) {
-      onValidationChange?.('Completa las cuatro coordenadas para continuar.')
-      setMessage('Completa las cuatro coordenadas para aplicar el rectángulo.')
+       onValidationChange?.('Complete all four coordinates to continue.')
+       setMessage('Complete all four coordinates to apply the rectangle.')
       return
     }
     if (next.south! < -90 || next.south! > 90 || next.north! < -90 || next.north! > 90 || next.west! < -180 || next.west! > 180 || next.east! < -180 || next.east! > 180) {
-      onValidationChange?.('Latitudes: −90 a 90. Longitudes: −180 a 180.')
-      setMessage('Latitudes: −90 a 90. Longitudes: −180 a 180.')
+       onValidationChange?.('Latitudes: −90 to 90. Longitudes: −180 to 180.')
+       setMessage('Latitudes: −90 to 90. Longitudes: −180 to 180.')
       return
     }
     if (next.south! >= next.north! || next.west! >= next.east!) {
-      onValidationChange?.('Sur debe ser menor que norte y oeste menor que este.')
-      setMessage('Verifica que sur sea menor que norte y oeste menor que este.')
+       onValidationChange?.('South must be less than north and west less than east.')
+       setMessage('Check that south is less than north and west is less than east.')
       return
     }
     onPointChange(null)
     onValidationChange?.(null)
     onChange({ south: next.south!, north: next.north!, west: next.west!, east: next.east! })
-     setMessage('Coordenadas aplicadas. Arrastra las esquinas azules o edítalas para ajustar el tamaño.')
+      setMessage('Coordinates applied. Drag the blue corners or edit them to adjust the size.')
   }
 
   function clearSelection() {
@@ -146,37 +146,37 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
     setFirstCorner(null)
     onPointChange(null)
     onChange(null)
-    setMessage('Área limpiada. Haz dos clics en el mapa para comenzar.')
+    setMessage('Area cleared. Click twice on the map to begin.')
   }
 
   return (
     <section id="region" aria-labelledby="map-title" className="surface-panel scroll-mt-6 p-5 sm:p-6">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div><h2 id="map-title" className="text-sm font-semibold">Delimita un área de interés</h2><p className="mt-1 text-xs leading-relaxed text-muted">Selecciona dos esquinas, o escribe las coordenadas geográficas.</p></div>
-         <button type="button" onClick={clearSelection} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-line px-3 text-xs font-semibold text-muted transition-colors hover:border-accent hover:text-accent"><RotateCcw size={14} aria-hidden="true" />Limpiar área</button>
+        <div><h2 id="map-title" className="text-base font-semibold">Define an area of interest</h2><p className="mt-1 text-sm leading-relaxed text-muted">Select two corners or enter geographic coordinates.</p></div>
+         <button type="button" onClick={clearSelection} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-line px-3 text-sm font-semibold text-muted transition-colors hover:border-accent hover:text-accent"><RotateCcw size={15} aria-hidden="true" />Clear area</button>
       </div>
       <div className="mb-3 flex flex-wrap gap-2">
-          <button type="button" aria-pressed={selectionMode === 'rectangle'} onClick={() => { setSelectionMode('rectangle'); setFirstCorner(null); onValidationChange?.('Selecciona dos esquinas para completar el rectángulo.'); setMessage('Haz dos clics en el mapa para definir esquinas opuestas.') }} className={`min-h-9 rounded-lg border px-3 text-xs font-semibold transition-all ${selectionMode === 'rectangle' ? 'border-accent bg-accent text-white' : 'border-line text-muted hover:border-accent hover:text-accent'}`}>Dibujar rectángulo</button>
-          <button type="button" aria-pressed={selectionMode === 'point'} onClick={() => { setSelectionMode('point'); setFirstCorner(null); onValidationChange?.('Selecciona un punto en el mapa para continuar.'); setMessage('Haz clic en el mapa para seleccionar un punto.') }} className={`min-h-9 rounded-lg border px-3 text-xs font-semibold transition-all ${selectionMode === 'point' ? 'border-accent bg-accent text-white' : 'border-line text-muted hover:border-accent hover:text-accent'}`}>Seleccionar punto</button>
+           <button type="button" aria-pressed={selectionMode === 'rectangle'} onClick={() => { setSelectionMode('rectangle'); setFirstCorner(null); onValidationChange?.('Select two corners to complete the rectangle.'); setMessage('Click twice on the map to define opposite corners.') }} className={`min-h-10 rounded-lg border px-3 text-sm font-semibold transition-all ${selectionMode === 'rectangle' ? 'border-accent bg-accent text-white' : 'border-line text-muted hover:border-accent hover:text-accent'}`}>Draw rectangle</button>
+           <button type="button" aria-pressed={selectionMode === 'point'} onClick={() => { setSelectionMode('point'); setFirstCorner(null); onValidationChange?.('Select a point on the map to continue.'); setMessage('Click the map to select a point.') }} className={`min-h-10 rounded-lg border px-3 text-sm font-semibold transition-all ${selectionMode === 'point' ? 'border-accent bg-accent text-white' : 'border-line text-muted hover:border-accent hover:text-accent'}`}>Select point</button>
       </div>
        <div className="overflow-hidden rounded-lg border border-line shadow-inner">
-        <MapContainer center={center} zoom={4} scrollWheelZoom={false} className="h-72 w-full sm:h-96" aria-label="Mapa para definir un rectángulo geográfico">
+         <MapContainer center={center} zoom={4} scrollWheelZoom={false} className="h-72 w-full sm:h-96" aria-label="Map for defining a geographic rectangle">
           <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" eventHandlers={{ tileerror: () => setTilesUnavailable(true) }} />
           <MapController center={center} bounds={value} point={point} />
           <ClickToBounds onCorner={setCorner} />
           {firstCorner && <CircleMarker center={firstCorner} radius={6} pathOptions={{ color: '#1d4ed8' }} />}
           {point && <CircleMarker center={[point.latitude, point.longitude]} radius={7} pathOptions={{ color: '#0f766e', fillColor: '#0f766e', fillOpacity: 0.9 }} />}
-            {value && <><Rectangle bounds={[[value.south, value.west], [value.north, value.east]]} pathOptions={{ color: '#1d4ed8', fillOpacity: 0.12 }} /><ResizeHandles bounds={value} onChange={(bounds) => { onValidationChange?.(null); setFirstCorner(null); onPointChange(null); onChange(bounds); setDraft(bounds); setMessage('Área redimensionada. Se enviará al backend al generar el análisis.') }} /></>}
+            {value && <><Rectangle bounds={[[value.south, value.west], [value.north, value.east]]} pathOptions={{ color: '#1d4ed8', fillOpacity: 0.12 }} /><ResizeHandles bounds={value} onChange={(bounds) => { onValidationChange?.(null); setFirstCorner(null); onPointChange(null); onChange(bounds); setDraft(bounds); setMessage('Area resized. It will be sent to the backend when you generate the analysis.') }} /></>}
         </MapContainer>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-         {coordinateFields.map(({ key, label }) => <label key={key} className="text-xs font-semibold">{label}<input type="number" step="any" min={key === 'south' || key === 'north' ? -90 : -180} max={key === 'south' || key === 'north' ? 90 : 180} value={draft[key] ?? ''} onChange={(event) => updateCoordinate(key, event.target.value)} className="mt-1 block min-h-10 w-full rounded-lg border border-line bg-surface px-2 text-sm transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" /></label>)}
+         {coordinateFields.map(({ key, label }) => <label key={key} className="text-sm font-semibold">{label}<input type="number" step="any" min={key === 'south' || key === 'north' ? -90 : -180} max={key === 'south' || key === 'north' ? 90 : 180} value={draft[key] ?? ''} onChange={(event) => updateCoordinate(key, event.target.value)} className="mt-1 block min-h-10 w-full rounded-lg border border-line bg-surface px-2 text-sm transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" /></label>)}
       </div>
-       <p role="status" aria-live="polite" className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-muted"><MapPin size={14} className="mt-0.5 shrink-0" aria-hidden="true" />{message}</p>
-      {point && <p className="mt-1 text-xs text-muted">Punto: {point.latitude.toFixed(4)}° lat, {point.longitude.toFixed(4)}° lon.</p>}
-      {value && <p className="mt-1 text-xs text-muted">Área: {value.south.toFixed(3)}° a {value.north.toFixed(3)}° lat; {value.west.toFixed(3)}° a {value.east.toFixed(3)}° lon.</p>}
-      {tilesUnavailable && <p role="status" className="mt-2 text-xs text-muted">No se pudieron cargar las teselas del mapa. Puedes continuar con la selección manual de coordenadas.</p>}
-        <p className="mt-2 flex items-start gap-2 text-xs leading-relaxed text-muted"><CircleHelp size={14} className="mt-0.5 shrink-0" aria-hidden="true" />Puedes dibujar el área, arrastrar sus esquinas o editar sus coordenadas. NASA POWER admite rectángulos de 2° a 10° en cada eje; para áreas menores usa un punto. Limpiar área restaura la región predefinida.</p>
+       <p role="status" aria-live="polite" className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted"><MapPin size={15} className="mt-0.5 shrink-0" aria-hidden="true" />{message}</p>
+       {point && <p className="mt-1 text-sm text-muted">Point: {point.latitude.toFixed(4)}° lat, {point.longitude.toFixed(4)}° lon.</p>}
+       {value && <p className="mt-1 text-sm text-muted">Area: {value.south.toFixed(3)}° to {value.north.toFixed(3)}° lat; {value.west.toFixed(3)}° to {value.east.toFixed(3)}° lon.</p>}
+       {tilesUnavailable && <p role="status" className="mt-2 text-sm text-muted">Map tiles could not be loaded. You can continue by entering coordinates manually.</p>}
+         <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-muted"><CircleHelp size={15} className="mt-0.5 shrink-0" aria-hidden="true" />Draw an area, drag its corners, or edit its coordinates. NASA POWER accepts rectangles from 2° to 10° on each axis; use a point for smaller areas. Clearing the area restores the predefined region.</p>
     </section>
   )
 }

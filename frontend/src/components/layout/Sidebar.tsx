@@ -33,7 +33,7 @@ export function Sidebar() {
         </button>
       </div>
 
-      <nav id="main-navigation" aria-label="Navegación principal" className={`${mobileOpen ? 'block' : 'hidden'} px-3 pb-5 lg:block lg:flex-1 lg:overflow-y-auto lg:pt-5`}>
+       <nav id="main-navigation" aria-label="Main navigation" className={`${mobileOpen ? 'block' : 'hidden'} px-3 pb-5 lg:block lg:flex-1 lg:overflow-y-auto lg:pt-5`}>
          <p className={`mb-3 px-3 text-[10px] font-semibold tracking-[0.18em] text-white/60 ${collapsed ? 'lg:sr-only' : ''}`}>{t('research')}</p>
         <ul className="space-y-1.5">
            {navigation.map(({ id, path, icon: Icon }) => (

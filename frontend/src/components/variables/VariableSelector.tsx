@@ -148,7 +148,7 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
   }
 
   return (
-    <section id="variables" aria-labelledby="variables-title" className="scroll-mt-6 rounded-xl border border-line bg-surface p-5 sm:p-6 shadow-sm">
+    <section id="variables" aria-labelledby="variables-title" className="surface-panel scroll-mt-6 p-5 sm:p-6">
       <SectionTitle
         id="variables-title"
         title="¿Qué variable del sistema Tierra investigar?"
@@ -168,14 +168,14 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Buscar temperatura, precipitación, radiación, humedad, viento…"
-            className="min-h-11 w-full rounded-lg border border-line bg-surface pl-9 pr-3 text-sm focus:border-accent"
+            className="min-h-11 w-full rounded-lg border border-line bg-surface pl-9 pr-3 text-sm transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
           />
         </label>
         {query && (
           <button
             type="button"
             onClick={() => setQuery('')}
-            className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-line px-3 text-xs text-muted hover:text-ink"
+           className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-line px-3 text-xs font-medium text-muted transition-colors hover:border-accent hover:text-accent"
           >
             <X size={14} aria-hidden="true" />
             Limpiar
@@ -223,7 +223,7 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
           <button
             type="button"
             onClick={() => setShowRoadmap(!showRoadmap)}
-            className="inline-flex min-h-8 items-center gap-1.5 rounded-lg border border-line bg-canvas px-2.5 py-1 text-xs font-medium text-muted hover:border-accent hover:text-accent"
+           className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-line bg-canvas px-2.5 py-1 text-xs font-semibold text-muted transition-colors hover:border-accent hover:text-accent"
           >
             <Layers size={13} aria-hidden="true" />
             {showRoadmap ? 'Ocultar Roadmap Satelital' : 'Misiones en Roadmap (MODIS, GLDAS, SWOT)'}
@@ -248,7 +248,7 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
                     ? 'border-accent bg-accent-soft text-accent'
                     : isDisabled
                     ? 'cursor-not-allowed border-line/40 bg-canvas text-muted/50'
-                    : 'border-line text-muted hover:border-muted hover:text-ink'
+                     : 'border-line text-muted transition-colors hover:border-accent/50 hover:bg-accent-soft/50 hover:text-accent'
                 }`}
               >
                 {item} {isDisabled ? '· Próximamente' : `(${count})`}
@@ -261,12 +261,12 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
         <div
           tabIndex={0}
           aria-label="Lista de variables activas"
-          className="mt-4 max-h-80 overflow-y-auto overscroll-contain rounded-lg border border-line p-1.5 focus-visible:outline-2 focus-visible:outline-accent"
+          className="mt-4 max-h-80 overflow-y-auto overscroll-contain rounded-lg border border-line bg-canvas/45 p-1.5 focus-visible:outline-2 focus-visible:outline-accent"
         >
           {visibleVariables.length > 0 ? (
             <div className="grid grid-cols-1 gap-2 p-1 sm:grid-cols-2">
               {visibleVariables.map((variable) => (
-                <VariableCard
+                  <VariableCard
                   key={variable.id}
                   variable={variable}
                   selected={variable.demoId ? selectedIds.includes(variable.demoId) : false}

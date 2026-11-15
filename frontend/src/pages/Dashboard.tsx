@@ -69,7 +69,7 @@ export function Dashboard() {
   const canContinue = step === 0 ? draft.variableIds.length > 0 : step === 1 ? geoError === null : true
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <PageIntro
           eyebrow="INVESTIGACIÓN GUIADA"
@@ -80,7 +80,7 @@ export function Dashboard() {
           <button
             type="button"
             onClick={() => setShowGlossary(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:border-accent hover:text-accent shadow-2xs"
+             className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-accent hover:text-accent hover:shadow-md"
           >
             <BookOpen size={14} className="text-accent" />
             <span>Glosario del Detective</span>
@@ -88,7 +88,7 @@ export function Dashboard() {
           <button
             type="button"
             onClick={() => setShowWizard(!showWizard)}
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-2xs transition-colors ${
+             className={`inline-flex min-h-10 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition-all ${
               showWizard
                 ? 'border-accent bg-accent text-white'
                 : 'border-accent/30 bg-accent-soft text-accent hover:bg-accent hover:text-white'
@@ -110,7 +110,7 @@ export function Dashboard() {
       )}
 
       {/* Notificación de proveedor */}
-      <div className="flex items-start gap-3 rounded-lg border border-accent/15 bg-accent-soft/60 px-4 py-3.5">
+       <div className="flex items-start gap-3 rounded-lg border border-accent/20 bg-accent-soft/65 px-4 py-3.5 shadow-sm">
         <FlaskConical size={18} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
         <p className="text-xs leading-relaxed text-muted">
           <strong className="font-semibold text-ink">
@@ -124,7 +124,7 @@ export function Dashboard() {
 
       <div inert={isLoading} aria-busy={isLoading}>
         {/* Ejemplos Demostrativos */}
-        <details className="rounded-xl border border-line bg-surface p-4">
+         <details className="surface-panel p-4">
           <summary className="flex min-h-9 cursor-pointer list-none items-center gap-2 text-sm font-medium [&::-webkit-details-marker]:hidden">
             <Sparkles size={16} className="text-accent" aria-hidden="true" />
             Ver ejemplos demostrativos de 1 clic (periodos largos ≥ 20 años)
@@ -142,7 +142,7 @@ export function Dashboard() {
                   setMapDraftError(null)
                   setStep(0)
                 }}
-                className="flex min-h-16 items-center justify-between gap-3 rounded-lg border border-line p-3 text-left hover:border-accent hover:bg-accent-soft/30 focus-visible:outline-2 focus-visible:outline-accent"
+                 className="flex min-h-16 items-center justify-between gap-3 rounded-lg border border-line p-3 text-left transition-all hover:border-accent hover:bg-accent-soft/50 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <span className="min-w-0">
                   <span className="block text-xs font-semibold text-ink">{example.title}</span>
@@ -164,7 +164,7 @@ export function Dashboard() {
                   disabled={index > step || isLoading}
                   aria-current={index === step ? 'step' : undefined}
                   onClick={() => setStep(index)}
-                  className={`flex min-h-11 w-full items-center gap-2 rounded-lg border px-3 text-left text-xs ${
+                     className={`flex min-h-11 w-full items-center gap-2 rounded-lg border px-3 text-left text-xs transition-all ${
                     index === step
                       ? 'border-accent bg-accent-soft text-accent font-semibold'
                       : index < step
@@ -186,7 +186,7 @@ export function Dashboard() {
             <VariableSelector selectedIds={draft.variableIds} onToggle={toggleVariable} />
             {draft.variableIds.length >= 2 && <label className="mt-4 block text-sm">
               Presentación de las gráficas
-              <select className="ml-2 rounded border border-line bg-surface p-2" value={draft.chartLayout ?? 'separate'} onChange={(event) => updateDraft({ ...draft, chartLayout: event.target.value as 'separate' | 'combined' })}>
+               <select className="ml-2 rounded-lg border border-line bg-surface p-2 text-xs font-semibold transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" value={draft.chartLayout ?? 'separate'} onChange={(event) => updateDraft({ ...draft, chartLayout: event.target.value as 'separate' | 'combined' })}>
                 <option value="separate">Separadas (recomendado)</option>
                 <option value="combined">Juntas en una gráfica</option>
               </select>
@@ -223,7 +223,7 @@ export function Dashboard() {
                 onChange={(timeRange) => updateDraft({ ...draft, timeRange })}
                 error={timeError}
               />
-              <section aria-labelledby="review-title" className="rounded-xl border border-line bg-surface p-4 sm:p-5">
+               <section aria-labelledby="review-title" className="surface-panel p-4 sm:p-5">
                 <h2 id="review-title" className="text-sm font-semibold text-ink">
                   Resumen de la configuración
                 </h2>
@@ -242,7 +242,7 @@ export function Dashboard() {
                       <select
                         value={draft.sourceId}
                         onChange={(event) => updateDraft({ ...draft, sourceId: event.target.value })}
-                        className="rounded border border-line bg-surface px-2.5 py-1 text-ink text-xs"
+                         className="rounded-lg border border-line bg-surface px-2.5 py-1 text-xs text-ink transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
                       >
                         <option value="nasa-power">NASA POWER (datos reales)</option>
                         <option value="local-demo">Datos Sintéticos (Demo reproducible)</option>
@@ -265,8 +265,8 @@ export function Dashboard() {
       {notice && (
         <p
           role={notice.error ? 'alert' : 'status'}
-          className={`flex items-start gap-2 rounded-lg border p-3 text-xs ${
-            notice.error ? 'border-red-200 bg-red-50 text-red-800' : 'border-line bg-surface text-muted'
+             className={`flex items-start gap-2 rounded-lg border p-3 text-xs ${
+             notice.error ? 'border-red-200 bg-red-50 text-red-800' : 'border-line bg-surface text-muted shadow-sm'
           }`}
         >
           <CircleHelp size={15} className="shrink-0" aria-hidden="true" />
@@ -274,13 +274,13 @@ export function Dashboard() {
         </p>
       )}
 
-      {geoError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">{geoError}</p>}
+      {geoError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 shadow-sm">{geoError}</p>}
 
       {isLoading && (
         <p
           role="status"
           aria-live="polite"
-          className="flex items-center gap-2 rounded-lg border border-accent/20 bg-accent-soft/40 p-3 text-xs text-accent"
+          className="flex items-center gap-2 rounded-lg border border-accent/20 bg-accent-soft/65 p-3 text-xs font-medium text-accent shadow-sm"
         >
           <LoaderCircle size={16} className="animate-spin" aria-hidden="true" />
           Consultando serie temporal en NASA POWER y calculando OLS, Mann-Kendall e intervalos de confianza…
@@ -288,7 +288,7 @@ export function Dashboard() {
       )}
 
       {dataLoadState === 'error' && dataLoadError && (
-        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+         <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 shadow-sm">
           {dataLoadError}
         </p>
       )}

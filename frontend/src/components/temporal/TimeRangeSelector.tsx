@@ -8,7 +8,7 @@ interface TimeRangeSelectorProps {
   error: string | null
 }
 
-const fieldClass = 'mt-2 block min-h-11 w-full min-w-0 rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-accent'
+const fieldClass = 'mt-2 block min-h-11 w-full min-w-0 rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15'
 
 function lastCompleteMonth(): { start: string; end: string } {
   const date = new Date()
@@ -25,7 +25,7 @@ function lastCompleteMonth(): { start: string; end: string } {
 export function TimeRangeSelector({ value, onChange, error }: TimeRangeSelectorProps) {
   const latestCompleteMonth = lastCompleteMonth()
   return (
-    <section id="temporal" aria-labelledby="temporal-title" className="scroll-mt-6 rounded-xl border border-line bg-surface p-5 sm:p-6">
+    <section id="temporal" aria-labelledby="temporal-title" className="surface-panel scroll-mt-6 p-5 sm:p-6">
       <SectionTitle id="temporal-title" title="¿Durante cuánto tiempo?" description="Un periodo largo ayuda a evaluar tendencias. El proveedor indicará su cobertura disponible." />
       <div>
         <div className="grid min-w-0 gap-4 sm:grid-cols-2">

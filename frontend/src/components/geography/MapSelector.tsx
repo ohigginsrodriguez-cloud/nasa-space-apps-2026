@@ -150,16 +150,16 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
   }
 
   return (
-    <section id="region" aria-labelledby="map-title" className="scroll-mt-6 rounded-xl border border-line bg-surface p-5 sm:p-6">
+    <section id="region" aria-labelledby="map-title" className="surface-panel scroll-mt-6 p-5 sm:p-6">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div><h2 id="map-title" className="text-sm font-semibold">Delimita un área de interés</h2><p className="mt-1 text-xs leading-relaxed text-muted">Selecciona dos esquinas, o escribe las coordenadas geográficas.</p></div>
-        <button type="button" onClick={clearSelection} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-line px-3 text-xs text-muted hover:text-ink"><RotateCcw size={14} aria-hidden="true" />Limpiar área</button>
+         <button type="button" onClick={clearSelection} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-line px-3 text-xs font-semibold text-muted transition-colors hover:border-accent hover:text-accent"><RotateCcw size={14} aria-hidden="true" />Limpiar área</button>
       </div>
       <div className="mb-3 flex flex-wrap gap-2">
-         <button type="button" aria-pressed={selectionMode === 'rectangle'} onClick={() => { setSelectionMode('rectangle'); setFirstCorner(null); onValidationChange?.('Selecciona dos esquinas para completar el rectángulo.'); setMessage('Haz dos clics en el mapa para definir esquinas opuestas.') }} className={`min-h-9 rounded-lg border px-3 text-xs ${selectionMode === 'rectangle' ? 'border-accent bg-accent-soft text-accent' : 'border-line text-muted'}`}>Dibujar rectángulo</button>
-         <button type="button" aria-pressed={selectionMode === 'point'} onClick={() => { setSelectionMode('point'); setFirstCorner(null); onValidationChange?.('Selecciona un punto en el mapa para continuar.'); setMessage('Haz clic en el mapa para seleccionar un punto.') }} className={`min-h-9 rounded-lg border px-3 text-xs ${selectionMode === 'point' ? 'border-accent bg-accent-soft text-accent' : 'border-line text-muted'}`}>Seleccionar punto</button>
+          <button type="button" aria-pressed={selectionMode === 'rectangle'} onClick={() => { setSelectionMode('rectangle'); setFirstCorner(null); onValidationChange?.('Selecciona dos esquinas para completar el rectángulo.'); setMessage('Haz dos clics en el mapa para definir esquinas opuestas.') }} className={`min-h-9 rounded-lg border px-3 text-xs font-semibold transition-all ${selectionMode === 'rectangle' ? 'border-accent bg-accent text-white' : 'border-line text-muted hover:border-accent hover:text-accent'}`}>Dibujar rectángulo</button>
+          <button type="button" aria-pressed={selectionMode === 'point'} onClick={() => { setSelectionMode('point'); setFirstCorner(null); onValidationChange?.('Selecciona un punto en el mapa para continuar.'); setMessage('Haz clic en el mapa para seleccionar un punto.') }} className={`min-h-9 rounded-lg border px-3 text-xs font-semibold transition-all ${selectionMode === 'point' ? 'border-accent bg-accent text-white' : 'border-line text-muted hover:border-accent hover:text-accent'}`}>Seleccionar punto</button>
       </div>
-      <div className="overflow-hidden rounded-lg border border-line">
+       <div className="overflow-hidden rounded-lg border border-line shadow-inner">
         <MapContainer center={center} zoom={4} scrollWheelZoom={false} className="h-72 w-full sm:h-96" aria-label="Mapa para definir un rectángulo geográfico">
           <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" eventHandlers={{ tileerror: () => setTilesUnavailable(true) }} />
           <MapController center={center} bounds={value} point={point} />
@@ -170,7 +170,7 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
         </MapContainer>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {coordinateFields.map(({ key, label }) => <label key={key} className="text-xs font-medium">{label}<input type="number" step="any" min={key === 'south' || key === 'north' ? -90 : -180} max={key === 'south' || key === 'north' ? 90 : 180} value={draft[key] ?? ''} onChange={(event) => updateCoordinate(key, event.target.value)} className="mt-1 block min-h-10 w-full rounded-lg border border-line bg-surface px-2 text-sm" /></label>)}
+         {coordinateFields.map(({ key, label }) => <label key={key} className="text-xs font-semibold">{label}<input type="number" step="any" min={key === 'south' || key === 'north' ? -90 : -180} max={key === 'south' || key === 'north' ? 90 : 180} value={draft[key] ?? ''} onChange={(event) => updateCoordinate(key, event.target.value)} className="mt-1 block min-h-10 w-full rounded-lg border border-line bg-surface px-2 text-sm transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" /></label>)}
       </div>
        <p role="status" aria-live="polite" className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-muted"><MapPin size={14} className="mt-0.5 shrink-0" aria-hidden="true" />{message}</p>
       {point && <p className="mt-1 text-xs text-muted">Punto: {point.latitude.toFixed(4)}° lat, {point.longitude.toFixed(4)}° lon.</p>}

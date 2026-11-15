@@ -14,7 +14,7 @@ export function VariableCard({ variable, selected, onToggle, compact = false }: 
 
   if (compact) {
     return (
-      <article className={`min-w-0 rounded-lg border p-3 ${selected ? 'border-accent/50 bg-accent-soft/50' : 'border-line bg-surface'}`}>
+      <article className={`min-w-0 rounded-lg border p-3 transition-all duration-200 ${selected ? 'border-accent/55 bg-accent-soft/65 shadow-sm' : 'border-line bg-surface hover:border-accent/35 hover:shadow-sm'}`}>
         <div className="flex items-start justify-between gap-2">
           <h3 className="min-w-0 text-xs font-semibold leading-relaxed">{variable.name}</h3>
           <label className={`flex shrink-0 items-center gap-1.5 text-[11px] ${pending ? 'cursor-not-allowed text-muted' : 'cursor-pointer text-ink'}`}>
@@ -41,9 +41,9 @@ export function VariableCard({ variable, selected, onToggle, compact = false }: 
   }
 
   return (
-    <article className={`min-w-0 rounded-xl border p-4 ${selected ? 'border-accent/50 bg-accent-soft/50' : 'border-line bg-surface'}`}>
+    <article className={`min-w-0 rounded-xl border p-4 transition-all duration-200 ${selected ? 'border-accent/55 bg-accent-soft/65 shadow-sm' : 'border-line bg-surface hover:border-accent/35 hover:shadow-sm'}`}>
       <div className="flex items-start gap-3">
-        <span className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${selected ? 'bg-accent-soft text-accent' : 'bg-canvas text-muted'}`}><Activity size={19} aria-hidden="true" /></span>
+         <span className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${selected ? 'bg-accent text-white' : 'bg-accent-soft text-accent'}`}><Activity size={19} aria-hidden="true" /></span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold">{variable.name}</h3>

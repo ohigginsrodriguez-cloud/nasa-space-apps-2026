@@ -150,7 +150,7 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
   const ols = trend.ols
 
   return (
-    <article className="rounded-xl border border-line bg-canvas/50 p-4 sm:p-5 shadow-sm">
+       <article className="rounded-xl border border-line bg-canvas/55 p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="size-3 rounded-full" style={{ backgroundColor: getVariableColor(variable.id) }} />
@@ -160,11 +160,11 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
             isSig
-              ? 'bg-rose-50 text-rose-800 border border-rose-200'
+               ? 'border border-signal/25 bg-signal-soft text-ink'
               : 'border border-line bg-surface text-muted'
           }`}
         >
-          {isSig ? <CheckCircle2 size={13} className="text-rose-600" /> : <XCircle size={13} className="text-muted" />}
+           {isSig ? <CheckCircle2 size={13} className="text-success" /> : <XCircle size={13} className="text-muted" />}
           {isConstant
             ? 'Serie constante'
             : isSig
@@ -180,9 +180,9 @@ function TrendSummary({ result, regionName }: { result: BackendResult | undefine
       <div className="mt-4 flex flex-wrap items-baseline gap-3">
         <div className="flex items-center gap-1.5">
           {isUp ? (
-            <ArrowUpRight size={26} className="text-rose-600" aria-label="Aumento" />
+             <ArrowUpRight size={26} className="text-signal" aria-label="Aumento" />
           ) : isDown ? (
-            <ArrowDownRight size={26} className="text-blue-600" aria-label="Disminución" />
+             <ArrowDownRight size={26} className="text-accent" aria-label="Disminución" />
           ) : (
             <ArrowRight size={24} className="text-muted" aria-label="Sin cambio" />
           )}
@@ -389,7 +389,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   }
 
   return (
-    <section id="analysis" aria-labelledby="chart-title" className="min-w-0 scroll-mt-6 rounded-xl border border-line bg-surface p-5 sm:p-6 shadow-sm">
+     <section id="analysis" aria-labelledby="chart-title" className="surface-panel min-w-0 scroll-mt-6 p-5 sm:p-6">
       <SectionTitle
         id="chart-title"
         title="Serie temporal y análisis de tendencias"
@@ -404,7 +404,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               <button
                 type="button"
                 onClick={() => downloadExport('csv')}
-                className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1 text-xs font-medium text-muted hover:border-accent hover:text-accent"
+                 className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1 text-xs font-semibold text-muted transition-colors hover:border-accent hover:text-accent"
                 title="Descargar datos en CSV"
               >
                 <Download size={13} aria-hidden="true" />
@@ -413,7 +413,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               <button
                 type="button"
                 onClick={() => downloadExport('json')}
-                className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1 text-xs font-medium text-muted hover:border-accent hover:text-accent"
+                 className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1 text-xs font-semibold text-muted transition-colors hover:border-accent hover:text-accent"
                 title="Descargar resultados en JSON"
               >
                 <Download size={13} aria-hidden="true" />
@@ -436,7 +436,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                     aria-pressed={!hiddenVariables.includes(variable.id)}
                     aria-label={`${hiddenVariables.includes(variable.id) ? 'Mostrar' : 'Ocultar'} ${variable.name}`}
                     onClick={() => setHiddenVariables((current) => current.includes(variable.id) ? current.filter((id) => id !== variable.id) : [...current, variable.id])}
-                    className="flex items-center gap-2 rounded-lg border border-line p-2 text-xs">
+                     className="flex items-center gap-2 rounded-lg border border-line p-2 text-xs transition-colors hover:border-accent/40 hover:bg-accent-soft/35">
                     <span className="flex items-center gap-1 font-medium" style={{ color }}>
                       <Minus size={18} strokeWidth={3} aria-hidden="true" />
                       <span>{variable.name}</span>
@@ -476,7 +476,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
           </div>
 
           <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-line p-3 text-xs">
-            <div className="flex w-full items-center gap-2 rounded-md bg-accent-soft px-3 py-2 text-accent">
+             <div className="flex w-full items-center gap-2 rounded-md border border-accent/15 bg-accent-soft px-3 py-2 text-accent">
               <strong>Zoom de la gráfica</strong>
               <span className="text-muted">Usa − y + al lado de cada gráfica y arrastra con el mouse para recorrer los datos.</span>
               <button type="button" className="ml-auto inline-flex items-center gap-1 rounded border border-accent/30 px-2 py-1 font-medium hover:bg-surface" aria-expanded={showZoomHelp} onClick={() => setShowZoomHelp(!showZoomHelp)}>
@@ -484,21 +484,21 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               </button>
             </div>
             {showZoomHelp && <p role="note" className="w-full rounded-md border border-accent/20 bg-surface p-2 text-muted">Pulsa <strong>+</strong> para acercar y <strong>−</strong> para alejar. Cuando el zoom sea mayor que 1×, mantén presionado el botón izquierdo y arrastra horizontalmente sobre la gráfica. “Restablecer” vuelve a centrar la vista completa.</p>}
-            <button type="button" className="rounded border border-line p-2" onClick={() => setHiddenVariables([])}>Mostrar todas</button>
+             <button type="button" className="rounded-lg border border-line px-3 py-2 font-semibold transition-colors hover:border-accent hover:text-accent" onClick={() => setHiddenVariables([])}>Mostrar todas</button>
             {selectedVariables.length >= 2 && <label>Vista
-              <select aria-label="Vista de gráficas" className="ml-2 rounded border border-line bg-surface p-2" value={layout} onChange={(event) => setLayout(event.target.value as 'separate' | 'combined')}>
+               <select aria-label="Vista de gráficas" className="ml-2 rounded-lg border border-line bg-surface p-2 font-semibold transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15" value={layout} onChange={(event) => setLayout(event.target.value as 'separate' | 'combined')}>
                 <option value="separate">Separadas (recomendado)</option>
                 <option value="combined">Juntas en una gráfica</option>
               </select>
             </label>}
-            <button type="button" aria-pressed={expanded} className="rounded border border-line p-2" onClick={() => setExpanded(!expanded)}>{expanded ? 'Altura normal' : 'Ampliar altura para detalle'}</button>
+             <button type="button" aria-pressed={expanded} className="rounded-lg border border-line px-3 py-2 font-semibold transition-colors hover:border-accent hover:text-accent" onClick={() => setExpanded(!expanded)}>{expanded ? 'Altura normal' : 'Ampliar altura para detalle'}</button>
             <p className="w-full text-muted">El zoom centra la ventana temporal y no cambia las pruebas estadísticas ni las descargas.</p>
           </div>
           {!visibleVariables.length && <p role="status">Todas las variables están ocultas. Activa una variable o pulsa “Mostrar todas”.</p>}
           {!chartPoints.length && <p role="status">No hay observaciones dentro del zoom seleccionado.</p>}
           {/* Separate panels avoid overlapping variables and incompatible units. */}
           {layout === 'combined' && selectedVariables.length >= 2 && visibleVariables.length > 0 && (
-            <article aria-label="Gráfica conjunta de variables" className="mb-5 rounded-xl border border-line p-3">
+             <article aria-label="Gráfica conjunta de variables" className="mb-5 rounded-xl border border-line bg-canvas/35 p-3 shadow-sm">
               <h3 className="font-semibold">Variables juntas · escalas independientes</h3>
               <p className="text-xs text-muted">Consulta valores y unidades al pasar el puntero. Lluvia: tendencia y banda en equivalente mensual (÷12). Las escalas se ajustan al periodo visible.</p>
               <div className="my-2 flex flex-wrap gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label="Leyenda de variables juntas">
@@ -530,7 +530,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
           {(layout === 'separate' || selectedVariables.length < 2) && visibleVariables.map((variable) => {
             const result = results.find((item) => item.variable.id === variable.id)
             if (!result) return null
-             return <article key={variable.id} aria-label={`Panel de ${variable.name}`} className="mb-5 rounded-xl border border-line p-3">
+              return <article key={variable.id} aria-label={`Panel de ${variable.name}`} className="mb-5 rounded-xl border border-line bg-canvas/35 p-3 shadow-sm">
                <h3 className="font-semibold" style={{ color: getVariableColor(variable.id) }}>{variable.name} · {variable.unit}</h3>
                <p className="mb-2 text-xs text-muted">Línea continua: observado · discontinua: tendencia · sombreado: IC 95% de la media estimada.</p>
                <ChartLegend variable={variable} />
@@ -647,7 +647,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                 aria-label={`Significancia estadística de ${variable.name}`}
                 className={`mt-3 rounded-lg border px-3 py-2 text-xs ${
                   result.interpretation?.significant === true || (!result.interpretation && result.trend.significant === true)
-                    ? 'border-rose-200 bg-rose-50 text-rose-900'
+                     ? 'border-signal/25 bg-signal-soft text-ink'
                     : result.interpretation?.significant === false || (!result.interpretation && result.trend.significant === false)
                       ? 'border-slate-200 bg-slate-50 text-slate-800'
                       : 'border-amber-200 bg-amber-50 text-amber-900'
@@ -698,15 +698,15 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
             </div>
           </section>
           {results.length > 1 && dataset?.multivariateInterpretation ? (
-            <section aria-labelledby="processes-title" className="mt-5 rounded-xl border border-indigo-200 bg-indigo-50/60 p-4">
-              <h2 id="processes-title" className="flex items-center gap-2 text-sm font-bold text-indigo-950">
+             <section aria-labelledby="processes-title" className="mt-5 rounded-xl border border-accent/25 bg-accent-soft/65 p-4">
+               <h2 id="processes-title" className="flex items-center gap-2 text-sm font-bold text-accent">
                 <Link2 size={16} aria-hidden="true" />
                 Interpretación conjunta de las variables
               </h2>
-              <p className="mt-2 text-xs text-indigo-900">{dataset.multivariateInterpretation.summary}</p>
+               <p className="mt-2 text-xs text-ink">{dataset.multivariateInterpretation.summary}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {selectedGroupVariables.map((variable) => (
-                  <span key={variable.id} className="rounded-full border border-indigo-200 bg-white/80 px-2.5 py-1 text-[11px] text-indigo-950">
+                   <span key={variable.id} className="rounded-full border border-accent/20 bg-surface px-2.5 py-1 text-[11px] text-accent">
                     {variable.name} · {variable.unit}
                   </span>
                 ))}
@@ -714,16 +714,16 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               {dataset.multivariateInterpretation.processes.length > 0 && (
                 <ul className="mt-3 space-y-3">
                   {dataset.multivariateInterpretation.processes.map((process) => (
-                    <li key={process.id} className="rounded-lg border border-indigo-200 bg-white/80 p-3">
-                      <h3 className="text-xs font-semibold text-indigo-950">{process.name}</h3>
-                      <p className="mt-1 text-xs text-indigo-900">{process.summary}</p>
-                      <p className="mt-1 text-[11px] text-indigo-800">{process.causality_warning}</p>
+                     <li key={process.id} className="rounded-lg border border-accent/20 bg-surface p-3">
+                       <h3 className="text-xs font-semibold text-accent">{process.name}</h3>
+                       <p className="mt-1 text-xs text-ink">{process.summary}</p>
+                       <p className="mt-1 text-[11px] text-muted">{process.causality_warning}</p>
                     </li>
                   ))}
                 </ul>
               )}
-              <p className="mt-3 text-[11px] text-indigo-800">{dataset.multivariateInterpretation.pattern_summary}</p>
-              <p className="mt-2 text-[11px] text-indigo-800">{dataset.multivariateInterpretation.causality_warning}</p>
+               <p className="mt-3 text-[11px] text-muted">{dataset.multivariateInterpretation.pattern_summary}</p>
+               <p className="mt-2 text-[11px] text-muted">{dataset.multivariateInterpretation.causality_warning}</p>
             </section>
           ) : null}
         </>

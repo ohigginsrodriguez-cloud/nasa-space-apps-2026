@@ -71,7 +71,7 @@ export function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
       ref={dialog}
       aria-modal="true"
       aria-labelledby="glossary-title"
-      className="fixed inset-0 m-auto max-h-[90vh] w-[90vw] max-w-2xl overflow-hidden rounded-2xl bg-surface p-0 backdrop:bg-black/50"
+       className="fixed inset-0 m-auto max-h-[90vh] w-[90vw] max-w-2xl overflow-hidden rounded-2xl bg-surface p-0 shadow-2xl backdrop:bg-ink/45"
       onCancel={onClose}
       onWheel={(event) => event.stopPropagation()}
     >
@@ -94,7 +94,7 @@ export function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-muted hover:bg-canvas hover:text-ink focus:outline-none"
+             className="rounded-lg p-1.5 text-muted transition-colors hover:bg-accent-soft hover:text-accent focus:outline-none"
             aria-label="Cerrar glosario"
           >
             <X size={18} />
@@ -103,7 +103,7 @@ export function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
 
         <div className="mt-5 space-y-4">
           {terms.map((item) => (
-            <div key={item.term} className="rounded-xl border border-line bg-canvas/40 p-3.5 text-xs">
+             <div key={item.term} className="rounded-xl border border-line bg-canvas/55 p-3.5 text-xs transition-colors hover:border-accent/35">
               <h3 className="font-semibold text-accent text-sm">{item.term}</h3>
               <p className="mt-1 text-ink leading-relaxed">{item.definition}</p>
               <p className="mt-2 text-[11px] text-muted italic border-t border-line/50 pt-1.5">

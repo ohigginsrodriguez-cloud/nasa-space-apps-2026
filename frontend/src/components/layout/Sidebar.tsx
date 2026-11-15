@@ -20,10 +20,10 @@ export function Sidebar() {
     >
       <div className={`flex h-20 items-center justify-between gap-3 px-5 lg:h-24 ${collapsed ? 'lg:justify-center lg:px-3' : 'lg:px-6'}`}>
         <NavLink to="/dashboard" aria-label="Earth System Trend Detective — Inicio" className="flex min-w-0 items-center gap-3 rounded-md" onClick={() => setMobileOpen(false)}>
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-white"><Orbit size={25} strokeWidth={1.6} aria-hidden="true" /></span>
+           <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20"><Orbit size={25} strokeWidth={1.8} aria-hidden="true" /></span>
           <span className={collapsed ? 'lg:sr-only' : ''}>
-            <span className="block text-sm font-bold tracking-tight">EARTH SYSTEM</span>
-            <span className="block text-xs tracking-wide text-muted">Trend Detective</span>
+             <span className="block text-sm font-extrabold tracking-[0.04em]">EARTH SYSTEM</span>
+             <span className="block text-xs font-medium tracking-wide text-muted">Trend Detective</span>
           </span>
         </NavLink>
         <button ref={menuButton} type="button" className="flex size-11 items-center justify-center rounded-lg border border-line text-muted lg:hidden" aria-label={mobileOpen ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={mobileOpen} aria-controls="main-navigation" onClick={() => setMobileOpen(!mobileOpen)}>
@@ -32,11 +32,11 @@ export function Sidebar() {
       </div>
 
       <nav id="main-navigation" aria-label="Navegación principal" className={`${mobileOpen ? 'block' : 'hidden'} px-3 pb-5 lg:block lg:flex-1 lg:overflow-y-auto lg:pt-5`}>
-        <p className={`mb-3 px-3 text-[10px] font-semibold tracking-[0.18em] text-muted ${collapsed ? 'lg:sr-only' : ''}`}>INVESTIGACIÓN</p>
+        <p className={`eyebrow mb-3 px-3 text-[10px] ${collapsed ? 'lg:sr-only' : ''}`}>INVESTIGACIÓN</p>
         <ul className="space-y-1.5">
           {navigation.map(({ id, path, label, icon: Icon }) => (
             <li key={id}>
-              <NavLink to={path} end={path === '/dashboard'} title={collapsed ? label : undefined} onClick={() => setMobileOpen(false)} className={({ isActive }) => `flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm transition-colors motion-reduce:transition-none ${collapsed ? 'lg:justify-center' : ''} ${isActive ? 'bg-accent-soft font-semibold text-accent' : 'text-muted hover:bg-canvas hover:text-ink'}`}>
+               <NavLink to={path} end={path === '/dashboard'} title={collapsed ? label : undefined} onClick={() => setMobileOpen(false)} className={({ isActive }) => `flex min-h-11 w-full items-center gap-3 rounded-lg border-l-2 px-3 py-3 text-left text-sm transition-all duration-200 motion-reduce:transition-none ${collapsed ? 'lg:justify-center' : ''} ${isActive ? 'border-accent bg-accent-soft font-bold text-accent' : 'border-transparent text-muted hover:bg-canvas hover:text-ink'}`}>
                 {({ isActive }) => <>
                   <Icon size={19} strokeWidth={1.7} className="shrink-0" aria-hidden="true" />
                   <span className={collapsed ? 'lg:sr-only' : ''}>{label}</span>

@@ -95,7 +95,7 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-accent/25 bg-surface p-5 sm:p-6 shadow-sm">
+    <div className="surface-panel border-accent/25 p-5 sm:p-6">
       <div className="flex items-center gap-2.5 border-b border-line pb-3.5">
         <span className="flex size-9 items-center justify-center rounded-xl bg-accent text-white">
           <Compass size={20} />
@@ -145,10 +145,10 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
                   key={item.id}
                   type="button"
                   onClick={() => setSelectedPhenomenon(item.id)}
-                  className={`flex items-start gap-3 rounded-xl border p-3.5 text-left transition-all ${
+                   className={`flex items-start gap-3 rounded-xl border p-3.5 text-left transition-all duration-200 ${
                     isSelected
                       ? 'border-accent bg-accent-soft/40 shadow-xs'
-                      : 'border-line bg-surface hover:border-accent/40'
+                       : 'border-line bg-surface hover:border-accent/40 hover:shadow-sm'
                   }`}
                 >
                   <span className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ${isSelected ? 'bg-accent text-white' : 'bg-canvas text-muted'}`}>
@@ -179,10 +179,10 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
                   key={loc.id}
                   type="button"
                   onClick={() => setSelectedLocation(loc.id)}
-                  className={`flex flex-col rounded-xl border p-3.5 text-left transition-all ${
+                   className={`flex flex-col rounded-xl border p-3.5 text-left transition-all duration-200 ${
                     isSelected
                       ? 'border-accent bg-accent-soft/40 shadow-xs'
-                      : 'border-line bg-surface hover:border-accent/40'
+                       : 'border-line bg-surface hover:border-accent/40 hover:shadow-sm'
                   }`}
                 >
                   <span className="text-xs font-bold text-ink">{loc.name}</span>
@@ -209,10 +209,10 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
                   key={span.id}
                   type="button"
                   onClick={() => setSelectedSpan(span.id)}
-                  className={`flex flex-col rounded-xl border p-3.5 text-left transition-all ${
+                   className={`flex flex-col rounded-xl border p-3.5 text-left transition-all duration-200 ${
                     isSelected
                       ? 'border-accent bg-accent-soft/40 shadow-xs'
-                      : 'border-line bg-surface hover:border-accent/40'
+                       : 'border-line bg-surface hover:border-accent/40 hover:shadow-sm'
                   }`}
                 >
                   <span className="text-xs font-bold text-ink">{span.label}</span>
@@ -230,7 +230,7 @@ export function DetectiveWizard({ onComplete }: DetectiveWizardProps) {
           <button
             type="button"
             onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
-            className="rounded-lg border border-line px-3.5 py-1.5 text-xs font-medium text-muted hover:text-ink"
+             className="rounded-lg border border-line px-3.5 py-1.5 text-xs font-semibold text-muted transition-colors hover:border-accent hover:text-accent"
           >
             Anterior
           </button>

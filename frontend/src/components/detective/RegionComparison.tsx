@@ -71,16 +71,16 @@ export function RegionComparison() {
   const slopeA = resultA?.trend.change_per_decade
   const slopeB = resultB?.trend.change_per_decade
   return (
-    <div className="rounded-2xl border border-line bg-surface p-5 sm:p-6 shadow-sm space-y-5">
+    <div className="surface-panel space-y-5 p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
         <div className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-purple-600 text-white">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/20">
             <GitCompare size={20} />
           </span>
           <div>
             <h2 className="text-sm font-bold text-ink flex items-center gap-2">
               Modo Comparación Bi-Regional
-              <span className="rounded-full bg-purple-50 text-purple-700 px-2 py-0.5 text-[10px] font-semibold border border-purple-200">
+              <span className="rounded-full border border-accent/20 bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">
                 Reto NASA: Respuestas Contrastantes
               </span>
             </h2>
@@ -92,7 +92,7 @@ export function RegionComparison() {
           type="button"
           disabled={loading || validationError !== null}
           onClick={() => void handleCompare()}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-accent-hover hover:shadow-md disabled:opacity-60"
         >
           {loading ? <LoaderCircle size={14} className="animate-spin" /> : <GitCompare size={14} />}
           <span>{loading ? 'Consultando datos…' : 'Ejecutar Comparación'}</span>
@@ -106,7 +106,7 @@ export function RegionComparison() {
           <select
             value={variableId}
             onChange={(e) => setVariableId(e.target.value as VariableId)}
-            className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink font-medium focus:border-accent"
+            className="w-full rounded-lg border border-line bg-surface px-3 py-2 font-medium text-ink transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
           >
             {variables.map((v) => (
               <option key={v.id} value={v.id}>{v.name} ({v.unit})</option>
@@ -149,7 +149,7 @@ export function RegionComparison() {
               max={maxDate}
               onChange={(e) => setStartDate(e.target.value)}
               placeholder="YYYY-MM-DD"
-              className="w-1/2 rounded border border-line bg-surface px-1.5 py-1.5 text-[11px] font-mono text-ink"
+             className="w-1/2 rounded-lg border border-line bg-surface px-1.5 py-1.5 font-mono text-[11px] text-ink transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
             />
             <span className="text-muted">-</span>
             <input
@@ -158,7 +158,7 @@ export function RegionComparison() {
               max={maxDate}
               onChange={(e) => setEndDate(e.target.value)}
               placeholder="YYYY-MM-DD"
-              className="w-1/2 rounded border border-line bg-surface px-1.5 py-1.5 text-[11px] font-mono text-ink"
+               className="w-1/2 rounded-lg border border-line bg-surface px-1.5 py-1.5 font-mono text-[11px] text-ink transition-colors focus:border-accent focus:ring-2 focus:ring-accent/15"
             />
           </div>
         </div>
@@ -186,24 +186,24 @@ export function RegionComparison() {
 
       {/* Banner de Tendencias Opuestas Detectadas */}
       {hasCurrentResults && spatialInterpretation && (
-        <div className="rounded-xl border border-purple-300 bg-purple-50/90 p-4 text-purple-950 shadow-xs">
+        <div className="rounded-xl border border-signal/30 bg-signal-soft p-4 text-ink shadow-sm">
           <div className="flex items-start gap-2.5">
-            <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-purple-600 text-white font-bold text-xs">
+             <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-signal text-white font-bold text-xs">
               ⚡
             </span>
             <div>
-              <h3 className="text-sm font-bold text-purple-900">{spatialInterpretation.title}</h3>
-              <p className="mt-1 text-xs leading-relaxed text-purple-900">
+               <h3 className="text-sm font-bold text-ink">{spatialInterpretation.title}</h3>
+               <p className="mt-1 text-xs leading-relaxed text-ink">
                 {spatialInterpretation.summary}
               </p>
               {spatialInterpretation.regions?.map((item) => (
-                <p key={item.id} className="mt-1 text-[11px] text-purple-900">
+                 <p key={item.id} className="mt-1 text-[11px] text-ink">
                   <strong>{item.name}:</strong> {item.direction} · {formatValue(item.change_per_decade)} {selectedVar.unit}/década ·{' '}
                   {item.significant === true ? 'significativa' : item.significant === false ? 'no significativa' : 'no evaluable'}
                 </p>
               ))}
               {spatialInterpretation.causality_warning && (
-                <p className="mt-2 text-[11px] italic text-purple-800">{spatialInterpretation.causality_warning}</p>
+                 <p className="mt-2 text-[11px] italic text-muted">{spatialInterpretation.causality_warning}</p>
               )}
             </div>
           </div>
@@ -215,14 +215,14 @@ export function RegionComparison() {
       {hasCurrentResults && datasetA && datasetB && (
         <div className="grid gap-5 lg:grid-cols-2 pt-2">
           {/* Tarjeta Región A */}
-          <div className="rounded-xl border border-line bg-canvas/40 p-4">
+          <div className="rounded-xl border border-line bg-canvas/55 p-4 shadow-sm">
             <div className="flex items-center justify-between border-b border-line pb-2 mb-3">
                 <h3 className="text-xs font-bold text-ink">{regionA.name} · {selectedVar.name}</h3>
               <span className="flex items-center gap-1 text-xs font-semibold">
                 {slopeA !== undefined && slopeA !== null && slopeA > 0 ? (
-                  <TrendingUp size={14} className="text-rose-600" />
+                   <TrendingUp size={14} className="text-signal" />
                 ) : (
-                  <TrendingDown size={14} className="text-blue-600" />
+                   <TrendingDown size={14} className="text-accent" />
                 )}
                 {formatValue(slopeA)} {selectedVar.unit}/década
               </span>
@@ -239,9 +239,9 @@ export function RegionComparison() {
                   <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} label={{ value: selectedVar.unit, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 10, fill: 'var(--color-muted)' } }} />
                   <Tooltip labelFormatter={(l) => formatDate(String(l))} />
-                  <Area dataKey={`band_${variableId}`} stroke="none" fill="#0284c7" fillOpacity={0.12} isAnimationActive={false} />
-                  <Line dataKey={variableId} stroke="#0284c7" strokeWidth={1.3} dot={false} isAnimationActive={false} name={`Observado (${selectedVar.unit})`} />
-                  <Line dataKey={`trend_${variableId}`} stroke="#0284c7" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Tendencia (${selectedVar.unit})`} />
+                   <Area dataKey={`band_${variableId}`} stroke="none" fill="var(--color-chart-precipitation)" fillOpacity={0.12} isAnimationActive={false} />
+                   <Line dataKey={variableId} stroke="var(--color-chart-precipitation)" strokeWidth={1.3} dot={false} isAnimationActive={false} name={`Observado (${selectedVar.unit})`} />
+                   <Line dataKey={`trend_${variableId}`} stroke="var(--color-chart-precipitation)" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Tendencia (${selectedVar.unit})`} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
@@ -254,14 +254,14 @@ export function RegionComparison() {
           </div>
 
           {/* Tarjeta Región B */}
-          <div className="rounded-xl border border-line bg-canvas/40 p-4">
+          <div className="rounded-xl border border-line bg-canvas/55 p-4 shadow-sm">
             <div className="flex items-center justify-between border-b border-line pb-2 mb-3">
                 <h3 className="text-xs font-bold text-ink">{regionB.name} · {selectedVar.name}</h3>
               <span className="flex items-center gap-1 text-xs font-semibold">
                 {slopeB !== undefined && slopeB !== null && slopeB > 0 ? (
-                  <TrendingUp size={14} className="text-rose-600" />
+                   <TrendingUp size={14} className="text-signal" />
                 ) : (
-                  <TrendingDown size={14} className="text-blue-600" />
+                   <TrendingDown size={14} className="text-accent" />
                 )}
                 {formatValue(slopeB)} {selectedVar.unit}/década
               </span>
@@ -278,9 +278,9 @@ export function RegionComparison() {
                   <XAxis dataKey="date" tickFormatter={formatDate} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} label={{ value: selectedVar.unit, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 10, fill: 'var(--color-muted)' } }} />
                   <Tooltip labelFormatter={(l) => formatDate(String(l))} />
-                  <Area dataKey={`band_${variableId}`} stroke="none" fill="#e11d48" fillOpacity={0.12} isAnimationActive={false} />
-                  <Line dataKey={variableId} stroke="#e11d48" strokeWidth={1.3} dot={false} isAnimationActive={false} name={`Observado (${selectedVar.unit})`} />
-                  <Line dataKey={`trend_${variableId}`} stroke="#e11d48" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Tendencia (${selectedVar.unit})`} />
+                   <Area dataKey={`band_${variableId}`} stroke="none" fill="var(--color-signal)" fillOpacity={0.12} isAnimationActive={false} />
+                   <Line dataKey={variableId} stroke="var(--color-signal)" strokeWidth={1.3} dot={false} isAnimationActive={false} name={`Observado (${selectedVar.unit})`} />
+                   <Line dataKey={`trend_${variableId}`} stroke="var(--color-signal)" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Tendencia (${selectedVar.unit})`} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>

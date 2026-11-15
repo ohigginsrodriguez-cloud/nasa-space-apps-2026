@@ -269,6 +269,15 @@ y 5° × 5°, lectura en vivo de ancho/alto y estado válido/no válido según l
 restricciones de NASA POWER. También se tradujeron mensajes de carga, errores y
 ejemplos restantes al inglés.
 
+Fase científica de baja fricción: los detalles avanzados de métodos se
+agruparon en un panel colapsable para no saturar el resultado principal.
+Se añadió Seasonal Mann–Kendall junto a OLS, Mann–Kendall y Theil–Sen. Las
+respuestas visibles del backend activo (catálogo, regiones, advertencias,
+veredictos, patrones y divergencia espacial) se pasaron al inglés para evitar
+que la interfaz English-only vuelva a mostrar mensajes en español. Se
+actualizaron las aserciones afectadas y se mantienen **51 tests backend**, **11
+frontend**, typecheck, build y E2E aprobados.
+
 La limpieza de ramas solo debe borrar ramas ya fusionadas; se preservan las que
 tienen commits exclusivos.
 

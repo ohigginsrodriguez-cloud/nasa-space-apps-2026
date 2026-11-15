@@ -22,4 +22,4 @@ def test_incomplete_years_are_excluded_and_expose_coverage_warning():
     result = analyze_trend(series, VARIABLES["precipitation"])
     assert result.n_observations == 0
     assert result.status == "insufficient_data"
-    assert any("Se excluyeron del ajuste anual" in warning for warning in result.warnings)
+    assert any("Years with missing months were excluded" in warning for warning in result.warnings)

@@ -6,7 +6,7 @@ from app.schemas.analysis import RegionInfo, RegionRequest
 PREDEFINED_REGIONS: dict[str, RegionInfo] = {
     "sonoran-desert": RegionInfo(
         id="sonoran-desert",
-        name="Desierto de Sonora · México",
+        name="Sonoran Desert · Mexico",
         type="predefined",
         south=28.0,
         west=-112.0,
@@ -15,7 +15,7 @@ PREDEFINED_REGIONS: dict[str, RegionInfo] = {
     ),
     "lacandon-jungle": RegionInfo(
         id="lacandon-jungle",
-        name="Selva Lacandona · Chiapas",
+        name="Lacandon Jungle · Chiapas",
         type="point",
         south=16.8,
         west=-91.3,
@@ -24,7 +24,7 @@ PREDEFINED_REGIONS: dict[str, RegionInfo] = {
     ),
     "tabasco-wetlands": RegionInfo(
         id="tabasco-wetlands",
-        name="Pantanos de Centla · Tabasco",
+        name="Centla Wetlands · Tabasco",
         type="point",
         south=18.4,
         west=-92.6,
@@ -33,7 +33,7 @@ PREDEFINED_REGIONS: dict[str, RegionInfo] = {
     ),
     "valley-of-mexico": RegionInfo(
         id="valley-of-mexico",
-        name="Valle de México y alrededores",
+        name="Mexico City Valley and surroundings",
         type="predefined",
         # POWER Regional requires >=2° on each axis. This is an approximate
         # surrounding region for the API, not an exact metropolitan boundary.
@@ -68,7 +68,7 @@ def resolve_region(request: RegionRequest) -> RegionInfo:
 
     return RegionInfo(
         id="custom-bbox",
-        name=request.name or "Área personalizada",
+        name=request.name or "Custom area",
         type="bbox",
         south=request.south,
         west=request.west,

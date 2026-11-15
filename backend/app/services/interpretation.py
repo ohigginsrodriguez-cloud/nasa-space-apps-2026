@@ -18,11 +18,11 @@ def statistical_verdict(variable: dict[str, Any], trend: dict[str, Any]) -> dict
     if status == "constant_series" or direction == "no_linear_change":
         verdict = "stationary"
         significant = False
-        summary = "La serie anual no muestra cambio lineal; esto no descarta variación mensual."
+        summary = "The annual series shows no linear change; this does not rule out monthly variation."
     elif status in {"insufficient_data", "calculation_error"} or p_value is None or not interval:
         verdict = "insufficient_data"
         significant = None
-        summary = "No hay datos suficientes para evaluar la tendencia."
+        summary = "There is not enough data to evaluate the trend."
     else:
         contains_zero = interval[0] <= 0 <= interval[1]
         significant_by_p = p_value < alpha
@@ -30,28 +30,28 @@ def statistical_verdict(variable: dict[str, Any], trend: dict[str, Any]) -> dict
         if significant_by_p != significant_by_ci:
             verdict = "conflicting_evidence"
             significant = None
-            summary = "El p-value y el intervalo de confianza no concuerdan; interpreta el resultado con cautela."
+            summary = "The p-value and confidence interval disagree; interpret the result cautiously."
         elif significant_by_p:
             significant = True
             verdict = "significant_increase" if direction == "increasing" else "significant_decrease"
-            verb = "aumentó" if direction == "increasing" else "disminuyó"
+            verb = "increased" if direction == "increasing" else "decreased"
             summary = (
                 f"{variable['name']} {verb} {abs(float(slope)):.3g} "
-                f"{variable['unit']} por década; la tendencia es significativa."
+                f"{variable['unit']} per decade; the trend is statistically significant."
             )
         else:
             significant = False
             verdict = "non_significant"
-            summary = "La pendiente indica una dirección, pero la evidencia no alcanza significancia estadística."
+            summary = "The slope indicates a direction, but the evidence does not reach statistical significance."
 
     return {
         "title": {
-            "significant_increase": "Aumento significativo",
-            "significant_decrease": "Disminución significativa",
-            "non_significant": "Tendencia no significativa",
-            "stationary": "Sin cambio lineal detectado",
-            "insufficient_data": "Tendencia no evaluable",
-            "conflicting_evidence": "Evidencia estadística discordante",
+            "significant_increase": "Significant increase",
+            "significant_decrease": "Significant decrease",
+            "non_significant": "Not significant",
+            "stationary": "No linear change detected",
+            "insufficient_data": "Trend not evaluable",
+            "conflicting_evidence": "Conflicting statistical evidence",
         }[verdict],
         "status": verdict,
         "summary": summary,
@@ -71,7 +71,7 @@ def statistical_verdict(variable: dict[str, Any], trend: dict[str, Any]) -> dict
             "contains_zero": interval[0] <= 0 <= interval[1] if interval else None,
         },
         "warnings": warnings,
-        "causality_warning": "La asociación estadística no demuestra causalidad.",
+        "causality_warning": "Statistical association does not demonstrate causality.",
     }
 
 
@@ -104,20 +104,20 @@ def physical_processes(results: list[dict[str, Any]]) -> dict[str, Any]:
     candidates = [
         (
             "heat_drying",
-            "Patrón compatible con desecación por calor",
-            "La temperatura aumenta mientras la humedad del suelo disminuye.",
+            "Pattern compatible with heat-driven drying",
+            "Temperature increases while soil moisture decreases.",
             {"temperature": "increasing", "soil_moisture": "decreasing"},
         ),
         (
             "water_stress",
-            "Patrón compatible con estrés hídrico",
-            "La precipitación y la humedad del suelo disminuyen; esto es compatible con condiciones más secas.",
+            "Pattern compatible with water stress",
+            "Precipitation and soil moisture decrease; this is compatible with drier conditions.",
             {"precipitation": "decreasing", "soil_moisture": "decreasing"},
         ),
         (
             "warm_dry_air",
-            "Patrón compatible con aire más cálido y seco",
-            "La temperatura aumenta mientras la humedad relativa disminuye.",
+            "Pattern compatible with warmer, drier air",
+            "Temperature increases while relative humidity decreases.",
             {"temperature": "increasing", "relative_humidity": "decreasing"},
         ),
     ]
@@ -143,23 +143,23 @@ def physical_processes(results: list[dict[str, Any]]) -> dict[str, Any]:
                     for variable_id in requirements
                 },
                 "confidence": "exploratory",
-                "causality_warning": "Este patrón no identifica causas ni demuestra que una variable impulse a otra.",
+                "causality_warning": "This pattern does not identify causes or demonstrate that one variable drives another.",
             })
     return {
-        "title": "Interconexión del sistema terrestre detectada" if processes else "Sin patrón multivariable concluyente",
+        "title": "Earth system interaction pattern detected" if processes else "No conclusive multivariable pattern",
         "processes": processes,
         "selected_variables": selected_variables,
         "summary": (
-            f"Se analizaron conjuntamente {len(selected_variables)} variables: "
+            f"{len(selected_variables)} variables were analyzed together: "
             f"{', '.join(item['name'] for item in selected_variables)}. "
-            "Cada variable conserva su unidad y su propio veredicto estadístico."
+            "Each variable retains its unit and its own statistical verdict."
         ),
         "pattern_summary": (
-            "Se encontraron patrones compatibles; son hipótesis exploratorias basadas en tendencias significativas."
+            "Compatible patterns were found; these are exploratory hypotheses based on significant trends."
             if processes
-            else "No se encontró una combinación predefinida de tendencias significativas."
+            else "No predefined combination of significant trends was found."
         ),
-        "causality_warning": "Coincidencia de tendencias no demuestra causalidad ni mecanismo físico.",
+        "causality_warning": "Matching trends do not demonstrate causality or a physical mechanism.",
     }
 
 
@@ -169,7 +169,7 @@ def spatial_divergence(
 ) -> dict[str, Any]:
     """Compare a variable's trend direction across two analyzed regions."""
     if len(region_results) != 2:
-        return {"status": "no_evaluable", "summary": "Se requieren exactamente dos regiones."}
+        return {"status": "no_evaluable", "summary": "Exactly two regions are required."}
 
     left, right = region_results
     trend_a, trend_b = left["trend"], right["trend"]
@@ -181,7 +181,7 @@ def spatial_divergence(
     )
     if not evaluable:
         status = "insufficient_data"
-        summary = "No hay datos suficientes para comparar las tendencias de ambas regiones."
+        summary = "There is not enough data to compare the trends in both regions."
     elif direction_a in {"increasing", "decreasing"} and direction_b in {"increasing", "decreasing"} and direction_a != direction_b:
         significant_a = (left.get("interpretation") or {}).get(
             "significant", trend_a.get("significant")
@@ -192,18 +192,18 @@ def spatial_divergence(
         both_significant = significant_a is True and significant_b is True
         status = "opposite_significant_trends" if both_significant else "opposite_directions_mixed_significance"
         summary = (
-            f"{variable['name']} presenta direcciones opuestas en "
+            f"{variable['name']} shows opposite directions in "
             f"{left['region']['name']} y {right['region']['name']}."
         )
     elif direction_a == direction_b and direction_a in {"increasing", "decreasing"}:
         status = "same_direction"
-        summary = "La variable muestra la misma dirección de cambio en ambas regiones."
+        summary = "The variable shows the same direction of change in both regions."
     else:
         status = "no_divergence"
-        summary = "No se detectaron tendencias en direcciones opuestas entre las dos regiones."
+        summary = "No opposite trend directions were detected between the two regions."
 
     return {
-        "title": "Divergencia espacial detectada" if status.startswith("opposite_") else "Sin divergencia espacial concluyente",
+        "title": "Spatial divergence detected" if status.startswith("opposite_") else "No conclusive spatial divergence",
         "status": status,
         "summary": summary,
         "variable": variable,
@@ -223,5 +223,5 @@ def spatial_divergence(
             }
             for item in region_results
         ],
-        "causality_warning": "Tendencias opuestas no demuestran una causa común.",
+        "causality_warning": "Opposite trends do not demonstrate a common cause.",
     }

@@ -153,6 +153,7 @@ function TrendSummary({ result, regionName, language }: { result: BackendResult 
   }
 
   const mk = trend.mann_kendall
+  const seasonalMk = trend.seasonal_mann_kendall
   const sen = trend.sen
   const ols = trend.ols
 
@@ -209,10 +210,14 @@ function TrendSummary({ result, regionName, language }: { result: BackendResult 
         {naturalLanguage}
       </p>
 
-      {/* Grid de métodos estadísticos rigurosos */}
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-[11px]">
+       <details className="mt-4 rounded-lg border border-line bg-surface">
+         <summary className="cursor-pointer px-3 py-2.5 text-sm font-semibold text-accent">
+           Show method details
+         </summary>
+       {/* Grid de métodos estadísticos rigurosos */}
+       <div className="grid gap-3 border-t border-line p-3 text-sm sm:grid-cols-2 lg:grid-cols-5">
         {/* OLS Linear Regression */}
-        <div className="rounded-lg border border-line bg-surface p-2.5">
+         <div className="rounded-lg border border-line bg-surface p-2.5">
           <p className="font-semibold text-ink flex items-center">
              OLS regression
              <TermHelp term="OLS regression" explanation="Ordinary least-squares fit used to estimate the linear rate of change over time." />
@@ -240,7 +245,7 @@ function TrendSummary({ result, regionName, language }: { result: BackendResult 
              <TermHelp term="Theil–Sen slope" explanation="Median estimator of all pairwise slopes; highly robust to outliers and extremes." />
           </p>
            <p className="mt-1 text-muted">Median: <span className="font-mono text-ink">{sen?.slope_per_decade !== undefined && sen?.slope_per_decade !== null ? formatValue(sen.slope_per_decade) : '—'}</span> {variable.unit}/decade</p>
-          <p className="text-muted">IC 95%: <span className="font-mono text-ink">{sen?.ci95_per_decade ? `[${formatValue(sen.ci95_per_decade[0])}, ${formatValue(sen.ci95_per_decade[1])}]` : '—'}</span></p>
+           <p className="text-muted">95% CI: <span className="font-mono text-ink">{sen?.ci95_per_decade ? `[${formatValue(sen.ci95_per_decade[0])}, ${formatValue(sen.ci95_per_decade[1])}]` : '—'}</span></p>
         </div>
 
         {/* Observaciones y Muestra */}
@@ -251,8 +256,15 @@ function TrendSummary({ result, regionName, language }: { result: BackendResult 
           </p>
            <p className="mt-1 text-muted">Range: <span className="font-mono text-ink">{trend.confidence_interval_per_decade ? `[${formatValue(trend.confidence_interval_per_decade[0])}, ${formatValue(trend.confidence_interval_per_decade[1])}]` : '—'}</span></p>
            <p className="text-muted">Years analyzed: <span className="font-mono text-ink">{trend.n_observations}</span></p>
-        </div>
-      </div>
+         </div>
+         <div className="rounded-lg border border-line bg-surface p-2.5">
+           <p className="font-semibold text-ink">Seasonal Mann–Kendall</p>
+           <p className="mt-1 text-muted">Z statistic: <span className="font-mono text-ink">{seasonalMk?.z !== undefined && seasonalMk?.z !== null ? formatValue(seasonalMk.z, 2) : '—'}</span></p>
+           <p className="text-muted">p-value: <span className="font-mono text-ink">{seasonalMk?.p_value !== undefined && seasonalMk?.p_value !== null ? formatValue(seasonalMk.p_value, 4) : '—'}</span></p>
+           <p className="text-muted">Seasons: <span className="font-mono text-ink">{seasonalMk?.seasons_evaluated ?? '—'}</span></p>
+         </div>
+       </div>
+       </details>
 
       {trend.warnings && trend.warnings.length > 0 && (
         <div className="mt-3 space-y-1 rounded-lg border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">

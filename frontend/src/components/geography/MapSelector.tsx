@@ -12,9 +12,18 @@ interface MapSelectorProps {
 
 function MapController({ center, bounds }: { center: [number, number]; bounds: GeographicBounds | null }) {
   const map = useMap()
+  const didInitialFit = useRef(false)
+
   useEffect(() => {
-    if (bounds) map.fitBounds([[bounds.south, bounds.west], [bounds.north, bounds.east]], { padding: [24, 24] })
-    else map.setView(center, 4)
+    // Fit the initial rectangle once. Subsequent bounds updates come from
+    // dragging/resizing it and must not override the user's map zoom/pan.
+    if (!bounds) {
+      map.setView(center, 4)
+      return
+    }
+    if (didInitialFit.current) return
+    didInitialFit.current = true
+    map.fitBounds([[bounds.south, bounds.west], [bounds.north, bounds.east]], { padding: [24, 24] })
   }, [bounds, center, map])
   return null
 }

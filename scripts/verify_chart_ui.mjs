@@ -22,6 +22,24 @@ try {
   await page.getByText('Which Earth system variable should we investigate?', { exact: true }).click()
   await page.getByRole('button', { name: 'Next', exact: true }).click()
   await page.locator('#region-title').waitFor()
+  const map = page.locator('#region .leaflet-container')
+  await map.waitFor()
+  const mapZoomIn = map.getByRole('button', { name: 'Zoom in' })
+  await mapZoomIn.click()
+  await mapZoomIn.click()
+  const rectangle = page.locator('#region .leaflet-interactive').first()
+  const zoomedWidth = (await rectangle.boundingBox())?.width
+  assert.ok(zoomedWidth && zoomedWidth > 20, 'the rectangle should be visible at the selected zoom')
+  const handle = page.locator('#region .rectangle-drag-handle')
+  const handleBox = await handle.boundingBox()
+  assert.ok(handleBox)
+  await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(handleBox.x + handleBox.width / 2 + 40, handleBox.y + handleBox.height / 2 + 25, { steps: 5 })
+  await page.mouse.up()
+  const movedWidth = (await rectangle.boundingBox())?.width
+  assert.ok(movedWidth)
+  assert.ok(Math.abs(movedWidth - zoomedWidth) < 2, `moving area should preserve zoom (before ${zoomedWidth}px, after ${movedWidth}px)`)
   await page.getByRole('button', { name: 'Next', exact: true }).click()
   await page.locator('input[type=date]').nth(0).waitFor()
   await page.locator('input[type=date]').nth(0).fill('1991-01-01')
@@ -75,7 +93,7 @@ try {
   await page.getByRole('button', { name: 'Run comparison', exact: true }).waitFor()
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true)
   assert.deepEqual(errors, [])
-  console.log('PASS: siete paneles, ocultar/mostrar, zoom/restablecer, estado vacío, móvil y sin errores JS; API real HTTP 200.')
+  console.log('PASS: el zoom del mapa persiste al mover el rectángulo; siete paneles, controles, zoom/restablecer, móvil, sin errores JS y API real HTTP 200.')
 } finally {
   await browser.close()
 }

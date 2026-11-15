@@ -200,6 +200,22 @@ o visual ni convierte la tabla histórica en una auditoría exhaustiva.
 
 ## Auditoría y correcciones de interpretación (2026-11)
 
+### Selector de mapa: conservar zoom al mover el rectángulo
+
+- Corregido `frontend/src/components/geography/MapSelector.tsx`: `MapController`
+  encuadra el rectángulo inicial una sola vez por montaje/región. Al mover o
+  redimensionar el área ya no vuelve a ejecutar `fitBounds`, por lo que el zoom
+  y la vista que eligió el usuario permanecen.
+- Ampliado `scripts/verify_chart_ui.mjs`: acerca el mapa con los controles,
+  arrastra el rectángulo y comprueba que su ancho proyectado no cambie (señal
+  de que el zoom se conservó).
+- Validación: la prueba Playwright completa pasó con la interacción del mapa,
+  análisis real HTTP 200 y resto del flujo. Backend 51 tests y frontend 11
+  tests pasaron; typecheck y build correctos.
+- El backend ya estaba ejecutándose en el puerto 8000 al intentar iniciar otra
+  instancia; esa instancia devolvió `Address already in use`. No afectó la
+  prueba E2E, que se conectó al servicio ya disponible.
+
 Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 `feature/scientific-interpretation-and-audit`.
 

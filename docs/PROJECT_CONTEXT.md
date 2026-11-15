@@ -216,6 +216,21 @@ o visual ni convierte la tabla histórica en una auditoría exhaustiva.
   instancia; esa instancia devolvió `Address already in use`. No afectó la
   prueba E2E, que se conectó al servicio ya disponible.
 
+### Selector de mapa: arrastrar el rectángulo completo
+
+- Se confirmó que el control central azul se podía arrastrar, pero la superficie
+  del rectángulo no tenía manejador de movimiento. `MapSelector.tsx` ahora
+  escucha `mousedown` en el rectángulo y `mousemove`/`mouseup` del mapa, conserva
+  su ancho/alto y limita el movimiento a coordenadas válidas. El control azul
+  permanece como alternativa.
+- Se añadió cursor de movimiento e instrucciones que indican que se puede
+  arrastrar tanto el rectángulo como el control central.
+- La prueba E2E ahora comprueba que cambia la posición del rectángulo al
+  arrastrar su superficie, que no cambia el zoom y que funciona también el
+  control central.
+- Verificación: **11 pruebas frontend**, typecheck y build correctos; Chromium
+  completó el E2E con análisis API HTTP 200 y sin errores JS.
+
 Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
 `feature/scientific-interpretation-and-audit`.
 

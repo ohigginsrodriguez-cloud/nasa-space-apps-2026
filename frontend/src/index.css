@@ -140,6 +140,10 @@
     cursor: grabbing;
   }
 
+  .leaflet-area-draggable {
+    cursor: move;
+  }
+
   .animate-in {
     animation: enter 220ms ease-out both;
   }

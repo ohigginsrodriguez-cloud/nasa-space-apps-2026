@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
 import { CircleHelp, MapPin } from 'lucide-react'
 import { MapContainer, Rectangle, TileLayer, useMap } from 'react-leaflet'
+import type { LeafletMouseEvent } from 'leaflet'
 import type { GeographicBounds } from '../../types'
 
 interface MapSelectorProps {
@@ -86,6 +87,54 @@ function RectangleMoveHandle({ bounds, onChange }: { bounds: GeographicBounds; o
   )
 }
 
+function DraggableRectangle({ bounds, onChange }: { bounds: GeographicBounds; onChange: (bounds: GeographicBounds) => void }) {
+  const map = useMap()
+  const dragRef = useRef<{ startLat: number; startLng: number; original: GeographicBounds } | null>(null)
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
+  const move = useCallback((event: LeafletMouseEvent) => {
+    const drag = dragRef.current
+    if (!drag) return
+    const height = drag.original.north - drag.original.south
+    const width = drag.original.east - drag.original.west
+    const south = Math.max(-90, Math.min(90 - height, drag.original.south + event.latlng.lat - drag.startLat))
+    const west = Math.max(-180, Math.min(180 - width, drag.original.west + event.latlng.lng - drag.startLng))
+    onChangeRef.current({ south, north: south + height, west, east: west + width })
+  }, [])
+
+  const finish = useCallback(() => {
+    if (!dragRef.current) return
+    dragRef.current = null
+    map.off('mousemove', move)
+    map.off('mouseup', finish)
+    map.dragging.enable()
+  }, [map, move])
+
+  const start = useCallback((event: LeafletMouseEvent) => {
+    event.originalEvent.preventDefault()
+    event.originalEvent.stopPropagation()
+    dragRef.current = {
+      startLat: event.latlng.lat,
+      startLng: event.latlng.lng,
+      original: { ...bounds },
+    }
+    map.dragging.disable()
+    map.on('mousemove', move)
+    map.on('mouseup', finish)
+  }, [bounds, finish, map, move])
+
+  useEffect(() => () => finish(), [finish])
+
+  return (
+    <Rectangle
+      bounds={[[bounds.south, bounds.west], [bounds.north, bounds.east]]}
+      pathOptions={{ color: '#1d4ed8', fillColor: '#1d4ed8', fillOpacity: 0.12, weight: 3, className: 'leaflet-area-draggable' }}
+      eventHandlers={{ mousedown: start }}
+    />
+  )
+}
+
 function createBounds(center: [number, number], size = 5): GeographicBounds {
   const half = size / 2
   const latitude = Math.max(-90 + half, Math.min(90 - half, center[0]))
@@ -129,7 +178,7 @@ export function MapSelector({ center, value, onChange, onValidationChange }: Map
     <section id="region" aria-labelledby="map-title" className="surface-panel scroll-mt-6 border-accent/20 bg-linear-to-br from-accent-soft/35 via-surface to-surface p-5 sm:p-6">
       <div className="mb-4">
         <h2 id="map-title" className="text-xl font-bold">Where should we investigate?</h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted">A valid NASA POWER rectangle is created for you. Move it to focus on another area.</p>
+        <p className="mt-1 text-sm leading-relaxed text-muted">A valid NASA POWER rectangle is created for you. Drag the rectangle itself or its blue center handle to move it.</p>
       </div>
       <div className="mb-4">
         <p className="mb-2 text-sm font-semibold text-ink">Choose a valid rectangle size</p>
@@ -152,12 +201,15 @@ export function MapSelector({ center, value, onChange, onValidationChange }: Map
         <MapContainer center={center} zoom={4} scrollWheelZoom={false} className="h-72 w-full sm:h-96" aria-label="Map for selecting a research area">
           <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" eventHandlers={{ tileerror: () => setTilesUnavailable(true) }} />
           <MapController center={center} bounds={value} />
-          {value && <><Rectangle bounds={[[value.south, value.west], [value.north, value.east]]} pathOptions={{ color: '#1d4ed8', fillOpacity: 0.12 }} /><RectangleMoveHandle bounds={value} onChange={(bounds) => { setDraft(bounds); onChange(bounds); setMessage('Area moved. It remains a valid NASA POWER rectangle.') }} /></>}
+          {value && <>
+            <DraggableRectangle bounds={value} onChange={(bounds) => { setDraft(bounds); onChange(bounds); setMessage('Area moved. It remains a valid NASA POWER rectangle.') }} />
+            <RectangleMoveHandle bounds={value} onChange={(bounds) => { setDraft(bounds); onChange(bounds); setMessage('Area moved. It remains a valid NASA POWER rectangle.') }} />
+          </>}
         </MapContainer>
       </div>
       <p role="status" aria-live="polite" className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted"><MapPin size={15} className="mt-0.5 shrink-0" aria-hidden="true" />{message}</p>
       {tilesUnavailable && <p role="status" className="mt-2 text-sm text-muted">Map tiles could not be loaded. The predefined area remains usable.</p>}
-      <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted"><CircleHelp size={15} className="mt-0.5 shrink-0" aria-hidden="true" />The area starts at a valid size. Drag the blue center handle to move it, or choose a larger rectangle above.</p>
+      <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted"><CircleHelp size={15} className="mt-0.5 shrink-0" aria-hidden="true" />Drag anywhere inside the rectangle or use the blue center handle to move the area. Choose a size above to change its dimensions. The map zoom stays where you set it.</p>
     </section>
   )
 }

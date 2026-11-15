@@ -41,6 +41,9 @@ En Windows, activar con `.venv\Scripts\activate`.
 - Health: <http://127.0.0.1:8000/health>
 
 La consulta real requiere conexión a Internet, pero no credenciales NASA.
+Para un frontend desplegado en Netlify, define `FRONTEND_ORIGINS` en el
+servicio de la API con la URL del sitio Netlify. Se aceptan varios orígenes
+separados por comas.
 
 ## Endpoints
 

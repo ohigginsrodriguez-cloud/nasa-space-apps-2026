@@ -4,7 +4,7 @@ Educational tool for investigating Earth-system trends. The main flow has two
 screens: guided investigation setup and a time series with statistical
 analysis.
 
-In `/dashboard`, users choose a variable, region, valid rectangle, and period.
+In `/dashboard`, users choose a variable, a valid rectangle, and period.
 NASA POWER retrieves real data; `local-demo` is explicitly labeled synthetic
 data for offline development. `/trends` displays the returned series and
 analysis. Loading and error states are visible, and loaded data is reused
@@ -35,6 +35,9 @@ Desde esta carpeta:
 - `npm run typecheck`: valida los tipos TypeScript.
 - `npm run build`: crea la versión de producción.
 
-Configura `VITE_API_URL` en `.env.local` si el backend no está en
+Configure `VITE_API_URL` in `.env.local` if the backend is not at
 `http://localhost:8000`. El backend permite por defecto los orígenes locales
-`http://localhost:5173` y `http://127.0.0.1:5173`.
+`http://localhost:5173` and `http://127.0.0.1:5173`.
+
+For Netlify, set `VITE_API_URL` to the deployed FastAPI URL. The repository
+root contains the Netlify build configuration.

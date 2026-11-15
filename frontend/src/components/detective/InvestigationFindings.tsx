@@ -14,15 +14,13 @@ export function InvestigationFindings({ configuration, dataset, pending }: {
         {configuration.timeRange.startDate} – {configuration.timeRange.endDate} · {dataset.isDemonstration ? 'SYNTHETIC DEMO — not NASA observations' : 'NASA POWER · historical data'}
       </p>
       {pending && <p role="status" className="mt-3 font-semibold">These findings describe the previous analysis. Run your changed configuration to update them.</p>}
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
+      <div className="mt-5 grid gap-2">
         {dataset.results.map(({ variable, interpretation, trend }) => (
-          <article key={variable.id} className="border border-line bg-white p-5">
-            <h3 className="font-bold">{variable.name}</h3>
-            <p className="mt-2 text-lg font-bold text-accent">{interpretation?.title ?? 'Review the statistical evidence below'}</p>
-            <p className="mt-2 text-sm leading-relaxed">{interpretation?.summary ?? trend.message}</p>
-            <p className="mt-3 text-sm text-muted">Annual analysis: {trend.n_observations} complete years.</p>
+          <article key={variable.id} className="border-l-2 border-accent/40 px-3 py-2">
+            <h3 className="font-bold">{variable.name}: <span className="font-semibold text-accent">{interpretation?.title ?? 'Review the statistical evidence below'}</span></h3>
+            <p className="mt-1 text-sm leading-relaxed">{interpretation?.summary ?? trend.message}</p>
             {!!trend.warnings?.length && (
-              <details className="mt-3 text-sm">
+              <details className="mt-2 text-xs">
                 <summary className="cursor-pointer font-semibold">Interpretation limits ({trend.warnings.length})</summary>
                 <ul className="mt-2 list-disc space-y-2 pl-5">{trend.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
               </details>

@@ -1,4 +1,4 @@
 # Examples
 
-Casos reproducibles para la demo. Cada ejemplo debe indicar variable, región,
-periodo, fuente, unidades y resultado esperado.
+Reproducible cases for validation and presentation. Each example should record
+the variable, rectangle, period, source, units, and expected result.

@@ -1,4 +1,5 @@
 # Tests
 
-Pruebas de análisis, API, integración y casos con datos faltantes. Cada área
-debe añadir aquí o junto a su código las pruebas correspondientes.
+Tests cover analysis, API, integration, missing data, geographic limits, and
+interpretation. Run the complete suite from the repository root with
+`pytest -q`; frontend tests live in `frontend/tests`.

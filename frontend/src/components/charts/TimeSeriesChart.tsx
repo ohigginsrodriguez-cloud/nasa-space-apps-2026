@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
-import { Download, ExternalLink, Info, Link2, Minus, SlidersHorizontal } from 'lucide-react'
+import { Download, ExternalLink, Info, Minus, SlidersHorizontal } from 'lucide-react'
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from 'recharts'
 import { regions, variables } from '../../data/mockData'
 import type { DataConfiguration, TimeSeriesDataset, TimeSeriesPoint } from '../../types'
@@ -515,28 +515,6 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
              Solid lines represent monthly observations; dashed lines show the estimated linear trend; shading shows the 95% interval.
           </p>
 
-           {results.length > 1 && dataset?.multivariateInterpretation ? (
-             <details className="mt-5 rounded-xl border border-accent/25 bg-accent-soft/65 p-4">
-               <summary className="flex cursor-pointer items-center gap-2 text-sm font-bold text-accent">
-                <Link2 size={16} aria-hidden="true" />
-                 Explore relationships between selected variables
-               </summary>
-               <p className="mt-3 text-xs text-ink">{dataset.multivariateInterpretation.summary}</p>
-              {dataset.multivariateInterpretation.processes.length > 0 && (
-                <ul className="mt-3 space-y-3">
-                  {dataset.multivariateInterpretation.processes.map((process) => (
-                     <li key={process.id} className="rounded-lg border border-accent/20 bg-surface p-3">
-                       <h3 className="text-xs font-semibold text-accent">{process.name}</h3>
-                       <p className="mt-1 text-xs text-ink">{process.summary}</p>
-                       <p className="mt-1 text-[11px] text-muted">{process.causality_warning}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-               <p className="mt-3 text-[11px] text-muted">{dataset.multivariateInterpretation.pattern_summary}</p>
-               <p className="mt-2 text-[11px] text-muted">{dataset.multivariateInterpretation.causality_warning}</p>
-            </details>
-          ) : null}
         </>
       ) : (
         <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-line bg-canvas/50 px-5 text-center">

@@ -21,7 +21,7 @@ is separate and explicitly labeled as a demo.
 
 ### 3. Does it satisfy the challenge workflow?
 
-Yes. The core flow is variable → region → period → data → time series → rate →
+Yes. The core flow is variable → rectangle → period → data → time series → rate →
 statistical evidence → limitations.
 
 ### 4. What is scientifically different from a simple regression chart?
@@ -49,14 +49,14 @@ products rather than direct satellite observations.
 | Requirement | Status | Evidence | Honest limitation |
 | --- | --- | --- | --- |
 | Choose an Earth-system variable | Complete | Seven-variable NASA POWER catalog and dropdown | Additional NASA products are future work |
-| Choose a region | Complete | Four Mexican regions and movable rectangle | Current MVP is not global |
+| Choose a region | Complete | User-defined movable rectangle | Current MVP is not global |
 | Use a sufficiently long period | Complete | 1991–2023 examples; date validation | Short periods can be low power |
 | Retrieve or load data | Complete | NASA POWER provider and labeled synthetic provider | Live NASA access needs Internet |
 | Visualize a time series | Complete | One panel per variable with trend and confidence band | Monthly display uses an annual trend estimate |
 | Measure rate of change | Complete | OLS and Theil–Sen rates, including per-decade rate | Rate depends on period and product |
 | Evaluate significance | Complete | OLS/t-test, Mann–Kendall, p-values, confidence intervals | Autocorrelation is warned about, not corrected |
 | Explain result and limitations | Complete | Findings-first result, glossary, warnings, provenance | Learner testing is still pending |
-| Explore regional contrast | Optional | Folded two-region comparison | It does not test causal differences between slopes |
+| Explore regional contrast | Deferred | Not shown in the primary interface | Future work after the single-area flow is stable |
 
 ## Judge-oriented strengths
 

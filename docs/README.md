@@ -19,6 +19,7 @@
 ## Engineering reference
 
 - [Deployment](deployment.md)
+- [Netlify hosting](../netlify.toml)
 - [Data sources](data-sources.md)
 - [Decisions](decisions.md)
 - [Project context](PROJECT_CONTEXT.md)

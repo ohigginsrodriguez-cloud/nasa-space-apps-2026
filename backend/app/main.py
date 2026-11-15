@@ -1,5 +1,6 @@
 """HTTP API: validate requests, orchestrate providers, and format responses."""
 
+import os
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -27,10 +28,16 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Local frontend origins only. Add the deployed site explicitly before release.
+configured_origins = os.getenv("FRONTEND_ORIGINS", "")
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    *[origin.strip() for origin in configured_origins.split(",") if origin.strip()],
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],

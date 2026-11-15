@@ -16,7 +16,7 @@ responsible conclusion. They need to know not only **what changed**, but also
 ## The solution
 
 Earth Trend Detective turns a question into a guided investigation. A user
-selects a NASA POWER variable, a Mexican region, a valid regional rectangle,
+selects a NASA POWER variable, a valid regional rectangle,
 and a long period. The application retrieves a monthly series and presents a
 plain-language finding before exposing the chart and advanced statistical
 details.
@@ -31,7 +31,7 @@ of being hidden.
 | Challenge requirement | Evidence in the project |
 | --- | --- |
 | Identify an Earth-system variable | NASA POWER catalog with seven active variables |
-| Select a region | Four Mexican regions and a valid movable rectangle |
+| Select a region | A user-defined movable rectangle with valid dimensions |
 | Choose a long period | Built-in 1991–2023 examples and validated date limits |
 | Retrieve data | NASA POWER Monthly API or explicitly labeled synthetic demo |
 | Visualize change | Monthly series, trend line, confidence band, panel per variable |
@@ -96,7 +96,8 @@ change exists.
 
 ## Honest limitations
 
-- The current regional MVP focuses on Mexico rather than global geography.
+- The current MVP uses one user-defined rectangle rather than a global
+  geographic search.
 - NASA POWER products can be model/reanalysis products, not direct satellite
   observations.
 - Autocorrelation is reported but not automatically corrected.

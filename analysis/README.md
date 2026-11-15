@@ -1,4 +1,4 @@
 # Analysis
 
-Funciones estadísticas independientes de la interfaz: limpieza, pendiente,
-significancia y formato de resultados.
+Independent statistical functions: cleaning, slope, significance, and result
+formatting. These functions are used by the NASA POWER analysis API.

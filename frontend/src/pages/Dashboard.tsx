@@ -1,14 +1,13 @@
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, CircleHelp, LoaderCircle, Play, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, CircleHelp, LoaderCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/common/Button'
 import { ProjectGuideModal } from '../components/common/ProjectGuideModal'
 import { MapSelector } from '../components/geography/MapSelector'
-import { RegionSelector } from '../components/regions/RegionSelector'
 import { TimeRangeSelector } from '../components/temporal/TimeRangeSelector'
 import { VariableSelector } from '../components/variables/VariableSelector'
 import { useResearch } from '../context/ResearchContext'
-import { demoExamples, regions, variables } from '../data/mockData'
+import { variables } from '../data/mockData'
 import { validateGeographicSelection } from '../utils/configuration'
 import { useLanguage } from '../context/LanguageContext'
 
@@ -26,9 +25,6 @@ export function Dashboard() {
     geographicBounds,
     areaName,
     setAreaName,
-    selectedPoint,
-    setSelectedPoint,
-    loadExample,
     applyConfiguration,
     notice,
     timeError,
@@ -40,7 +36,6 @@ export function Dashboard() {
   const { t } = useLanguage()
   const steps = [t('variable'), t('location'), t('period')]
 
-  const region = regions.find((item) => item.id === draft.regionId) ?? regions[0]
   const selectedVariableNames = draft.variableIds
     .map((id) => variables.find((variable) => variable.id === id)?.name)
     .filter(Boolean)
@@ -51,7 +46,7 @@ export function Dashboard() {
   }
 
   const isLoading = dataLoadState === 'loading'
-  const geoError = mapDraftError ?? validateGeographicSelection(draft.sourceId, geographicBounds, selectedPoint)
+  const geoError = mapDraftError ?? validateGeographicSelection(draft.sourceId, geographicBounds, null)
   const canContinue = step === 0 ? draft.variableIds.length > 0 : step === 1 ? geoError === null : true
 
   return (
@@ -109,25 +104,6 @@ export function Dashboard() {
       </section>
 
       <div inert={isLoading} aria-busy={isLoading}>
-        <section className="py-4" aria-labelledby="question-title">
-          <h2 id="question-title" className="flex min-h-9 items-center gap-2 text-xl font-bold">
-            <Sparkles size={16} className="text-accent" aria-hidden="true" />
-            Start with a question
-          </h2>
-          <p className="mt-2 text-sm text-muted">Choose a real NASA POWER case study, then review its region and dates—or build your own investigation below.</p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
-            {demoExamples.map((example) => (
-              <button key={example.id} type="button" onClick={() => { loadExample(example.id); setMapDraftError(null); setStep(2); document.getElementById('investigation-setup')?.focus() }}
-                className="flex min-h-16 items-center justify-between gap-3 rounded-lg border border-line p-3 text-left transition-all hover:border-accent hover:bg-accent-soft/50 hover:shadow-sm">
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-ink">{example.title}</span>
-                  <span className="mt-1 block text-xs text-muted">{example.description}</span>
-                </span>
-                <Play size={15} className="shrink-0 text-accent" aria-hidden="true" />
-              </button>
-            ))}
-          </div>
-        </section>
         {/* Pasos numerados */}
         <nav id="investigation-setup" tabIndex={-1} aria-label="Investigation setup" className="mt-4 scroll-mt-6">
           <ol className="grid grid-cols-3 gap-2">
@@ -169,20 +145,8 @@ export function Dashboard() {
           </>}
           {step === 1 && (
             <div className="space-y-4">
-               <RegionSelector
-                 value={draft.regionId}
-                 onChange={(regionId) => {
-                   setMapDraftError(null)
-                   setGeographicBounds(null)
-                   setAreaName('')
-                   setSelectedPoint(null)
-                   updateDraft({ ...draft, regionId })
-                 }}
-                 onUseSuggestion={(variableIds) => updateDraft({ ...draft, variableIds })}
-               />
                <MapSelector
-                 key={draft.regionId}
-                 center={region.center}
+                 center={[23.5, -102]}
                  value={geographicBounds}
                  onChange={setGeographicBounds}
                  onValidationChange={setMapDraftError}
@@ -209,7 +173,7 @@ export function Dashboard() {
                   </div>
                   <div>
                      <dt className="text-muted">{t('studyRegion')}</dt>
-                    <dd className="mt-1 font-medium text-ink">{geographicBounds ? `${areaName.trim() || 'Selected area'} · Latitude ${geographicBounds.south.toFixed(2)}° to ${geographicBounds.north.toFixed(2)}°, longitude ${geographicBounds.west.toFixed(2)}° to ${geographicBounds.east.toFixed(2)}°` : region.name}</dd>
+                    <dd className="mt-1 font-medium text-ink">{geographicBounds ? `${areaName.trim() || 'Selected area'} · Latitude ${geographicBounds.south.toFixed(2)}° to ${geographicBounds.north.toFixed(2)}°, longitude ${geographicBounds.west.toFixed(2)}° to ${geographicBounds.east.toFixed(2)}°` : 'Selected area'}</dd>
                   </div>
                   <div>
                      <dt className="text-muted">{t('dataProvider')}</dt>

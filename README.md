@@ -7,7 +7,7 @@ Apps challenge **“Be An Earth System Trend Detective!”** It helps a user mov
 from a question to a defensible answer:
 
 1. choose an Earth-system variable;
-2. choose a Mexican region and a valid NASA POWER rectangle;
+2. choose a valid NASA POWER rectangle;
 3. choose a long observation period;
 4. retrieve a monthly time series;
 5. measure the rate of change;
@@ -37,13 +37,11 @@ trend → evidence → responsible interpretation**.
 - **Active source:** NASA POWER Monthly API.
 - **Active variables:** air temperature, precipitation, root-zone soil moisture,
   relative humidity, surface solar radiation, surface pressure, and wind speed.
-- **Geography:** user-selected movable rectangles, with educational Mexican examples.
+- **Geography:** one user-selected movable rectangle. The UI does not offer
+  predefined regions or point selection.
   Rectangle sizes are limited to valid NASA POWER spans of 2°–10° per axis.
 - **Time resolution:** monthly input with annual aggregation for the main trend
   estimate; incomplete calendar years are excluded from that estimate.
-- **Optional exploration:** compare the same variable across two user-defined
-  rectangles. This does not test causality or the significance of a difference
-  between slopes.
 
 NASA POWER products may be model or reanalysis products rather than direct
 satellite observations. The interface identifies the source and product
@@ -54,18 +52,26 @@ metadata where available.
 Configure an investigation manually:
 
 1. select a variable from the dropdown;
-2. select a region;
-3. keep the automatically created 5° × 5° rectangle or choose another valid
-   size;
-4. select a long period, for example 1991–2023;
-5. generate the series; and
-6. read the finding, trend rate, confidence interval, OLS result,
+2. choose the rectangle size and move it to the study area;
+3. select a long period, for example 1991–2023;
+4. generate the series; and
+5. read the finding, trend rate, confidence interval, OLS result,
    Mann–Kendall result, and limitations.
 
 The project includes real-data checks for Mexican examples. For instance, the
 documented Sonora temperature run reports a positive decadal rate with
 significant OLS and Mann–Kendall evidence; the Lacandon precipitation example
 shows why disagreement between methods must be explained rather than hidden.
+
+## Deploy the frontend to Netlify
+
+The repository includes `netlify.toml`. Set `VITE_API_URL` in Netlify to the
+public URL of a separately hosted FastAPI backend. Netlify hosts the React
+frontend; it does not run the Python API.
+
+Build settings: base directory `frontend`, command `npm run build`, publish
+directory `dist`. The SPA redirect is included so `/dashboard` and `/trends`
+work after refresh.
 
 ## Run locally
 
@@ -125,8 +131,8 @@ analysis responses.
   forecasting model.
 - Results depend on the selected period, rectangle, POWER product, missing
   values, and assumptions.
-- The current geography is intentionally focused on Mexico for a coherent MVP;
-  it is not yet a global regional analysis product.
+- The current MVP uses a user-defined rectangle rather than a global geographic
+  search.
 
 ## Judge-facing next steps
 

@@ -1,4 +1,4 @@
 # Data
 
-Notas de datasets y archivos pequeños de demostración. No subir credenciales,
-datos pesados ni datasets descargados sin documentar su licencia.
+Notes for small datasets and reproducible development fixtures. Never commit
+credentials, large downloads, or data without documenting its license.

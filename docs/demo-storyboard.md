@@ -19,11 +19,11 @@ Show the challenge title and the guided workflow.
 
 ## Slide 3 — Ask a question
 
-Choose a variable, region, and time period. Start with a long period so the
+Choose a variable, rectangle, and time period. Start with a long period so the
 trend has enough observations to evaluate.
 
-Show the variable dropdown with its information icon, the region selector, and
-the period selector.
+Show the variable dropdown with its information icon, the rectangle size
+controls, and the period selector.
 
 ## Slide 4 — Use NASA data
 

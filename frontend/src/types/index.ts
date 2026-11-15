@@ -37,7 +37,7 @@ export interface TimeRange {
 
 export interface TimeSeriesPoint {
   date: string
-  [variableId: string]: string | number | null
+  [key: string]: string | number | null | [number, number] | undefined
 }
 
 export interface Region {
@@ -100,6 +100,48 @@ export interface BackendTrend {
   n_observations: number
   message: string
   warnings?: string[]
+  ols?: {
+    status?: string
+    slope_per_year?: number
+    slope_per_decade?: number
+    intercept?: number
+    r_squared?: number
+    p_value?: number
+    ci95_per_decade?: number[] | null
+    t_stat?: number
+    df?: number
+    stderr?: number
+  } | null
+  mann_kendall?: {
+    status?: string
+    s?: number
+    var_s?: number
+    z?: number
+    p_value?: number | null
+    tau?: number
+    trend?: string
+  } | null
+  seasonal_mann_kendall?: {
+    status?: string
+    s?: number
+    var_s?: number
+    z?: number | null
+    p_value?: number | null
+    trend?: string
+    seasons_evaluated?: number
+  } | null
+  sen?: {
+    status?: string
+    slope_per_year?: number | null
+    slope_per_decade?: number | null
+    intercept?: number | null
+    ci95_per_decade?: number[] | null
+  } | null
+  trend_line?: Array<{ date: string; value: number }>
+  trend_band?: Array<{ date: string; lower: number; upper: number }>
+  alpha?: number
+  data_source?: string
+  analysis_method?: string
 }
 
 export interface BackendResult {

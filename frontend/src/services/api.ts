@@ -51,12 +51,35 @@ export async function runAnalysis(
     }),
   })
 
-  const pointMap = new Map<string, Record<string, string | number | null>>()
-  response.results.forEach((result) => result.series.forEach((observation) => {
-    const current = pointMap.get(observation.date) ?? { date: observation.date }
-    current[result.variable.id] = observation.value
-    pointMap.set(observation.date, current)
-  }))
+  const pointMap = new Map<string, Record<string, string | number | null | [number, number]>>()
+  response.results.forEach((result) => {
+    // 1. Observed series points
+    result.series.forEach((observation) => {
+      const current = pointMap.get(observation.date) ?? { date: observation.date }
+      current[result.variable.id] = observation.value
+      pointMap.set(observation.date, current)
+    })
+
+    // 2. Trend line points (y_hat)
+    if (result.trend.trend_line) {
+      result.trend.trend_line.forEach((item) => {
+        const current = pointMap.get(item.date) ?? { date: item.date }
+        current[`trend_${result.variable.id}`] = item.value
+        pointMap.set(item.date, current)
+      })
+    }
+
+    // 3. Confidence band range points [lower, upper]
+    if (result.trend.trend_band) {
+      result.trend.trend_band.forEach((item) => {
+        const current = pointMap.get(item.date) ?? { date: item.date }
+        current[`band_${result.variable.id}`] = [item.lower, item.upper]
+        current[`band_lower_${result.variable.id}`] = item.lower
+        current[`band_upper_${result.variable.id}`] = item.upper
+        pointMap.set(item.date, current)
+      })
+    }
+  })
 
   return {
     points: [...pointMap.values()] as TimeSeriesDataset['points'],

@@ -74,8 +74,11 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
   const [firstCorner, setFirstCorner] = useState<[number, number] | null>(null)
   const [draft, setDraft] = useState<CoordinateDraft>(value ?? {})
   const [selectionMode, setSelectionMode] = useState<'rectangle' | 'point'>('rectangle')
-  const [message, setMessage] = useState('Haz dos clics en el mapa para definir esquinas opuestas.')
+  const [message, setMessage] = useState('Click twice on the map to define opposite corners.')
   const [tilesUnavailable, setTilesUnavailable] = useState(false)
+  const width = draft.west !== undefined && draft.east !== undefined ? draft.east - draft.west : null
+  const height = draft.south !== undefined && draft.north !== undefined ? draft.north - draft.south : null
+  const validPowerArea = width !== null && height !== null && width >= 2 && width <= 10 && height >= 2 && height <= 10
 
   useEffect(() => { setDraft(value ?? {}) }, [value])
   useEffect(() => {
@@ -84,6 +87,23 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
         setMessage(`Point selected: ${point.latitude.toFixed(4)}, ${point.longitude.toFixed(4)}.`)
     }
   }, [point])
+
+  function applyPreset(size: number) {
+    const half = size / 2
+    const bounds = {
+      south: Math.max(-90, center[0] - half),
+      north: Math.min(90, center[0] + half),
+      west: center[1] - half,
+      east: center[1] + half,
+    }
+    setSelectionMode('rectangle')
+    setFirstCorner(null)
+    setDraft(bounds)
+    onPointChange(null)
+    onValidationChange?.(null)
+    onChange(bounds)
+    setMessage(`${size}° × ${size}° area applied. This size is valid for NASA POWER.`)
+  }
 
   function setCorner(latitude: number, longitude: number) {
     longitude = ((longitude + 180) % 360 + 360) % 360 - 180
@@ -155,10 +175,26 @@ export function MapSelector({ center, value, point, onChange, onPointChange, onV
         <div><h2 id="map-title" className="text-base font-semibold">Define an area of interest</h2><p className="mt-1 text-sm leading-relaxed text-muted">Select two corners or enter geographic coordinates.</p></div>
          <button type="button" onClick={clearSelection} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-line px-3 text-sm font-semibold text-muted transition-colors hover:border-accent hover:text-accent"><RotateCcw size={15} aria-hidden="true" />Clear area</button>
       </div>
-      <div className="mb-3 flex flex-wrap gap-2">
+       <div className="mb-3 flex flex-wrap items-center gap-2">
            <button type="button" aria-pressed={selectionMode === 'rectangle'} onClick={() => { setSelectionMode('rectangle'); setFirstCorner(null); onValidationChange?.('Select two corners to complete the rectangle.'); setMessage('Click twice on the map to define opposite corners.') }} className={`min-h-10 rounded-lg border px-3 text-sm font-semibold transition-all ${selectionMode === 'rectangle' ? 'border-accent bg-accent text-white' : 'border-line text-muted hover:border-accent hover:text-accent'}`}>Draw rectangle</button>
            <button type="button" aria-pressed={selectionMode === 'point'} onClick={() => { setSelectionMode('point'); setFirstCorner(null); onValidationChange?.('Select a point on the map to continue.'); setMessage('Click the map to select a point.') }} className={`min-h-10 rounded-lg border px-3 text-sm font-semibold transition-all ${selectionMode === 'point' ? 'border-accent bg-accent text-white' : 'border-line text-muted hover:border-accent hover:text-accent'}`}>Select point</button>
-      </div>
+           {selectionMode === 'rectangle' && (
+             <>
+               <span className="ml-1 text-sm text-muted">Quick size:</span>
+               <button type="button" onClick={() => applyPreset(2)} className="min-h-10 rounded-lg border border-line bg-surface px-3 text-sm font-semibold text-muted hover:border-accent hover:text-accent">2° × 2°</button>
+               <button type="button" onClick={() => applyPreset(5)} className="min-h-10 rounded-lg border border-line bg-surface px-3 text-sm font-semibold text-muted hover:border-accent hover:text-accent">5° × 5°</button>
+             </>
+           )}
+       </div>
+       <div className={`mb-4 rounded-lg border px-3 py-2.5 text-sm ${validPowerArea ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900'}`}>
+         <div className="flex flex-wrap items-center justify-between gap-2">
+           <strong>{validPowerArea ? 'Valid NASA POWER area' : 'NASA POWER area requirement'}</strong>
+           <span className="font-mono text-xs">
+             {width !== null && height !== null ? `${width.toFixed(2)}° wide × ${height.toFixed(2)}° high` : 'Waiting for four coordinates'}
+           </span>
+         </div>
+         <p className="mt-1 text-xs leading-relaxed">Regional queries require each side to measure between 2° and 10°. Use a quick size above if you do not want to adjust the rectangle manually.</p>
+       </div>
        <div className="overflow-hidden rounded-lg border border-line shadow-inner">
          <MapContainer center={center} zoom={4} scrollWheelZoom={false} className="h-72 w-full sm:h-96" aria-label="Map for defining a geographic rectangle">
           <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" eventHandlers={{ tileerror: () => setTilesUnavailable(true) }} />

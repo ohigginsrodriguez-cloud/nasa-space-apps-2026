@@ -260,6 +260,15 @@ navegación privada; `docs/demo-storyboard.md` prepara una alternativa de siete
 diapositivas al video de 30 segundos. El despliegue real y los enlaces públicos
 siguen pendientes porque requieren credenciales/servicios de hosting.
 
+Fase de simplificación UX: se eliminó el filtro de categoría `All` y el roadmap
+de misiones del selector principal para que las siete variables activas se
+entiendan de un vistazo. El encabezado de Dashboard conserva únicamente
+`How it works`; el propósito ahora se explica con una llamada principal y tres
+resultados esperados. La selección geográfica añade tamaños rápidos de 2° × 2°
+y 5° × 5°, lectura en vivo de ancho/alto y estado válido/no válido según las
+restricciones de NASA POWER. También se tradujeron mensajes de carga, errores y
+ejemplos restantes al inglés.
+
 La limpieza de ramas solo debe borrar ramas ya fusionadas; se preservan las que
 tienen commits exclusivos.
 

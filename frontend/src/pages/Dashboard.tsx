@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, CircleHelp, Compass, FlaskConical, LoaderCircle, Play, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/common/Button'
-import { GlossaryModal } from '../components/common/GlossaryModal'
 import { ProjectGuideModal } from '../components/common/ProjectGuideModal'
 import { PageIntro } from '../components/common/PageIntro'
 import { DetectiveWizard } from '../components/detective/DetectiveWizard'
@@ -19,7 +18,6 @@ import { useLanguage } from '../context/LanguageContext'
 export function Dashboard() {
   const [step, setStep] = useState(0)
   const [showWizard, setShowWizard] = useState(false)
-  const [showGlossary, setShowGlossary] = useState(false)
   const [showProjectGuide, setShowProjectGuide] = useState(false)
   const [mapDraftError, setMapDraftError] = useState<string | null>(null)
 
@@ -88,31 +86,46 @@ export function Dashboard() {
             <BookOpen size={14} className="text-accent" />
             <span>{t('howItWorks')}</span>
           </button>
-          <button
-            type="button"
-            onClick={() => setShowGlossary(true)}
-             className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-accent hover:text-accent hover:shadow-md"
-          >
-            <BookOpen size={14} className="text-accent" />
-            <span>{t('glossary')}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowWizard(!showWizard)}
-             className={`inline-flex min-h-10 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition-all ${
-              showWizard
-                ? 'border-accent bg-accent text-white'
-                : 'border-accent/30 bg-accent-soft text-accent hover:bg-accent hover:text-white'
-            }`}
-          >
-            <Compass size={14} />
-            <span>{showWizard ? t('closeWizard') : t('guidedWizard')}</span>
-          </button>
         </div>
       </div>
 
-      <GlossaryModal isOpen={showGlossary} onClose={() => setShowGlossary(false)} />
       <ProjectGuideModal isOpen={showProjectGuide} onClose={() => setShowProjectGuide(false)} />
+
+      <section className="surface-panel overflow-hidden border-accent/20 bg-linear-to-br from-accent-soft/70 via-surface to-surface p-5 sm:p-7">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="eyebrow">WHAT THIS TOOL DOES</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+              Turn NASA Earth data into understandable evidence.
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
+              Choose a variable, region, and time period. Earth System Trend Detective shows what changed, how fast it changed, how strong the evidence is, and what the data cannot prove.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowWizard(!showWizard)}
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-accent-hover"
+          >
+            <Compass size={16} aria-hidden="true" />
+            {showWizard ? 'Close guided setup' : 'Need help choosing?'}
+          </button>
+        </div>
+        <div className="mt-6 grid gap-3 border-t border-accent/15 pt-5 sm:grid-cols-3">
+          <div>
+            <p className="text-sm font-bold text-ink">What changed?</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted">Measure the direction and rate of change.</p>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-ink">Where did it change?</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted">Investigate a region or compare two regions.</p>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-ink">How strong is the evidence?</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted">Review uncertainty, p-values, and warnings.</p>
+          </div>
+        </div>
+      </section>
 
       {/* Banner de Asistente Guiado */}
       {showWizard && (
@@ -295,7 +308,7 @@ export function Dashboard() {
           className="flex items-center gap-2 rounded-lg border border-accent/20 bg-accent-soft/65 p-3 text-xs font-medium text-accent shadow-sm"
         >
           <LoaderCircle size={16} className="animate-spin" aria-hidden="true" />
-          Consultando serie temporal en NASA POWER y calculando OLS, Mann-Kendall e intervalos de confianza…
+           Retrieving the NASA POWER time series and calculating OLS, Mann-Kendall, and confidence intervals…
         </p>
       )}
 

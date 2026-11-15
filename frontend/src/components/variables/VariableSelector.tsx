@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { ExternalLink, Layers, Search, Sparkles, X } from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Search, Sparkles, X } from 'lucide-react'
 import { variables } from '../../data/mockData'
 import { getVariables } from '../../services/api'
 import type { BackendVariable, EnvironmentalVariable, VariableCategory, VariableId } from '../../types'
@@ -10,50 +10,6 @@ interface VariableSelectorProps {
   selectedIds: VariableId[]
   onToggle: (id: VariableId) => void
 }
-
-const categories: Array<VariableCategory> = [
-  'Todas',
-  'Atmósfera',
-  'Hidrología',
-  'Superficie terrestre',
-  'Energía',
-  'Océanos e Hidrología',
-]
-
-const roadmapInstruments = [
-  {
-    name: 'MODIS (Terra / Aqua) · NDVI',
-    mission: 'MODIS MOD13C2 v061',
-    description: 'Global vegetation index available every 16 days and monthly at 0.05° resolution.',
-    integration: 'AppEEARS API / Earthdata Login OAuth2',
-    status: 'Roadmap (Requiere Bearer Token)',
-    url: 'https://lpdaac.usgs.gov/products/mod13c2v061/',
-  },
-  {
-    name: 'GLDAS · Evapotranspiration and deep soil moisture',
-    mission: 'GLDAS Catchment / NOAH LSM v2.1',
-    description: 'Hourly and monthly soil evaporation and plant transpiration at 0.25°.',
-    integration: 'NASA Giovanni / OPeNDAP GES DISC',
-    status: 'Roadmap (Integration in progress)',
-    url: 'https://ldas.gsfc.nasa.gov/gldas',
-  },
-  {
-    name: 'SWOT · Surface water elevation',
-    mission: 'Surface Water and Ocean Topography (NASA / CNES)',
-    description: 'Synthetic aperture radar for changes in lake, river, and coastal water levels.',
-    integration: 'PO.DAAC Cloud / Earthdata Cloud AWS',
-    status: 'Roadmap (New satellite mission, 2023+)',
-    url: 'https://swot.jpl.nasa.gov/',
-  },
-  {
-    name: 'GPM (IMERG) · Global satellite precipitation',
-    mission: 'Global Precipitation Measurement',
-    description: 'Global fusion of radar and satellite microwave observations at 0.1°.',
-    integration: 'NASA GES DISC / Giovanni',
-    status: 'Roadmap (High-resolution candidate)',
-    url: 'https://gpm.nasa.gov/data',
-  },
-]
 
 const englishVariableCopy: Record<string, { name: string; description: string }> = {
   temperature: { name: 'Air temperature', description: 'Monthly mean air temperature at 2 meters above the surface.' },
@@ -116,31 +72,18 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
   const [catalog, setCatalog] = useState<EnvironmentalVariable[]>(fallbackCatalog)
   const [catalogError, setCatalogError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState<VariableCategory>('Todas')
-  const [showRoadmap, setShowRoadmap] = useState(false)
   const searchInput = useRef<HTMLInputElement>(null)
   const results = useRef<HTMLDivElement>(null)
 
   const normalizedQuery = query.trim().toLocaleLowerCase('es')
   const displayCatalog = catalog.map((variable) => englishVariableCopy[variable.id] ? { ...variable, ...englishVariableCopy[variable.id] } : variable)
   const visibleVariables = displayCatalog.filter((variable) => {
-    const matchesCategory = category === 'Todas' || variable.category === category
     const matchesQuery =
       !normalizedQuery ||
       `${variable.name} ${variable.description} ${variable.category}`.toLocaleLowerCase('es').includes(normalizedQuery)
-    return matchesCategory && matchesQuery
+    return matchesQuery
   })
   const selectedVariables = displayCatalog.filter((variable) => variable.demoId && selectedIds.includes(variable.demoId))
-
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { Todas: catalog.length }
-    for (const cat of categories) {
-      if (cat !== 'Todas') {
-        counts[cat] = displayCatalog.filter((v) => v.category === cat).length
-      }
-    }
-    return counts
-  }, [displayCatalog])
 
   useEffect(() => {
     getVariables('nasa-power')
@@ -224,49 +167,14 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
 
       {/* Filtros por Categoría */}
          <div ref={results} className="mt-5 scroll-mt-6" aria-label="Variables available in the catalog">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
+         <div>
+           <div>
              <h3 className="text-sm font-semibold text-ink">NASA POWER environmental catalog</h3>
-            <p className="mt-0.5 text-xs text-muted" aria-live="polite">
+             <p className="mt-0.5 text-xs text-muted" aria-live="polite">
                {visibleVariables.length} variable{visibleVariables.length !== 1 ? 's' : ''} available
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowRoadmap(!showRoadmap)}
-           className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-line bg-canvas px-2.5 py-1 text-xs font-semibold text-muted transition-colors hover:border-accent hover:text-accent"
-          >
-            <Layers size={13} aria-hidden="true" />
-             {showRoadmap ? 'Hide satellite roadmap' : 'Satellite roadmap (MODIS, GLDAS, SWOT)'}
-          </button>
-        </div>
-
-         <div className="mt-3 flex flex-wrap gap-2" aria-label="Filter by category">
-          {categories.map((item) => {
-            const count = categoryCounts[item] ?? 0
-            const isDisabled = item !== 'Todas' && count === 0
-            return (
-              <button
-                key={item}
-                type="button"
-                disabled={isDisabled}
-                aria-pressed={category === item}
-                onClick={() => {
-                  if (!isDisabled) setCategory(item)
-                }}
-                className={`min-h-9 rounded-full border px-3 text-xs font-medium transition-colors ${
-                  category === item
-                    ? 'border-accent bg-accent-soft text-accent'
-                    : isDisabled
-                    ? 'cursor-not-allowed border-line/40 bg-canvas text-muted/50'
-                     : 'border-line text-muted transition-colors hover:border-accent/50 hover:bg-accent-soft/50 hover:text-accent'
-                }`}
-              >
-                 {item.replace('Atmósfera', 'Atmosphere').replace('Hidrología', 'Hydrology').replace('Superficie terrestre', 'Land surface').replace('Energía', 'Energy').replace('Océanos e Hidrología', 'Oceans and hydrology')} {isDisabled ? '· Coming soon' : `(${count})`}
-              </button>
-            )
-          })}
-        </div>
+             </p>
+           </div>
+         </div>
 
         {/* Lista de tarjetas de variables activas */}
         <div
@@ -297,42 +205,6 @@ export function VariableSelector({ selectedIds, onToggle }: VariableSelectorProp
 
         {catalogError && <p role="status" className="mt-3 text-xs text-muted">{catalogError}</p>}
 
-        {/* Sección Roadmap / Próximamente para instrumentos con Earthdata Login */}
-        {showRoadmap && (
-          <div className="mt-5 rounded-xl border border-line bg-canvas/70 p-4">
-            <div className="flex items-center gap-2">
-              <Layers size={16} className="text-accent" />
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-ink">
-               NASA / partner agency missions and instruments roadmap
-              </h4>
-            </div>
-            <p className="mt-1 text-xs text-muted leading-relaxed">
-               The following missions and instruments are part of the challenge’s advanced scope. They require Bearer Token authentication through NASA Earthdata Login OAuth2 or polygon queries through Giovanni / AppEEARS:
-            </p>
-            <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
-              {roadmapInstruments.map((inst) => (
-                <div key={inst.name} className="rounded-lg border border-line bg-surface p-3 text-xs">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-semibold text-ink">{inst.name}</span>
-                    <a
-                      href={inst.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-accent hover:underline inline-flex items-center gap-0.5 text-[11px]"
-                    >
-                      NASA <ExternalLink size={10} />
-                    </a>
-                  </div>
-                  <p className="mt-1 text-[11px] text-muted">{inst.description}</p>
-                  <div className="mt-2 flex items-center justify-between text-[10px] text-muted border-t border-line/60 pt-1.5">
-                    <span>{inst.integration}</span>
-                    <span className="rounded bg-canvas px-1.5 py-0.5 font-medium">{inst.status}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </section>
   )

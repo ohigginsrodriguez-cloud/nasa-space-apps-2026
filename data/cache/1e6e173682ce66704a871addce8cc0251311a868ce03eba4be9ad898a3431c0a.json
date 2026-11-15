@@ -1,0 +1,1 @@
+{"features": [{"geometry": {"coordinates": [-100.0, 10.0]}, "properties": {"parameter": {"PRECTOTCORR": {"202001": 2.0, "202002": 1.0, "202013": 1.5}}}}, {"geometry": {"coordinates": [-99.5, 10.0]}, "properties": {"parameter": {"PRECTOTCORR": {"202001": 4.0, "202002": 3.0}}}}]}

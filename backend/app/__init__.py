@@ -1,1 +1,1 @@
-"""Aplicación backend del Earth System Trend Detective."""
+"""Aplicación backend de Trend detective."""

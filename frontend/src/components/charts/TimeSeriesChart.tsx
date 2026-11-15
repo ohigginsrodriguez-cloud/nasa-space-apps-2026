@@ -22,11 +22,11 @@ const formatValue = (value: number | null | undefined, digits = 2) => (value ===
 const colors: Record<string, string> = {
   temperature: 'var(--color-chart-temperature, #FC3D21)',
   precipitation: 'var(--color-chart-precipitation, #0B3D91)',
-  soil_moisture: '#1B5E7A',
-  relative_humidity: '#5B6770',
-  solar_radiation: '#F5A623',
-  surface_pressure: '#111111',
-  wind_speed: '#7A9E9F',
+  soil_moisture: 'var(--color-chart-soil)',
+  relative_humidity: 'var(--color-chart-humidity)',
+  solar_radiation: 'var(--color-chart-solar)',
+  surface_pressure: 'var(--color-chart-pressure)',
+  wind_speed: 'var(--color-chart-wind)',
 }
 
 function getVariableColor(id: string): string {

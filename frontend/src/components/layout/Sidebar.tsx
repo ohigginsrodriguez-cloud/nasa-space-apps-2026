@@ -5,10 +5,10 @@ export function Sidebar() {
   return (
     <header className="bg-black text-white">
       <div className="mx-auto flex max-w-400 flex-wrap items-center justify-between gap-5 px-5 py-6 sm:px-8 xl:px-10">
-        <NavLink to="/dashboard" className="flex items-center gap-3" aria-label="Earth Trend Detective — home">
+        <NavLink to="/dashboard" className="flex items-center gap-3" aria-label="Trend detective — home">
           <Orbit size={36} className="text-signal" aria-hidden="true" />
           <span>
-            <span className="block text-lg font-extrabold tracking-tight">Earth Trend Detective</span>
+            <span className="block text-lg font-extrabold tracking-tight">Trend detective</span>
             <span className="text-xs tracking-widest text-white/70">NASA SPACE APPS PROJECT</span>
           </span>
         </NavLink>

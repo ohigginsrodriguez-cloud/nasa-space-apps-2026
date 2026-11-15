@@ -19,7 +19,7 @@ const translations: Record<string, [string, string]> = {
   howItWorks: ['How it works', 'Cómo funciona'],
   glossary: ['Scientific glossary', 'Glosario Científico'],
   guidedResearch: ['GUIDED RESEARCH', 'INVESTIGACIÓN GUIADA'],
-  earthDetective: ['Earth Trend Detective', 'Detective de Tendencias de la Tierra'],
+  earthDetective: ['Trend detective', 'Trend detective'],
   guidedDescription: ['Use NASA Earth data to investigate what changed, where it changed, and how strong the evidence is.', 'Usa datos de la Tierra de NASA para investigar qué cambió, dónde cambió y qué tan sólida es la evidencia.'],
   closeWizard: ['Close wizard', 'Cerrar Asistente'],
   guidedWizard: ['Guided wizard (3 steps)', 'Asistente Guiado (3 pasos)'],

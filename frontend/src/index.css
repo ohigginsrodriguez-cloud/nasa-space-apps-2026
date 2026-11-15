@@ -4,11 +4,11 @@
   --font-sans: "Public Sans", "Inter", "Helvetica Neue", Arial, sans-serif;
   --font-display: "Inter", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
-  --color-canvas: #ffffff;
+  --color-canvas: #f8fafc;
   --color-surface: #ffffff;
   --color-ink: #10233f;
-  --color-muted: #53677f;
-  --color-line: #d6e0eb;
+  --color-muted: #475569;
+  --color-line: #c5d2e0;
   --color-accent: #0b3d91;
   --color-accent-hover: #082f70;
   --color-accent-soft: #eaf1f9;
@@ -16,12 +16,18 @@
   --color-signal-soft: #fff0ed;
   --color-success: #087f5b;
   --color-success-soft: #eaf7f2;
-  --color-chart-temperature: #fc3d21;
+  --color-chart-temperature: #b53d08;
   --color-chart-precipitation: #0b3d91;
+  --color-chart-soil: #006b54;
+  --color-chart-humidity: #7045a1;
+  --color-chart-solar: #875000;
+  --color-chart-pressure: #475569;
+  --color-chart-wind: #006479;
 }
 
 @layer base {
   html {
+    color-scheme: light;
     background: var(--color-canvas);
     scroll-behavior: smooth;
   }
@@ -52,7 +58,7 @@
   }
 
   :focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--color-signal) 55%, transparent);
+    outline: 3px solid var(--color-accent);
     outline-offset: 3px;
   }
 

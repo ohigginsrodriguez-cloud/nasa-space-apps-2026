@@ -1,5 +1,39 @@
 # Contexto y bitácora del proyecto
 
+## Restauración y revisión documental — Trend detective
+
+- Se restauró el diseño anterior a la revisión NASA: navegación negra,
+  portada oscura, tarjetas y encabezados anteriores.
+- Por indicación expresa, siguen retirados el modo oscuro y los botones
+  direccionales del mapa. El nombre visible es `Trend detective`.
+- Se revisó el único PDF encontrado en `document/`. El catálogo NASA POWER
+  no equivale a los productos GPM/GLDAS/MODIS propuestos: cumplimiento parcial.
+- Evidencias y pendientes: `docs/pdf-compliance-review.md`.
+- Pasaron 53 tests backend, 12 frontend y build durante esta revisión.
+
+## Revisión visual NASA — modo claro
+
+- Por solicitud del usuario, se retiraron el selector/estilos de modo oscuro
+  y los botones Move North/South/East/West. Se conserva el arrastre del mapa.
+- Navegación azul NASA (#0B3D91), acentos rojos (#FC3D21), superficies blancas,
+  portada clara, pasos activos azules y títulos de evidencia coherentes.
+- Interfaz en inglés. Backend y contratos sin modificaciones.
+- Verificados: 12 tests frontend, build y E2E Chromium con siete variables,
+  arrastre, zoom, nombres de áreas, comparación y respuestas HTTP 200.
+- El historial de modo oscuro que sigue describe una versión anterior.
+
+## Sistema visual: trabajo en curso
+
+- `design-system/earth-trend-detective/`: sistema generado por ui-ux-pro-max y
+  overrides dashboard/comparison. El patrón comercial y el ejemplo blanco
+  sobre ámbar del generador no se adoptan; ver adaptación en MASTER.
+- Se ajustaron tokens de modo claro, foco y colores de series; se añadió modo
+  oscuro con control persistente y alternativa sin arrastrar para mover mapas.
+- Las 12 pruebas frontend, build y E2E Chromium pasan; el E2E comprueba cambio
+  de tema, flujo de análisis y comparación. Esto no certifica WCAG AA ni prueba
+  exhaustiva visual del tema oscuro; quedan pendientes auditoría de contraste
+  por componente, pruebas de lector de pantalla y revisión responsive completa.
+
 ## Cómo retomar el trabajo
 
 Leer primero este archivo, `README.md`, `docs/challenge-requirements.md` y

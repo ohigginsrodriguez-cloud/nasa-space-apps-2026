@@ -1,4 +1,4 @@
-import type { BackendResult, BackendVariable, DataConfiguration, GeographicBounds, GeographicPoint, RegionId, TimeSeriesDataset } from '../types'
+import type { BackendResult, BackendVariable, DataConfiguration, GeographicBounds, GeographicPoint, RegionId, SpatialInterpretation, TimeSeriesDataset } from '../types'
 import { validateConfiguration, validateGeographicSelection } from '../utils/configuration'
 import { formatApiError } from '../utils/apiErrors'
 
@@ -10,6 +10,21 @@ interface BackendAnalysis {
   region: { id: string; name: string; type: string; south: number; west: number; north: number; east: number }
   period: { start: string; end: string; frequency: string }
   results: BackendResult[]
+  multivariate_interpretation?: TimeSeriesDataset['multivariateInterpretation']
+}
+
+interface BackendComparison {
+  provider: string
+  source_url: string | null
+  period: { start: string; end: string; frequency: string }
+  variable: BackendVariable
+  regions: Array<{
+    region: NonNullable<TimeSeriesDataset['region']>
+    series: BackendResult['series']
+    trend: BackendResult['trend']
+    interpretation: BackendResult['interpretation']
+  }>
+  spatial_interpretation: SpatialInterpretation
 }
 
 function regionBody(regionId: RegionId, bounds: GeographicBounds | null, point: GeographicPoint | null) {
@@ -94,5 +109,65 @@ export async function runAnalysis(
     missingValueCount: response.results.reduce((total, result) => total + result.series.filter((item) => item.value === null).length, 0),
     results: response.results,
     sourceUrl: response.source_url,
+    multivariateInterpretation: response.multivariate_interpretation ?? null,
   }
+}
+
+export async function runRegionComparison(
+  variableId: string,
+  regionIds: [RegionId, RegionId],
+  startDate: string,
+  endDate: string,
+  sourceId: string,
+): Promise<{ datasets: [TimeSeriesDataset, TimeSeriesDataset]; interpretation: SpatialInterpretation }> {
+  const provider = sourceId === 'nasa-power' ? 'nasa-power' : 'demo'
+  const response = await request<BackendComparison>('/api/v1/analysis/compare', {
+    method: 'POST',
+    body: JSON.stringify({
+      variable_id: variableId,
+      regions: regionIds.map((id) => ({ type: 'predefined', id })),
+      start_date: startDate,
+      end_date: endDate,
+      provider,
+    }),
+  })
+
+  const datasets = response.regions.map((item) => {
+    const result: BackendResult = {
+      variable: response.variable,
+      series: item.series,
+      trend: item.trend,
+      interpretation: item.interpretation,
+    }
+    const pointMap = new Map<string, TimeSeriesDataset['points'][number]>()
+    item.series.forEach((observation) => {
+      pointMap.set(observation.date, {
+        ...(pointMap.get(observation.date) ?? { date: observation.date }),
+        [response.variable.id]: observation.value,
+      })
+    })
+    item.trend.trend_line?.forEach((line) => {
+      pointMap.set(line.date, {
+        ...(pointMap.get(line.date) ?? { date: line.date }),
+        [`trend_${response.variable.id}`]: line.value,
+      })
+    })
+    item.trend.trend_band?.forEach((band) => {
+      pointMap.set(band.date, {
+        ...(pointMap.get(band.date) ?? { date: band.date }),
+        [`band_${response.variable.id}`]: [band.lower, band.upper],
+      })
+    })
+    return {
+      region: item.region,
+      points: [...pointMap.values()].sort((a, b) => a.date.localeCompare(b.date)),
+      sourceId,
+      isDemonstration: provider === 'demo',
+      missingValueCount: item.series.filter((entry) => entry.value === null).length,
+      results: [result],
+      sourceUrl: response.source_url,
+    } satisfies TimeSeriesDataset
+  }) as [TimeSeriesDataset, TimeSeriesDataset]
+
+  return { datasets, interpretation: response.spatial_interpretation }
 }

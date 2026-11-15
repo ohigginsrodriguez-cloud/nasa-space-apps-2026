@@ -94,17 +94,17 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
     try {
       const configuration = { ...draft, variableIds: [...draft.variableIds], timeRange: { ...draft.timeRange } }
       const loadedDataset = await runAnalysis(configuration, geographicBounds, selectedPoint)
-      if (!loadedDataset.points.length) throw new Error('No hay datos dentro del periodo seleccionado.')
+       if (!loadedDataset.points.length) throw new Error('No data is available within the selected period.')
       setDataset(loadedDataset)
       setVisualization(configuration)
       setVisualizationBounds(geographicBounds)
       setVisualizationPoint(selectedPoint)
       setDataLoadState('success')
-      setNotice({ text: 'Serie cargada. Revisa la gráfica y el análisis de tendencia.', error: false })
+      setNotice({ text: 'Series loaded. Review the chart and trend analysis.', error: false })
       return true
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error)
-      setDataLoadError(`No se pudo cargar la serie: ${reason}`)
+      setDataLoadError(`The time series could not be loaded: ${reason}`)
       setDataLoadState('error')
       return false
     }
@@ -124,7 +124,7 @@ export function ResearchProvider({ children }: { children: ReactNode }) {
     setGeographicBounds(null)
     setSelectedPoint(null)
     setTimeError(null)
-    setNotice({ text: `Ejemplo cargado: ${example.title}`, error: false })
+    setNotice({ text: `Example loaded: ${example.title}`, error: false })
   }
 
   const isPending = visualization !== null

@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { MainLayout } from './components/layout/MainLayout'
 import { ResearchProvider } from './context/ResearchContext'
+import { LanguageProvider } from './context/LanguageContext'
 
 const Dashboard = lazy(() => import('./pages/Dashboard').then((module) => ({ default: module.Dashboard })))
 const TrendsPage = lazy(() => import('./pages/TrendsPage').then((module) => ({ default: module.TrendsPage })))
@@ -9,9 +10,10 @@ const TrendsPage = lazy(() => import('./pages/TrendsPage').then((module) => ({ d
 export default function App() {
   return (
     <BrowserRouter>
-      <ResearchProvider>
-        <MainLayout>
-          <Suspense fallback={<div role="status" className="rounded-xl border border-line bg-surface p-5 text-sm text-muted">Cargando esta sección…</div>}>
+      <LanguageProvider>
+        <ResearchProvider>
+          <MainLayout>
+          <Suspense fallback={<div role="status" className="rounded-xl border border-line bg-surface p-5 text-sm text-muted">Loading this section…</div>}>
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
@@ -25,8 +27,9 @@ export default function App() {
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </Suspense>
-        </MainLayout>
-      </ResearchProvider>
+          </MainLayout>
+        </ResearchProvider>
+      </LanguageProvider>
     </BrowserRouter>
   )
 }

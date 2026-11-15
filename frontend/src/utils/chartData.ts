@@ -15,7 +15,23 @@ export function variableChartPoints(points: TimeSeriesPoint[], result: BackendRe
   })
 }
 
-export function zoomPoints(points: TimeSeriesPoint[], start: string, end: string): TimeSeriesPoint[] {
-  return points.filter((point) => (!start || point.date.slice(0, 7) >= start)
-    && (!end || point.date.slice(0, 7) <= end))
+/** Returns a centered temporal window. Level 0 is the complete series. */
+export function centeredZoomPoints(points: TimeSeriesPoint[], level: number): TimeSeriesPoint[] {
+  return zoomedPoints(points, level, 0)
+}
+
+export function zoomWindowSize(points: TimeSeriesPoint[], level: number): number {
+  if (level <= 0 || points.length < 2) return points.length
+  return Math.min(points.length, Math.max(12, Math.ceil(points.length / (1.5 ** level))))
+}
+
+export function zoomedPoints(points: TimeSeriesPoint[], level: number, offset: number): TimeSeriesPoint[] {
+  if (level <= 0 || points.length < 2) return points
+  const ordered = [...points].sort((a, b) => a.date.localeCompare(b.date))
+  const windowSize = zoomWindowSize(ordered, level)
+  if (windowSize >= ordered.length) return ordered
+  const centeredStart = Math.floor((ordered.length - windowSize) / 2)
+  const maxOffset = ordered.length - windowSize
+  const start = Math.max(0, Math.min(maxOffset, centeredStart + Math.round(offset)))
+  return ordered.slice(start, start + windowSize)
 }

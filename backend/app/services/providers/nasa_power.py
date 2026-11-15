@@ -79,8 +79,8 @@ class NasaPowerProvider:
             or region.east - region.west > 10
         ):
             raise ValueError(
-                "El área es demasiado grande para NASA POWER: cada lado del "
-                "rectángulo debe medir entre 2° y 10°."
+                "The area is too large for NASA POWER: each side of the "
+                "rectangle must measure between 2° and 10°."
             )
 
         params: dict[str, str | float] = {
@@ -144,8 +144,8 @@ class NasaPowerProvider:
                     payload = cached_fallback
                 else:
                     raise RuntimeError(
-                        f"No se pudo conectar con la API de NASA POWER tras {self.max_retries + 1} intentos. "
-                        "Verifica tu conexión a internet o utiliza el modo demo sintético."
+                        f"Could not connect to the NASA POWER API after {self.max_retries + 1} attempts. "
+                        "Check your internet connection or use synthetic demo mode."
                     ) from last_error
 
         features = payload.get("features")

@@ -1,137 +1,159 @@
-# Earth System Trend Detective 🌍🔍
+# Earth Trend Detective
 
-[![NASA Space Apps Challenge 2026](https://img.shields.io/badge/NASA_Space_Apps-2026-blue.svg)](https://www.spaceappschallenge.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](backend/)
-[![React 19](https://img.shields.io/badge/react-19-61dafb.svg)](frontend/)
-[![Pytest](https://img.shields.io/badge/tests-passing-brightgreen.svg)](tests/)
+**From NASA Earth data to understandable evidence.**
 
-Herramienta científica e interactiva para el reto de la **NASA Space Apps Challenge 2026**: *"Be An Earth System Trend Detective!"*. Permite formular preguntas, seleccionar variables de misiones y modelos de la Tierra, adquirir series temporales para cualquier región del planeta, visualizar su evolución histórica y determinar cuantitativamente si los cambios observados son estadísticamente significativos.
+Earth Trend Detective is an educational investigation tool for the NASA Space
+Apps challenge **“Be An Earth System Trend Detective!”** It helps a user move
+from a question to a defensible answer:
 
-**Contexto y cambios:** consulta [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md)
-para retomar el proyecto, revisar decisiones, pruebas y pendientes.
-NASA POWER regional admite rectángulos de **2° a 10° por eje**; para áreas
-menores se puede seleccionar un punto.
+1. choose an Earth-system variable;
+2. choose a Mexican region and a valid NASA POWER rectangle;
+3. choose a long observation period;
+4. retrieve a monthly time series;
+5. measure the rate of change;
+6. evaluate statistical evidence; and
+7. read the result together with its uncertainty and limitations.
 
----
+The product is intentionally not a forecasting or causal-inference tool. A
+detected trend does not prove what caused it.
 
-## 🎯 Cumplimiento de Objetivos del Challenge
+## Why this project matters
 
-| Objetivo del Challenge | Estado | Implementación en este Repositorio |
-| :--- | :---: | :--- |
-| **1. Identificar variables de la Tierra** | 🟢 **100%** | Catálogo con 7 variables activas verificadas en NASA POWER (MERRA-2) y roadmap detallado para instrumentos satelitales (MODIS, GLDAS, SWOT, GPM, OMI). |
-| **2. Definiciones sencillas y accesibles** | 🟢 **100%** | Glosario interactivo integrado en la UI y descripciones a nivel preparatoria para estudiantes y público general. |
-| **3. Adquisición regional de datos** | 🟢 Implementado | 4 ubicaciones mexicanas: Sonora, Selva Lacandona, Pantanos de Centla y Valle de México. Puntos representativos y cajas aproximadas documentados. |
-| **4. Visualización de series temporales** | 🟢 **100%** | Gráficas compuestas en Recharts mostrando la serie mensual, la recta de tendencia estimada y la banda de confianza al 95%. |
-| **5. Análisis estadístico: Tasa de cambio** | 🟢 **100%** | Cálculo de la tasa decadal ($\beta_1 \times 10$) y la pendiente mediana de Theil-Sen. |
-| **6. Pruebas de significancia (t-test / MK)** | 🟢 **100%** | Doble prueba de significancia: $t$-test sobre regresión OLS y Test de Mann-Kendall con corrección por empates y continuidad ($\alpha = 0,05$). |
-| **7. Intervalos de confianza** | 🟢 **100%** | Intervalo de confianza analítico del 95% para la tasa decadal y bandas de incertidumbre sobre la recta de regresión. |
-| **8. Tratamiento estacional (opcional)** | Implementado con límites | Agregación anual ($\ge 9$ meses) y Seasonal MK. Las anomalías no se usan en el ajuste; los años incompletos llevan advertencia de posible sesgo. |
-| **9. "Detective de Datos" guiado** | 🟢 **100%** | Asistente en 3 pasos que orienta al usuario según fenómeno, ecosistema y profundidad temporal. |
-| **10. Ejemplos demostrativos** | 🟢 Implementado | 3 casos mexicanos precargados (1991–2023), con NASA POWER como fuente inicial. |
-| **11. Detección de tendencias opuestas** | 🟢 Implementado | Comparación bi-regional con gráficas sincronizadas; banner solo si ambas pendientes son significativas por OLS y de signo opuesto. No infiere causalidad. |
+Earth-data portals expose valuable measurements, but a non-specialist user
+often has to make the scientific interpretation alone. This project puts the
+interpretation next to the chart:
 
----
+- a plain-language finding appears before the advanced charts;
+- OLS, Mann–Kendall, and Theil–Sen results are shown together;
+- confidence intervals, missing-data checks, autocorrelation warnings, and
+  method disagreement are visible;
+- synthetic demo data is clearly separated from NASA POWER data.
 
-## 🧪 Verificación con datos de México
+The differentiator is not another chart. It is the bridge from **measurement →
+trend → evidence → responsible interpretation**.
 
-Consultas reales de NASA POWER para **1991–2023**, geometrías en
-[`docs/region-guidelines.md`](docs/region-guidelines.md):
+## Current scope
 
-- **Sonora, temperatura:** +0.291 °C/década; OLS p=0.000751;
-  Mann-Kendall p=0.005546.
-- **Selva Lacandona, precipitación:** +199.173 mm/década; OLS p=0.034661;
-  Mann-Kendall p=0.060817. Los métodos difieren en significancia: se muestra
-  una advertencia, no se oculta la discrepancia.
+- **Active source:** NASA POWER Monthly API.
+- **Active variables:** air temperature, precipitation, root-zone soil moisture,
+  relative humidity, surface solar radiation, surface pressure, and wind speed.
+- **Geography:** four predefined Mexican regions plus a movable rectangle.
+  Rectangle sizes are limited to valid NASA POWER spans of 2°–10° per axis.
+- **Time resolution:** monthly input with annual aggregation for the main trend
+  estimate; incomplete calendar years are excluded from that estimate.
+- **Optional exploration:** compare the same variable across two predefined
+  regions. This does not test causality or the significance of a difference
+  between slopes.
 
-`scripts/verify_analysis.py` verifica OLS, MK y Sen frente a SciPy/pymannkendall.
-No se afirma que estas dos series tengan tendencias opuestas: son variables
-diferentes. El comparador permite investigar una misma variable entre regiones.
+NASA POWER products may be model or reanalysis products rather than direct
+satellite observations. The interface identifies the source and product
+metadata where available.
 
----
+## What a judge can see in one run
 
-## 🚀 Inicio Rápido
+Use one of the built-in long-period examples, or configure an investigation
+manually:
 
-### Requisitos previos
-- Python 3.10 o superior
-- Node.js ^22.12.0 o >=24.0.0 y npm
+1. select a variable from the dropdown;
+2. select a region;
+3. keep the automatically created 5° × 5° rectangle or choose another valid
+   size;
+4. use the 1991–2023 example period;
+5. generate the series; and
+6. read the finding, trend rate, confidence interval, OLS result,
+   Mann–Kendall result, and limitations.
 
-### 1. Backend (FastAPI)
+The project includes real-data checks for Mexican examples. For instance, the
+documented Sonora temperature run reports a positive decadal rate with
+significant OLS and Mann–Kendall evidence; the Lacandon precipitation example
+shows why disagreement between methods must be explained rather than hidden.
+
+## Run locally
+
+### Requirements
+
+- Python 3.10+
+- Node.js 22.12+ or 24+
+- Internet access for live NASA POWER data and map tiles
+
+### Backend
+
 ```bash
-# Crear entorno virtual e instalar dependencias
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
-pip install pymannkendall
-
-# Ejecutar el servidor backend
-export PYTHONPATH=backend
-uvicorn app.main:app --reload --port 8000
+PYTHONPATH=backend uvicorn app.main:app --reload --port 8000
 ```
-La documentación Swagger interactiva queda disponible en: `http://localhost:8000/docs`.
 
-### 2. Frontend (React + TypeScript + Vite + TailwindCSS)
+### Frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-La aplicación web se abrirá en `http://localhost:5173`.
 
----
+Open `http://localhost:5173`. Swagger is available at
+`http://localhost:8000/docs`.
 
-## 🔬 Validación Científica y Tests
+For offline frontend development, the source selector includes an explicitly
+labeled reproducible synthetic demo. Demo observations must never be described
+as NASA observations.
 
-Para ejecutar la suite completa de pruebas unitarias y de integración:
+## Validation
+
+From the repository root:
+
 ```bash
-# Ejecutar tests de backend
-.venv/bin/pytest
-
-# Ejecutar benchmark de validación numérica contra scipy y pymannkendall
-.venv/bin/python scripts/verify_analysis.py
-
-# Verificar compilación estricta de TypeScript y build del frontend
+pytest -q
 npm --prefix frontend test
+npm --prefix frontend run typecheck
 npm --prefix frontend run build
+npm --prefix frontend run test:e2e
 ```
 
----
+The current validated branch has **51 backend tests**, **11 frontend tests**, a
+passing TypeScript build, and a passing browser flow that exercises real HTTP
+analysis responses.
 
-## 📊 Variables Científicas Activas
+## Scientific limitations
 
-| ID | Variable | Fuente / Instrumento | Unidades | Agregación |
-| :--- | :--- | :--- | :---: | :---: |
-| `temperature` | Temperatura del aire (2 m) | NASA POWER / MERRA-2 (`T2M`) | °C | Promedio |
-| `precipitation` | Precipitación acumulada | NASA POWER / MERRA-2 (`PRECTOTCORR`) | mm | Suma |
-| `soil_moisture` | Humedad de suelo (raíz) | NASA POWER Land Assimilation (`GWETROOT`) | fracción | Promedio |
-| `relative_humidity` | Humedad relativa (2 m) | NASA POWER / MERRA-2 (`RH2M`) | % | Promedio |
-| `solar_radiation` | Radiación solar en superficie | NASA POWER Solar (`ALLSKY_SFC_SW_DWN`) | kW·h/m²/día | Promedio |
-| `surface_pressure` | Presión en superficie | NASA POWER / MERRA-2 (`PS`) | kPa | Promedio |
-| `wind_speed` | Velocidad del viento (10 m) | NASA POWER / MERRA-2 (`WS10M`) | m/s | Promedio |
+- Statistical significance is evidence under the selected method and
+  assumptions, not proof of causality.
+- Positive residual autocorrelation is warned about but not automatically
+  corrected.
+- The main estimate uses complete annual aggregates; it is not a seasonal
+  forecasting model.
+- Results depend on the selected period, rectangle, POWER product, missing
+  values, and assumptions.
+- The current geography is intentionally focused on Mexico for a coherent MVP;
+  it is not yet a global regional analysis product.
 
----
+## Judge-facing next steps
 
-## 🛰️ Roadmap Satelital (Earthdata Login)
+These are the next improvements in priority order:
 
-Para instrumentos satelitales avanzados que requieren autenticación Bearer Token mediante NASA Earthdata Login:
-- **MODIS NDVI (`MOD13C2`)**: Vía AppEEARS API / LP DAAC.
-- **GLDAS Evapotranspiración**: Vía GES DISC OPeNDAP.
-- **SWOT**: Elevación de aguas superficiales y lagos vía PO.DAAC Cloud.
-- **GPM IMERG**: Precipitación satelital global de alta resolución.
+1. **Publish a stable public demo and a short screen recording** so judges can
+   evaluate the project without local setup.
+2. **Run a small usability and accessibility review** with learners or
+   educators, especially around the first-screen question and result wording.
+3. **Make one finding the showcase path**: reduce the first-run choices and
+   highlight a concrete, reproducible result in the demo.
+4. **Add a shareable result summary** containing the source, region, period,
+   rate, evidence status, and limitations.
+5. **Expand geography and data products only after the core workflow is stable**;
+   future candidates include global regions and selected NASA Earthdata
+   products.
 
-Consulta los detalles en [`docs/statistical-methodology.md`](docs/statistical-methodology.md) y [`docs/variable-catalog.md`](docs/variable-catalog.md).
+## Documentation
 
-## Gráficas y revisión del reto
+- [Submission brief](docs/submission.md)
+- [Challenge alignment and judge review](docs/challenge-review.md)
+- [Demo storyboard](docs/demo-storyboard.md)
+- [Investigation workflow](docs/investigation-workflow.md)
+- [Scientific methodology](docs/statistical-methodology.md)
+- [Variable catalog](docs/variable-catalog.md)
+- [Region guidelines](docs/region-guidelines.md)
+- [NASA POWER documentation](https://power.larc.nasa.gov/docs/services/api/temporal/monthly/)
 
-Cada variable tiene un panel independiente, nombre, unidad y escala propios.
-Pulsa su botón para ocultarla/mostrarla, o **Mostrar todas**. Los campos
-**Zoom: desde / Hasta** amplían el periodo visible; **Restablecer zoom**
-recupera la serie completa. Las estadísticas no cambian al hacer zoom.
-
-Consulta [`docs/challenge-review.md`](docs/challenge-review.md) para la tabla
-de cumplimiento revisada, evidencia y limitaciones (los porcentajes históricos
-de arriba no son una certificación de NASA).
-
-Prueba de navegador reproducible: con Playwright y Chromium instalados y ambos
-servidores encendidos, ejecutar `node scripts/verify_chart_ui.mjs`.
-También se puede indicar una instalación externa mediante `PLAYWRIGHT_MODULE`.
+This is an independent educational project. NASA does not endorse it.

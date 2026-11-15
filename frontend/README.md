@@ -1,32 +1,31 @@
 # Frontend
 
-Prototipo educativo para investigar tendencias en variables de ciencias de la
-Tierra. El flujo principal tiene dos pantallas: configuración guiada de la
-investigación y serie temporal con análisis estadístico.
+Educational tool for investigating Earth-system trends. The main flow has two
+screens: guided investigation setup and a time series with statistical
+analysis.
 
-En `/dashboard` se eligen variable, región y periodo paso a paso. El proveedor
-se puede cambiar en el resumen final: NASA POWER obtiene datos reales y
-`local-demo` permite trabajar sin red. En `/trends` se visualizan la serie y
-el análisis devuelto por el backend.
-Al generar una serie se indican los estados de carga y error; la gráfica
-reutiliza los datos cargados para no solicitar la misma serie dos veces.
-Las rutas previas de configuración redirigen a `/dashboard`; `/results`
-redirige a `/trends`.
+In `/dashboard`, users choose a variable, region, valid rectangle, and period.
+NASA POWER retrieves real data; `local-demo` is explicitly labeled synthetic
+data for offline development. `/trends` displays the returned series and
+analysis. Loading and error states are visible, and loaded data is reused
+instead of requesting the same series twice.
 
 ## Datos y limitaciones
 
 El frontend consume `POST /api/v1/analysis` mediante `src/services/api.ts`.
 El backend es la única fuente del cálculo estadístico. `local-demo` genera
-datos sintéticos; NASA POWER obtiene temperatura y precipitación mensuales.
+datos sintéticos; NASA POWER entrega las siete variables activas descritas en
+el catálogo del proyecto.
 
 El backend aplica regresión lineal y una prueba t bilateral de la pendiente
 sobre agregados anuales completos, con tasa por año y década, p-value e
-intervalo de confianza del 95 %. No corrige autocorrelación ni cambios de
-sensor y no permite inferir causalidad. Mann–Kendall y variables adicionales
-siguen pendientes.
+intervalo de confianza del 95 %. Mann–Kendall, Seasonal MK y Theil–Sen son
+métodos complementarios. No corrige autocorrelación ni cambios de producto o
+sensor y no permite inferir causalidad. NDVI, evapotranspiración y SWOT siguen
+pendientes.
 
-El mapa base usa teselas de OpenStreetMap y requiere conexión a internet; la
-selección manual de coordenadas sigue disponible si no cargan las teselas.
+The map uses OpenStreetMap tiles and requires an Internet connection. The
+rectangle remains defined by the application if tiles are unavailable.
 
 ## Desarrollo
 

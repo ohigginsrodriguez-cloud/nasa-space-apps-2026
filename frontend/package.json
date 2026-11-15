@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:e2e": "PLAYWRIGHT_MODULE=./node_modules/playwright/index.mjs node ../scripts/verify_chart_ui.mjs",
     "dev": "vite",
     "typecheck": "tsc -b",
     "build": "tsc -b && vite build",
@@ -31,6 +32,7 @@
     "@vitejs/plugin-react": "^6.3.0",
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2",
-    "vite": "^8.3.8"
+    "vite": "^8.3.8",
+    "playwright": "^1.58.2"
   }
 }

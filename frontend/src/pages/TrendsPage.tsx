@@ -1,101 +1,52 @@
 import { useState } from 'react'
-import { BookOpen, GitCompare, LineChart as ChartIcon } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { TimeSeriesChart } from '../components/charts/TimeSeriesChart'
 import { GlossaryModal } from '../components/common/GlossaryModal'
 import { PageIntro } from '../components/common/PageIntro'
 import { RegionComparison } from '../components/detective/RegionComparison'
+import { InvestigationFindings } from '../components/detective/InvestigationFindings'
 import { useResearch } from '../context/ResearchContext'
+import { useLanguage } from '../context/LanguageContext'
 
 export function TrendsPage() {
   const { visualization, dataset, isPending, dataLoadState, dataLoadError } = useResearch()
-  const [activeTab, setActiveTab] = useState<'single' | 'compare'>('single')
   const [showGlossary, setShowGlossary] = useState(false)
+  const { t } = useLanguage()
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <PageIntro
-          eyebrow="ANÁLISIS ESTADÍSTICO"
-          title="Detective de Tendencias Ambientales"
-          description="Inferencia multi-método (Regresión OLS, Mann-Kendall, Sen) con detección de tendencias opuestas y bandas de confianza al 95%."
-        />
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowGlossary(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:border-accent hover:text-accent shadow-2xs"
-          >
-            <BookOpen size={14} className="text-accent" />
-            <span>Glosario Científico</span>
-          </button>
-          <div className="flex rounded-lg border border-line bg-surface p-1 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => setActiveTab('single')}
-              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
-                activeTab === 'single'
-                  ? 'bg-accent text-white'
-                  : 'text-muted hover:text-ink'
-              }`}
-            >
-              <ChartIcon size={14} />
-              <span>Análisis Principal</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('compare')}
-              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
-                activeTab === 'compare'
-                  ? 'bg-purple-600 text-white'
-                  : 'text-muted hover:text-ink'
-              }`}
-            >
-              <GitCompare size={14} />
-              <span>Comparar 2 Regiones</span>
-            </button>
-          </div>
-        </div>
+        <PageIntro eyebrow={t('statisticalAnalysis')} title={t('trendDetective')} description={t('trendDescription')} />
+        <button type="button" onClick={() => setShowGlossary(true)}
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line px-3 text-sm font-semibold text-ink hover:text-accent">
+          <BookOpen size={14} aria-hidden="true" /> {t('glossary')}
+        </button>
       </div>
-
       <GlossaryModal isOpen={showGlossary} onClose={() => setShowGlossary(false)} />
-
-      {activeTab === 'compare' ? (
-        <RegionComparison />
-      ) : (
+      {dataLoadState === 'loading' && <p role="status" className="text-sm text-muted">{t('loadingSeries')}</p>}
+      {dataLoadState === 'error' && dataLoadError && <p role="alert" className="text-sm text-red-800">{dataLoadError}</p>}
+      {visualization && dataset ? (
         <>
-          {dataLoadState === 'loading' && (
-            <p role="status" aria-live="polite" className="rounded-lg border border-accent/20 bg-accent-soft/40 p-3 text-xs text-accent">
-              Cargando la serie temporal y calculando inferencia estadística…
-            </p>
-          )}
-
-          {dataLoadState === 'error' && dataLoadError && (
-            <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
-              {dataLoadError}
-            </p>
-          )}
-
-          {visualization && dataset ? (
-            <TimeSeriesChart configuration={visualization} dataset={dataset} pendingChanges={isPending} />
-          ) : (
-            dataLoadState !== 'loading' && (
-              <section className="rounded-xl border border-dashed border-line bg-surface p-6 text-center">
-                <p className="text-sm font-medium text-ink">Primero configura tu investigación</p>
-                <p className="mt-2 text-xs text-muted">
-                  Elige variables, región y periodo en el panel de investigación para calcular las tendencias.
-                </p>
-                <Link
-                  to="/dashboard"
-                  className="mt-4 inline-flex min-h-10 items-center rounded-lg bg-accent px-4 text-xs font-semibold text-white hover:bg-accent-hover"
-                >
-                  Configurar investigación
-                </Link>
-              </section>
-            )
-          )}
+          <InvestigationFindings configuration={visualization} dataset={dataset} pending={isPending} />
+          <TimeSeriesChart configuration={visualization} dataset={dataset} pendingChanges={isPending} />
         </>
+      ) : dataLoadState !== 'loading' && (
+        <section className="surface-panel border-dashed p-6 text-center">
+          <h2 className="font-semibold">{t('configureFirst')}</h2>
+          <p className="mt-2 text-sm text-muted">{t('configureDescription')}</p>
+          <Link to="/dashboard" className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-white">{t('configureInvestigation')}</Link>
+        </section>
       )}
+      <details className="surface-panel p-5">
+        <summary className="cursor-pointer text-base font-bold text-accent">Go further: does the trend differ between regions?</summary>
+        <p className="my-4 text-sm leading-relaxed text-muted">
+          Optional investigation: compare the same variable over the same period in two regions.
+          The challenge highlights that trends can differ by location. Opposite trends do not prove a shared cause,
+          and this comparison does not test whether the difference between slopes is statistically significant.
+        </p>
+        <RegionComparison />
+      </details>
     </div>
   )
 }

@@ -208,6 +208,9 @@ tempCodeRunnerFile.py
 # Ruff stuff:
 .ruff_cache/
 
+# Runtime NASA POWER cache; committed fixture files remain tracked.
+data/cache/*.json
+
 # PyPI configuration file
 .pypirc
 

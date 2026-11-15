@@ -1,19 +1,22 @@
 import { useLocation } from 'react-router-dom'
 import { navigation } from './navigation'
 import { useResearch } from '../../context/ResearchContext'
+import { useLanguage } from '../../context/LanguageContext'
 
 export function Header() {
   const { pathname } = useLocation()
   const { draft } = useResearch()
+  const { t } = useLanguage()
   const section = navigation.find((item) => item.path === pathname) ?? navigation[0]
 
   return (
-    <header className="flex min-h-24 flex-wrap items-center justify-between gap-4 border-b border-line bg-surface px-5 py-5 sm:px-8 xl:px-10">
+    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface px-5 py-3 sm:px-8 xl:px-10">
       <div>
-        <p className="text-sm font-semibold">{section.label}</p>
-        <p className="mt-1 text-xs leading-relaxed text-muted sm:text-sm">{section.description}</p>
+        <p className="text-sm font-bold tracking-tight">{section.id === 'investigation' ? t('investigation') : t('trends')}</p>
       </div>
-      <span className="flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-xs text-muted"><span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />{draft.sourceId === 'local-demo' ? 'Demo local · sintético' : 'NASA POWER · MVP'}</span>
+      <div className="flex items-center gap-3">
+        <span className="status-pill" data-demo={draft.sourceId === 'local-demo'}>{draft.sourceId === 'local-demo' ? 'Selected source · synthetic demo' : 'Selected source · NASA POWER'}</span>
+      </div>
     </header>
   )
 }

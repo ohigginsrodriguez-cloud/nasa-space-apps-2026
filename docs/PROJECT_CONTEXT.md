@@ -9,9 +9,21 @@ pruebas ejecutadas y pendientes. El historial Git conserva el detalle exacto.
 
 ## Objetivo y arquitectura
 
+### Vista múltiple y glosario
+
+Al seleccionar dos o más variables se permite elegir paneles separados
+(predeterminado) o una gráfica conjunta con ejes independientes en unidades
+originales. Los resultados permiten alternar vistas, ocultar variables, acotar
+meses, ajustar límites verticales por variable y ampliar la altura. El zoom
+no recalcula significancia ni modifica las exportaciones.
+El glosario usa un diálogo modal nativo en la capa superior del navegador,
+bloquea el desplazamiento de fondo y contiene el scroll para aislar el mapa.
+Verificación: 11 pruebas frontend, typecheck y build correctos.
+
 NASA Space Apps 2026: **Be An Earth System Trend Detective!**
-Flujo: variables → región/punto → periodo → serie temporal → tasa de cambio y
-significancia. Textos de interfaz en español; código en inglés.
+Flujo actual: variable → región → rectángulo válido → periodo → serie temporal
+→ tasa de cambio y significancia. La interfaz visible está en inglés; el código
+está en inglés.
 
 - Backend FastAPI: `backend/app`, entrada `main.py`.
 - Catálogo: `backend/app/catalog.py`; regiones: `backend/app/regions.py`.
@@ -164,8 +176,8 @@ ante solicitudes inválidas.
 
 ### Comprobaciones ejecutadas
 
-- Backend: **42 passed**, una advertencia de deprecación Starlette/httpx.
-- Frontend: **7 passed**; TypeScript y Vite compilan correctamente.
+- Histórico de la primera integración: backend **42 passed** y frontend **7
+  passed**; esa ejecución tenía la advertencia de deprecación Starlette/httpx.
 - Servidor local `localhost:8000`: **cuatro análisis HTTP 200**, uno por cada
   región, **siete variables simultáneas**, periodo 1991–2023, 396 meses por variable.
   Datos NASA POWER reales (con la caché normal del proveedor); no respuestas simuladas.
@@ -179,11 +191,97 @@ ante solicitudes inválidas.
 Si se mantiene abierto un frontend antiguo, recargar la página. Si el backend
 no usa `--reload`, reiniciarlo para cargar el nuevo límite y catálogo.
 El aviso de React DevTools es normal en desarrollo.
-Los puntos del mapa personalizados siguen disponibles; solo el catálogo de
-regiones se restringió a México.
+La interfaz actual usa exclusivamente rectángulos regionales; los puntos
+permanecen en contratos históricos del backend para compatibilidad, pero no se
+ofrecen al usuario.
 Los antiguos pendientes del banner comparativo y `syncId` quedaron corregidos.
 La revisión actual no certifica ausencia de cualquier otro defecto científico
 o visual ni convierte la tabla histórica en una auditoría exhaustiva.
+
+## Auditoría y correcciones de interpretación (2026-11)
+
+Trabajo iniciado sobre `dev` en `fdb4f4c`, sin modificar `main`, en la rama
+`feature/scientific-interpretation-and-audit`.
+
+- `pymannkendall` quedó declarado en `backend/requirements.txt`; ya no se
+  requiere instalarlo manualmente aparte.
+- El ajuste anual requiere 12 meses válidos; no extrapola años incompletos.
+- Las variables de estado se agregan con promedio anual ponderado por días de
+  cada mes; las variables acumulativas suman los 12 totales mensuales.
+- El backend limita `end_date` al último mes calendario completo para análisis
+  ordinarios y comparaciones.
+- La API devuelve por variable un veredicto JSON con OLS, Mann-Kendall e IC;
+  también devuelve procesos multivariables exploratorios. Se añadió
+  `/api/v1/analysis/compare` para el JSON de divergencia espacial.
+- La UI presenta estado de significancia, ambos p-values e IC debajo de cada
+  gráfica individual y de cada gráfica regional. Los resultados no evaluables
+  y la evidencia discordante no se muestran como “no significativos”.
+- Los patrones de interconexión son hipótesis; no afirman causalidad.
+- Se actualizaron catálogo, alcance y metodología para que reflejen las siete
+  variables POWER, los años completos y las limitaciones vigentes.
+- Cuando se seleccionan dos o más variables, la API y la UI muestran una
+  interpretación conjunta aunque no exista un patrón predefinido: enumera las
+  variables/unidades analizadas, resume sus veredictos y separa los patrones
+  exploratorios de las conclusiones estadísticas individuales.
+- Los controles de zoom comparten un componente; el arrastre con mouse usa
+  actualización por frame y permite recorrer la ventana ampliada sin cambiar
+  los cálculos.
+
+Verificación ejecutada después de estos cambios: backend **51 passed**,
+frontend **11 passed**, typecheck y build correctos; el benchmark NASA POWER
+real valida OLS/MK/Sen frente a SciPy y pymannkendall. También se ejecutó el
+E2E con Playwright y Chromium: siete paneles, zoom/arrastre, vista conjunta,
+estado vacío, móvil y API real sin errores JavaScript. `httpx2` elimina la
+advertencia deprecada de Starlette.
+Primera fase de claridad para la submission: se añadió `ProjectGuideModal.tsx`,
+accesible desde Dashboard y TrendsPage, con flujo de tres pasos, metodología,
+documentación NASA POWER y disclaimer de no afiliación.
+`TimeSeriesChart.tsx` ahora incluye un panel desplegable de procedencia con
+fuente, región, periodo, método, productos/modelos, faltantes y documentación.
+Se corrigió el overflow móvil introducido por estos controles: el encabezado y
+las pestañas de `TrendsPage` se adaptan en viewport de 390 px sin ocultar
+acciones.
+Verificación final de esta fase: backend **51 passed**, frontend **11 passed**,
+typecheck, build y E2E correctos.
+
+Segunda fase de submission: se añadió `LanguageContext.tsx` con inglés por
+defecto, selector EN/ES persistente y traducción del flujo principal, guía,
+glosario, fechas, regiones y resultados clave. `docs/submission.md` contiene el
+texto en inglés para la página de proyecto, uso de SI, referencias, disclaimer
+y guion de demo de 30 segundos. El E2E se actualizó para validar la interfaz
+inglesa; también se verificó el cambio EN/ES manualmente.
+
+Tercera fase de presentación: la interfaz quedó únicamente en inglés, sin
+selector de idioma. Se tradujeron los nombres y descripciones de variables,
+ejemplos, asistente guiado, mapa, comparación regional, controles de zoom,
+errores y resultados visibles. Se aumentaron tamaños de texto en tarjetas de
+variables, asistente, mapa, comparación y controles de zoom; se actualizaron
+los selectores E2E y sus pruebas de mensajes al inglés.
+`docs/deployment.md` documenta el despliegue público y la verificación desde
+navegación privada; `docs/demo-storyboard.md` prepara una alternativa de siete
+diapositivas al video de 30 segundos. El despliegue real y los enlaces públicos
+siguen pendientes porque requieren credenciales/servicios de hosting.
+
+Fase de simplificación UX: se eliminó el filtro de categoría `All` y el roadmap
+de misiones del selector principal para que las siete variables activas se
+entiendan de un vistazo. El encabezado de Dashboard conserva únicamente
+`How it works`; el propósito ahora se explica con una llamada principal y tres
+resultados esperados. La selección geográfica añade tamaños rápidos de 2° × 2°
+y 5° × 5°, lectura en vivo de ancho/alto y estado válido/no válido según las
+restricciones de NASA POWER. También se tradujeron mensajes de carga, errores y
+ejemplos restantes al inglés.
+
+Fase científica de baja fricción: los detalles avanzados de métodos se
+agruparon en un panel colapsable para no saturar el resultado principal.
+Se añadió Seasonal Mann–Kendall junto a OLS, Mann–Kendall y Theil–Sen. Las
+respuestas visibles del backend activo (catálogo, regiones, advertencias,
+veredictos, patrones y divergencia espacial) se pasaron al inglés para evitar
+que la interfaz English-only vuelva a mostrar mensajes en español. Se
+actualizaron las aserciones afectadas y se mantienen **51 tests backend**, **11
+frontend**, typecheck, build y E2E aprobados.
+
+La limpieza de ramas solo debe borrar ramas ya fusionadas; se preservan las que
+tienen commits exclusivos.
 
 ## Revisión del challenge y gráficas por variable
 
@@ -202,9 +300,93 @@ de rectas, atribución incorrecta de significancia a MK, ubicación personalizad
 mal titulada, etiqueta `annual_anomalies` sin uso real de anomalías, falta de
 advertencia por años incompletos y explicación errónea de autocorrelación/IC.
 
-Verificación: **44 tests backend, 10 frontend, build y benchmark correctos**.
-Esta vez se ejecutó Chromium: siete variables con datos reales, ocultar/mostrar,
-zoom/restablecer, estado vacío y móvil sin errores JS. Playwright fue instalado
-fuera del repo en `/tmp/opencode/browser-check`; ejecutar con
-`PLAYWRIGHT_MODULE=/tmp/opencode/browser-check/node_modules/playwright/index.mjs node scripts/verify_chart_ui.mjs`.
-Los servidores deben estar disponibles en 5173/8000.
+Histórico: **44 tests backend, 10 frontend, build y benchmark** en aquella
+revisión. Para la auditoría de noviembre de 2026, ver el registro actualizado
+arriba; no asumir que este conteo histórico refleja la rama actual.
+
+Fase final de identidad: el nombre visible se acortó a **Earth Trend Detective**
+para que el propósito sea memorable, mientras la documentación conserva el
+alineamiento con el proyecto oficial de NASA Space Apps. El primer bloque del
+Dashboard ahora responde explícitamente qué hace la herramienta y usa una
+jerarquía inspirada en NASA: azul institucional para la navegación y rojo NASA
+para la marca, la llamada principal y los estados activos. Se eliminó el banner
+de proveedor duplicado porque el estado de NASA POWER ya aparece en el header y
+la procedencia se explica junto a los resultados.
+
+## Investigación orientada a preguntas
+
+La interfaz adopta una cabecera negra, fondo blanco, estructura azul y acciones
+rojas inspiradas en la referencia NASA.gov. El hero pregunta “Is your region
+changing?” y lleva al flujo de configuración. Los tres casos científicos ahora
+son visibles y precargan directamente la revisión de región/periodo, antes de
+consultar POWER. Se retiró el asistente paralelo del Dashboard y se plegaron
+las opciones avanzadas de gráficas. El resumen muestra coordenadas cuando la
+selección geográfica es personalizada.
+
+Los resultados comienzan con `InvestigationFindings`: respuesta por variable
+del backend, periodo, región consultada, años completos, límites y distinción
+entre datos NASA y demo. No se inventan niveles de confianza ni probabilidades;
+se mantienen los veredictos calculados y las advertencias científicas.
+El usuario puede volver a refinar su pregunta. Se actualizó idioma y título
+HTML y se añadió atribución/disclaimer al pie.
+
+Validación: 51 pruebas backend, 11 frontend, typecheck, build y E2E aprobados.
+Se comprobó además pregunta → revisión → resultados a 1440 y 390 px sin
+desbordamiento horizontal. Pendientes: evaluación con usuarios, auditoría
+completa de accesibilidad, despliegue público y video; estas mejoras de UX no
+constituyen una puntuación oficial de jueces.
+
+Revisión de inglés y selección: el proceso uvicorn activo conservaba código
+antiguo en memoria y devolvía catálogo y veredictos españoles. Se reinició con
+recarga del directorio backend/app. Se corrigieron además leyendas, tooltips,
+fechas, formato numérico, errores y unidades todavía españoles. Los valores
+muy pequeños en la gráfica principal usan notación científica para evitar
+mostrar pendientes no nulas o p-values pequeños como cero.
+
+El selector muestra las siete variables con descripciones visibles, selección
+por etiqueta y metadatos plegados; se retiraron buscador, chips duplicados y
+scroll interno. La comparación regional se conserva al final, plegada y con
+su alcance explícito. Ver challenge-requirements.md para fuentes y limitaciones
+de esta revisión del enunciado. El E2E comprueba ahora texto inglés de resultados
+y acceso al comparador opcional.
+
+Revisión de repetición y selección geográfica: se retiraron las tarjetas
+estadísticas duplicadas que repetían el veredicto de `InvestigationFindings`;
+la evidencia detallada permanece bajo cada gráfica. La relación multivariable
+también quedó plegada. Los controles para ocultar/mostrar series están dentro
+de `Choose visible series` y no compiten con la lectura principal.
+
+La selección de área dejó de imponer el mapa como paso obligatorio. Una región
+predefinida queda lista para analizar; `Customize the area (optional)` abre el
+mapa, punto, rectángulo y coordenadas solo para quien necesita precisión
+geográfica. Esto conserva la validación NASA POWER de 2°–10° para rectángulos
+sin castigar el flujo principal.
+
+La selección de variables ahora usa un selector desplegable: se añade una
+variable por vez y cada variable seleccionada tiene información contextual y
+eliminación independiente. En el mapa, un control azul situado en el centro
+del rectángulo permite mover toda el área; las esquinas continúan redimensionando
+la selección y las coordenadas siguen disponibles para precisión manual.
+La interacción fue comprobada con Playwright a 1280 px.
+
+Revisión final de interacción geográfica: el rectángulo ya no se dibuja con dos
+clics ni tiene marcadores visibles en sus esquinas. Se crea automáticamente
+centrado en la región, con tamaño válido de 5° × 5°; también se ofrecen 2° × 2°
+y selección de punto. El usuario solo mueve el área mediante el control central
+azul, por lo que no puede iniciar una consulta regional inválida por tamaño.
+El mapa volvió a ser visible dentro del paso de región, no como opción avanzada.
+
+El selector de variables pasó a un menú desplegable propio: cada opción tiene
+su icono de información dentro del menú y las variables seleccionadas se
+mantienen en una lista separada. Variables, región y periodo recibieron fondos
+azul/rojo muy sutiles y controles con altura mínima de 44 px para mejorar
+legibilidad y objetivos táctiles sin saturar la paleta.
+
+La interfaz de variables usa un menú desplegable sencillo, ahora con un icono
+de ayuda junto a cada opción y una lista compacta de variables seleccionadas.
+La geografía usa
+exclusivamente rectángulos: no se ofrece selección por punto ni dibujo libre.
+Los tamaños disponibles son 2°, 3°, 4°, 5°, 6°, 8° y 10° por lado, todos
+válidos para NASA POWER. El arrastre del rectángulo tiene una amortiguación del
+20% para facilitar el posicionamiento. La escala base de texto se fijó en
+16 px con títulos de sección mayores y objetivos táctiles mínimos de 44 px.

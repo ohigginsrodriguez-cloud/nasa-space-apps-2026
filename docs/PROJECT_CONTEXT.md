@@ -347,3 +347,15 @@ scroll interno. La comparación regional se conserva al final, plegada y con
 su alcance explícito. Ver challenge-requirements.md para fuentes y limitaciones
 de esta revisión del enunciado. El E2E comprueba ahora texto inglés de resultados
 y acceso al comparador opcional.
+
+Revisión de repetición y selección geográfica: se retiraron las tarjetas
+estadísticas duplicadas que repetían el veredicto de `InvestigationFindings`;
+la evidencia detallada permanece bajo cada gráfica. La relación multivariable
+también quedó plegada. Los controles para ocultar/mostrar series están dentro
+de `Choose visible series` y no compiten con la lectura principal.
+
+La selección de área dejó de imponer el mapa como paso obligatorio. Una región
+predefinida queda lista para analizar; `Customize the area (optional)` abre el
+mapa, punto, rectángulo y coordenadas solo para quien necesita precisión
+geográfica. Esto conserva la validación NASA POWER de 2°–10° para rectángulos
+sin castigar el flujo principal.

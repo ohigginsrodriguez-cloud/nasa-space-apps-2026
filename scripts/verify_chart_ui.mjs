@@ -26,6 +26,7 @@ try {
   const response = page.waitForResponse((res) => res.url().endsWith('/api/v1/analysis'), { timeout: 180000 })
   await page.getByRole('button', { name: 'Generate series and analyze' }).click()
   assert.equal((await response).status(), 200)
+  await page.getByText('Choose visible series', { exact: true }).click()
   await page.getByRole('button', { name: 'Hide Air temperature', exact: true }).waitFor()
   const panels = page.locator('article[aria-label^="Panel for"]')
   assert.equal(await panels.count(), 7)
@@ -48,7 +49,8 @@ try {
   assert.equal(await page.getByText('1×', { exact: true }).count(), 7)
   await page.getByLabel('Chart view').selectOption('combined')
   await page.getByRole('article', { name: 'Combined variable chart' }).waitFor()
-  await page.getByText('Joint interpretation of the variables', { exact: true }).waitFor()
+  await page.getByText('Explore relationships between selected variables', { exact: true }).click()
+  await page.getByText(/variables were analyzed together:/).waitFor()
   assert.doesNotMatch(await page.locator('body').innerText(), /Temperatura del aire|Área personalizada|Humedad del suelo|Autocorrelación|Se analizaron|Coincidencia de tendencias|Observado:|Unidad:/)
   await page.getByLabel('Chart view').selectOption('separate')
   while (await page.getByRole('button', { name: /^Hide / }).count()) {

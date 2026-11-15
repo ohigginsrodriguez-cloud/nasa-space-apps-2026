@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
-import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Download, ExternalLink, HelpCircle, Info, Link2, Minus, SlidersHorizontal, XCircle } from 'lucide-react'
+import { Download, ExternalLink, HelpCircle, Info, Link2, Minus, SlidersHorizontal } from 'lucide-react'
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps, type TooltipValueType } from 'recharts'
 import { regions, variables } from '../../data/mockData'
-import type { BackendResult, DataConfiguration, TimeSeriesDataset, TimeSeriesPoint } from '../../types'
+import type { DataConfiguration, TimeSeriesDataset, TimeSeriesPoint } from '../../types'
 import { SectionTitle } from '../common/SectionTitle'
 import { useLanguage } from '../../context/LanguageContext'
 import { ChartZoomControls } from './ChartZoomControls'
@@ -80,206 +80,6 @@ function ChartLegend({ variable }: { variable: { name: string; unit: string; id:
   )
 }
 
-function TermHelp({ term, explanation }: { term: string; explanation: string }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <span className="relative inline-flex items-center">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="ml-1 inline-flex items-center text-muted hover:text-accent focus:outline-none"
-        title={`What does ${term} mean?`}
-        aria-label={`What does ${term} mean?`}
-      >
-        <HelpCircle size={13} aria-hidden="true" />
-      </button>
-      {open && (
-        <span className="absolute bottom-full left-1/2 z-30 mb-1 w-64 -translate-x-1/2 rounded-md border border-line bg-surface p-2.5 text-[11px] font-normal leading-relaxed text-ink shadow-lg">
-          <strong className="block font-semibold text-accent mb-0.5">{term}</strong>
-          {explanation}
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="mt-1 block text-[10px] text-muted underline hover:text-ink"
-          >
-            Close
-          </button>
-        </span>
-      )}
-    </span>
-  )
-}
-
-function TrendSummary({ result, regionName, language }: { result: BackendResult | undefined; regionName: string; language: 'en' | 'es' }) {
-  if (!result) return null
-  const { variable, trend } = result
-  const isConstant = trend.status === 'constant_series'
-  const isSig = result.interpretation?.significant === true || (!result.interpretation && trend.significant === true)
-  const slopeDecade = trend.change_per_decade
-  const isUp = slopeDecade !== null && slopeDecade > 0
-  const isDown = slopeDecade !== null && slopeDecade < 0
-
-  let naturalLanguage = ''
-  if (isConstant) {
-     naturalLanguage = language === 'en'
-       ? `The annual aggregates of ${variable.name} are constant in ${regionName}. There is no annual trend to evaluate; monthly values may still vary.`
-       : `Los agregados anuales de ${variable.name} son constantes en ${regionName}. No hay tendencia anual que evaluar; los valores mensuales pueden variar.`
-  } else if (
-    result.interpretation?.status === 'conflicting_evidence'
-    || result.interpretation?.status === 'insufficient_data'
-  ) {
-    naturalLanguage = result.interpretation.summary
-  } else if (slopeDecade !== null) {
-     const dirVerb = language === 'en' ? (isUp ? 'increased' : isDown ? 'decreased' : 'showed no linear change') : (isUp ? 'aumentó' : isDown ? 'disminuyó' : 'se mantuvo sin cambio lineal')
-    const absChange = Math.abs(slopeDecade)
-    const ciText = trend.confidence_interval_per_decade
-       ? ` (${language === 'en' ? '95% CI' : 'IC 95%'}: [${formatValue(trend.confidence_interval_per_decade[0])}, ${formatValue(trend.confidence_interval_per_decade[1])}] ${variable.unit}/${language === 'en' ? 'decade' : 'década'})`
-      : ''
-    const mkP = trend.mann_kendall?.p_value ?? trend.p_value
-
-    if (isSig) {
-       naturalLanguage = language === 'en'
-         ? `${variable.name} in ${regionName} ${dirVerb} ${formatValue(absChange)} ${variable.unit} per decade${ciText}. Significant under OLS (p=${formatValue(trend.p_value, 4)}). Mann-Kendall p=${formatValue(mkP, 4)}: ${mkP !== null && mkP < 0.05 ? 'significant' : 'insufficient evidence of significance'}.`
-         : `${variable.name} en ${regionName} ${dirVerb} ${formatValue(absChange)} ${variable.unit} por década${ciText}. Significativa según OLS (p=${formatValue(trend.p_value, 4)}). Mann-Kendall p=${formatValue(mkP, 4)}: ${mkP !== null && mkP < 0.05 ? 'significativa' : 'sin evidencia suficiente de significancia'}.`
-    } else {
-       naturalLanguage = language === 'en'
-          ? `The estimated change is ${formatValue(slopeDecade)} ${variable.unit}/decade, but the evidence does not meet the OLS significance threshold (p=${formatValue(trend.p_value, 3)} ≥ 0.05). This does not prove there is no change.`
-         : `Hay una tendencia de ${formatValue(absChange)} ${variable.unit}/década, pero aún no es estadísticamente significativa (p=${formatValue(trend.p_value, 3)} ≥ 0,05). Un periodo más largo podría cambiar esto.`
-    }
-  } else if (result.interpretation) {
-    naturalLanguage = result.interpretation.summary
-  } else {
-    naturalLanguage = trend.message
-  }
-
-  const mk = trend.mann_kendall
-  const seasonalMk = trend.seasonal_mann_kendall
-  const sen = trend.sen
-  const ols = trend.ols
-
-  return (
-       <article className="rounded-xl border border-line bg-canvas/55 p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="size-3 rounded-full" style={{ backgroundColor: getVariableColor(variable.id) }} />
-          <h3 className="text-base font-semibold text-ink">{variable.name}</h3>
-          <span className="text-xs text-muted font-normal">({variable.unit})</span>
-        </div>
-        <span
-          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-            isSig
-               ? 'border border-signal/25 bg-signal-soft text-ink'
-              : 'border border-line bg-surface text-muted'
-          }`}
-        >
-           {isSig ? <CheckCircle2 size={13} className="text-success" /> : <XCircle size={13} className="text-muted" />}
-          {isConstant
-             ? 'Constant series'
-            : isSig
-             ? 'Significant · OLS (α = 0.05)'
-            : result.interpretation?.status === 'insufficient_data'
-            || result.interpretation?.status === 'conflicting_evidence'
-            || trend.status === 'insufficient_data' || trend.status === 'calculation_error'
-             ? 'Not evaluable'
-             : 'Not significant · OLS (α = 0.05)'}
-        </span>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-baseline gap-3">
-        <div className="flex items-center gap-1.5">
-          {isUp ? (
-              <ArrowUpRight size={26} className="text-signal" aria-label="Increase" />
-          ) : isDown ? (
-              <ArrowDownRight size={26} className="text-accent" aria-label="Decrease" />
-          ) : (
-            <ArrowRight size={24} className="text-muted" aria-label="No change" />
-          )}
-          <span className="text-2xl font-bold tabular-nums text-ink">
-            {slopeDecade !== null ? (slopeDecade > 0 ? `+${formatValue(slopeDecade)}` : formatValue(slopeDecade)) : '—'}
-          </span>
-           <span className="text-xs font-medium text-muted">{variable.unit} / decade</span>
-        </div>
-        {trend.slope_per_year !== null && (
-          <span className="text-xs text-muted">
-             ({trend.slope_per_year > 0 ? `+${formatValue(trend.slope_per_year, 3)}` : formatValue(trend.slope_per_year, 3)} {variable.unit}/year)
-          </span>
-        )}
-      </div>
-
-      <p className="mt-3 text-xs leading-relaxed font-medium text-ink bg-surface border border-line rounded-lg p-3">
-        {naturalLanguage}
-      </p>
-
-       <details className="mt-4 rounded-lg border border-line bg-surface">
-         <summary className="cursor-pointer px-3 py-2.5 text-sm font-semibold text-accent">
-           Show method details
-         </summary>
-       {/* Grid de métodos estadísticos rigurosos */}
-       <div className="grid gap-3 border-t border-line p-3 text-sm sm:grid-cols-2 lg:grid-cols-5">
-        {/* OLS Linear Regression */}
-         <div className="rounded-lg border border-line bg-surface p-2.5">
-          <p className="font-semibold text-ink flex items-center">
-             OLS regression
-             <TermHelp term="OLS regression" explanation="Ordinary least-squares fit used to estimate the linear rate of change over time." />
-          </p>
-           <p className="mt-1 text-muted">Slope: <span className="font-mono text-ink">{formatValue(ols?.slope_per_decade)}</span> {variable.unit}/decade</p>
-          <p className="text-muted">p-value: <span className="font-mono text-ink">{ols?.p_value !== undefined && ols?.p_value !== null ? formatValue(ols.p_value, 4) : '—'}</span></p>
-          <p className="text-muted">R²: <span className="font-mono text-ink">{ols?.r_squared !== undefined ? formatValue(ols.r_squared, 3) : '—'}</span></p>
-        </div>
-
-        {/* Mann-Kendall */}
-        <div className="rounded-lg border border-line bg-surface p-2.5">
-          <p className="font-semibold text-ink flex items-center">
-            Test Mann-Kendall
-             <TermHelp term="Mann-Kendall" explanation="A non-parametric test recommended by NASA for detecting monotonic trends without assuming normality." />
-          </p>
-           <p className="mt-1 text-muted">Z statistic: <span className="font-mono text-ink">{mk?.z !== undefined && mk?.z !== null ? formatValue(mk.z, 2) : '—'}</span></p>
-          <p className="text-muted">p-value: <span className="font-mono text-ink">{mk?.p_value !== undefined && mk?.p_value !== null ? formatValue(mk.p_value, 4) : '—'}</span></p>
-           <p className="text-muted">Kendall tau: <span className="font-mono text-ink">{mk?.tau !== undefined ? formatValue(mk.tau, 3) : '—'}</span></p>
-        </div>
-
-        {/* Sen's Slope */}
-        <div className="rounded-lg border border-line bg-surface p-2.5">
-          <p className="font-semibold text-ink flex items-center">
-             Theil–Sen slope
-             <TermHelp term="Theil–Sen slope" explanation="Median estimator of all pairwise slopes; highly robust to outliers and extremes." />
-          </p>
-           <p className="mt-1 text-muted">Median: <span className="font-mono text-ink">{sen?.slope_per_decade !== undefined && sen?.slope_per_decade !== null ? formatValue(sen.slope_per_decade) : '—'}</span> {variable.unit}/decade</p>
-           <p className="text-muted">95% CI: <span className="font-mono text-ink">{sen?.ci95_per_decade ? `[${formatValue(sen.ci95_per_decade[0])}, ${formatValue(sen.ci95_per_decade[1])}]` : '—'}</span></p>
-        </div>
-
-        {/* Observaciones y Muestra */}
-        <div className="rounded-lg border border-line bg-surface p-2.5">
-          <p className="font-semibold text-ink flex items-center">
-             Uncertainty (95% CI)
-             <TermHelp term="Confidence interval" explanation="If we repeated the sampling and procedure many times, approximately 95% of intervals would contain the true rate under the method assumptions." />
-          </p>
-           <p className="mt-1 text-muted">Range: <span className="font-mono text-ink">{trend.confidence_interval_per_decade ? `[${formatValue(trend.confidence_interval_per_decade[0])}, ${formatValue(trend.confidence_interval_per_decade[1])}]` : '—'}</span></p>
-           <p className="text-muted">Years analyzed: <span className="font-mono text-ink">{trend.n_observations}</span></p>
-         </div>
-         <div className="rounded-lg border border-line bg-surface p-2.5">
-           <p className="font-semibold text-ink">Seasonal Mann–Kendall</p>
-           <p className="mt-1 text-muted">Z statistic: <span className="font-mono text-ink">{seasonalMk?.z !== undefined && seasonalMk?.z !== null ? formatValue(seasonalMk.z, 2) : '—'}</span></p>
-           <p className="text-muted">p-value: <span className="font-mono text-ink">{seasonalMk?.p_value !== undefined && seasonalMk?.p_value !== null ? formatValue(seasonalMk.p_value, 4) : '—'}</span></p>
-           <p className="text-muted">Seasons: <span className="font-mono text-ink">{seasonalMk?.seasons_evaluated ?? '—'}</span></p>
-         </div>
-       </div>
-       </details>
-
-      {trend.warnings && trend.warnings.length > 0 && (
-        <div className="mt-3 space-y-1 rounded-lg border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
-          {trend.warnings.map((w, idx) => (
-            <p key={idx} className="flex items-start gap-1.5">
-              <span className="shrink-0">⚠️</span>
-              <span>{w}</span>
-            </p>
-          ))}
-        </div>
-      )}
-    </article>
-  )
-}
-
 export function TimeSeriesChart({ configuration, dataset, pendingChanges }: TimeSeriesChartProps) {
   const { language } = useLanguage()
   const [showTrendLines, setShowTrendLines] = useState(true)
@@ -305,14 +105,6 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
   const region = regions.find((item) => item.id === configuration?.regionId)
   const points = dataset?.points ?? []
   const results = dataset?.results ?? []
-  const selectedGroupVariables = dataset?.multivariateInterpretation?.selected_variables
-    ?? results.map((result) => ({
-      id: result.variable.id,
-      name: result.variable.name,
-      unit: result.variable.unit,
-      direction: result.trend.direction,
-      significant: result.interpretation?.significant ?? result.trend.significant,
-    }))
   const visibleVariables = selectedVariables.filter((variable) => !hiddenVariables.includes(variable.id))
   const regionName = dataset?.region?.name ?? region?.name ?? 'la región'
   const products = [...new Set(results.map((result) => result.variable.product).filter((product): product is string => Boolean(product)))]
@@ -485,29 +277,29 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
           </details>
 
           {/* Controles de visualización y leyenda */}
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              {selectedVariables.map((variable) => {
-                const color = getVariableColor(variable.id)
-                return (
-                  <button type="button" key={variable.id}
-                    aria-pressed={!hiddenVariables.includes(variable.id)}
-                    aria-label={`${hiddenVariables.includes(variable.id) ? 'Show' : 'Hide'} ${variable.name}`}
-                    onClick={() => setHiddenVariables((current) => current.includes(variable.id) ? current.filter((id) => id !== variable.id) : [...current, variable.id])}
-                     className="flex items-center gap-2 rounded-lg border border-line p-2 text-xs transition-colors hover:border-accent/40 hover:bg-accent-soft/35">
-                    <span className="flex items-center gap-1 font-medium" style={{ color }}>
-                      <Minus size={18} strokeWidth={3} aria-hidden="true" />
-                      <span>{variable.name}</span>
-                    </span>
-                   <span className="text-[11px] text-muted">
-                       {hiddenVariables.includes(variable.id) ? (language === 'en' ? 'Hidden · show' : 'Oculta · mostrar') : (language === 'en' ? 'Visible · hide' : 'Visible · ocultar')}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-
-            <div className="flex items-center gap-3 text-xs text-muted">
+           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
+             <details className="text-xs">
+               <summary className="cursor-pointer font-semibold text-accent">Choose visible series</summary>
+               <div className="mt-3 flex flex-wrap gap-2">
+                 {selectedVariables.map((variable) => {
+                   const color = getVariableColor(variable.id)
+                   return (
+                     <button type="button" key={variable.id}
+                       aria-pressed={!hiddenVariables.includes(variable.id)}
+                       aria-label={`${hiddenVariables.includes(variable.id) ? 'Show' : 'Hide'} ${variable.name}`}
+                       onClick={() => setHiddenVariables((current) => current.includes(variable.id) ? current.filter((id) => id !== variable.id) : [...current, variable.id])}
+                       className="flex items-center gap-2 rounded-lg border border-line p-2 text-xs transition-colors hover:border-accent/40 hover:bg-accent-soft/35">
+                       <span className="flex items-center gap-1 font-medium" style={{ color }}>
+                         <Minus size={18} strokeWidth={3} aria-hidden="true" />
+                         <span>{variable.name}</span>
+                       </span>
+                       <span className="text-[11px] text-muted">{hiddenVariables.includes(variable.id) ? 'Hidden · show' : 'Visible · hide'}</span>
+                     </button>
+                   )
+                 })}
+               </div>
+             </details>
+             <div className="flex items-center gap-3 text-xs text-muted">
               <span className="flex items-center gap-1 text-[11px] font-medium text-ink">
                 <SlidersHorizontal size={13} aria-hidden="true" />
                  {language === 'en' ? 'Layers:' : 'Capas:'}
@@ -732,44 +524,13 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
              Solid lines represent monthly observations; dashed lines show the estimated linear trend; shading shows the 95% interval.
           </p>
 
-          {/* Tarjetas de resultados estadísticos */}
-          <section aria-labelledby="trend-summary-title" className="mt-6 border-t border-line pt-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 id="trend-summary-title" className="text-sm font-semibold text-ink">
-                  How much does it change, and is the evidence statistically significant?
-                </h2>
-                <p className="mt-1 text-xs text-muted">
-                   Multi-method evaluation using OLS regression, the Mann-Kendall test, and Theil-Sen slope (α = 0.05).
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-4">
-              {visibleVariables.map((variable) => (
-                <TrendSummary
-                  key={variable.id}
-                  result={results.find((item) => item.variable.id === variable.id)}
-                  regionName={regionName}
-                  language={language}
-                />
-              ))}
-            </div>
-          </section>
-          {results.length > 1 && dataset?.multivariateInterpretation ? (
-             <section aria-labelledby="processes-title" className="mt-5 rounded-xl border border-accent/25 bg-accent-soft/65 p-4">
-               <h2 id="processes-title" className="flex items-center gap-2 text-sm font-bold text-accent">
+           {results.length > 1 && dataset?.multivariateInterpretation ? (
+             <details className="mt-5 rounded-xl border border-accent/25 bg-accent-soft/65 p-4">
+               <summary className="flex cursor-pointer items-center gap-2 text-sm font-bold text-accent">
                 <Link2 size={16} aria-hidden="true" />
-                 Joint interpretation of the variables
-              </h2>
-               <p className="mt-2 text-xs text-ink">{dataset.multivariateInterpretation.summary}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {selectedGroupVariables.map((variable) => (
-                   <span key={variable.id} className="rounded-full border border-accent/20 bg-surface px-2.5 py-1 text-[11px] text-accent">
-                    {variable.name} · {variable.unit}
-                  </span>
-                ))}
-              </div>
+                 Explore relationships between selected variables
+               </summary>
+               <p className="mt-3 text-xs text-ink">{dataset.multivariateInterpretation.summary}</p>
               {dataset.multivariateInterpretation.processes.length > 0 && (
                 <ul className="mt-3 space-y-3">
                   {dataset.multivariateInterpretation.processes.map((process) => (
@@ -783,7 +544,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
               )}
                <p className="mt-3 text-[11px] text-muted">{dataset.multivariateInterpretation.pattern_summary}</p>
                <p className="mt-2 text-[11px] text-muted">{dataset.multivariateInterpretation.causality_warning}</p>
-            </section>
+            </details>
           ) : null}
         </>
       ) : (

@@ -239,7 +239,7 @@ def analyze_trend(
         message=(
             "The trend is statistically significant at α=0.05."
             if significant
-            else "No hay evidencia suficiente para declarar una tendencia significativa con α=0.05."
+            else "There is insufficient evidence for a significant trend at α=0.05."
         ),
         ols=ols_res,
         mann_kendall=mk_res,

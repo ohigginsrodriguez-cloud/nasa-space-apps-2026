@@ -32,3 +32,19 @@ proceso la causó.
 - Probar causalidad.
 - Soportar datos horarios y diarios desde el primer día.
 - Reemplazar herramientas científicas profesionales.
+
+## Comparación regional: revisión de noviembre de 2026
+
+El resumen del reto menciona explícitamente que una variable puede tener
+tendencias opuestas en regiones distintas. Esto justifica conservar la
+comparación como exploración adicional, pero el resumen no exige un comparador
+doble como paso obligatorio. El núcleo sigue siendo variable, región, serie,
+tasa de cambio y significancia. La interfaz lo ofrece plegado al final de los
+resultados. Comparar signos no prueba una causa común ni la significancia
+estadística de la diferencia entre pendientes.
+
+Fuente consultada: [sede Rohnert Park / Sonoma State](https://edeon.sonoma.edu/nasaspaceapps-26/),
+que reproduce el resumen y enlaza al
+[enunciado oficial](https://www.spaceappschallenge.org/2026/challenges/earth-system-trend-detective/).
+La página oficial devolvió un error de transporte en esta revisión; no se
+presenta el resumen de la sede como una verificación nueva del texto completo.

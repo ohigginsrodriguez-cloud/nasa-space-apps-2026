@@ -144,7 +144,7 @@ class NasaPowerProvider:
                     payload = cached_fallback
                 else:
                     raise RuntimeError(
-                        f"No se pudo conectar con la API de NASA POWER tras {self.max_retries + 1} intentos. "
+                        f"Could not connect to the NASA POWER API after {self.max_retries + 1} attempts. "
                         "Check your internet connection or use synthetic demo mode."
                     ) from last_error
 

@@ -14,10 +14,10 @@ interface TimeSeriesChartProps {
   pendingChanges: boolean
 }
 
-const shortDate = new Intl.DateTimeFormat('es', { month: 'short', year: '2-digit', timeZone: 'UTC' })
-const fullDate = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+const shortDate = new Intl.DateTimeFormat('en', { month: 'short', year: '2-digit', timeZone: 'UTC' })
+const fullDate = new Intl.DateTimeFormat('en', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
 const formatDate = (date: string, full = false) => (full ? fullDate : shortDate).format(new Date(`${date}T00:00:00Z`))
-const formatValue = (value: number | null | undefined, digits = 2) => (value === null || value === undefined ? '—' : new Intl.NumberFormat('es', { maximumFractionDigits: digits }).format(value))
+const formatValue = (value: number | null | undefined, digits = 2) => (value === null || value === undefined ? '—' : new Intl.NumberFormat('en', Math.abs(value) > 0 && Math.abs(value) < 10 ** -digits ? { notation: 'scientific', maximumFractionDigits: 2 } : { maximumFractionDigits: digits }).format(value))
 
 const colors: Record<string, string> = {
   temperature: 'var(--color-chart-temperature, #FC3D21)',
@@ -70,12 +70,12 @@ function ChartTooltip({ active, payload, label }: TooltipContentProps<TooltipVal
 function ChartLegend({ variable }: { variable: { name: string; unit: string; id: string } }) {
   const color = getVariableColor(variable.id)
   return (
-    <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Leyenda de ${variable.name}`}>
+    <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Legend for ${variable.name}`}>
       <span className="font-semibold text-ink">{variable.name}</span>
-      <span className="text-muted">Unidad: <strong className="text-ink">{variable.unit}</strong></span>
-      <span className="flex items-center gap-1.5 text-muted"><span className="h-0.5 w-5" style={{ backgroundColor: color }} /> Observado</span>
-      <span className="flex items-center gap-1.5 text-muted"><span className="w-5 border-t-2 border-dashed" style={{ borderColor: color }} /> Tendencia</span>
-      <span className="flex items-center gap-1.5 text-muted"><span className="size-3 rounded-sm opacity-30" style={{ backgroundColor: color }} /> IC 95%</span>
+      <span className="text-muted">Unit: <strong className="text-ink">{variable.unit}</strong></span>
+      <span className="flex items-center gap-1.5 text-muted"><span className="h-0.5 w-5" style={{ backgroundColor: color }} /> Observed</span>
+      <span className="flex items-center gap-1.5 text-muted"><span className="w-5 border-t-2 border-dashed" style={{ borderColor: color }} /> Trend</span>
+      <span className="flex items-center gap-1.5 text-muted"><span className="size-3 rounded-sm opacity-30" style={{ backgroundColor: color }} /> 95% CI</span>
     </div>
   )
 }
@@ -88,8 +88,8 @@ function TermHelp({ term, explanation }: { term: string; explanation: string }) 
         type="button"
         onClick={() => setOpen(!open)}
         className="ml-1 inline-flex items-center text-muted hover:text-accent focus:outline-none"
-        title={`¿Qué significa ${term}?`}
-        aria-label={`¿Qué significa ${term}?`}
+        title={`What does ${term} mean?`}
+        aria-label={`What does ${term} mean?`}
       >
         <HelpCircle size={13} aria-hidden="true" />
       </button>
@@ -102,7 +102,7 @@ function TermHelp({ term, explanation }: { term: string; explanation: string }) 
             onClick={() => setOpen(false)}
             className="mt-1 block text-[10px] text-muted underline hover:text-ink"
           >
-            Cerrar
+            Close
           </button>
         </span>
       )}
@@ -143,7 +143,7 @@ function TrendSummary({ result, regionName, language }: { result: BackendResult 
          : `${variable.name} en ${regionName} ${dirVerb} ${formatValue(absChange)} ${variable.unit} por década${ciText}. Significativa según OLS (p=${formatValue(trend.p_value, 4)}). Mann-Kendall p=${formatValue(mkP, 4)}: ${mkP !== null && mkP < 0.05 ? 'significativa' : 'sin evidencia suficiente de significancia'}.`
     } else {
        naturalLanguage = language === 'en'
-         ? `There is a trend of ${formatValue(absChange)} ${variable.unit}/decade, but it is not yet statistically significant (p=${formatValue(trend.p_value, 3)} ≥ 0.05). A longer period could change this.`
+          ? `The estimated change is ${formatValue(slopeDecade)} ${variable.unit}/decade, but the evidence does not meet the OLS significance threshold (p=${formatValue(trend.p_value, 3)} ≥ 0.05). This does not prove there is no change.`
          : `Hay una tendencia de ${formatValue(absChange)} ${variable.unit}/década, pero aún no es estadísticamente significativa (p=${formatValue(trend.p_value, 3)} ≥ 0,05). Un periodo más largo podría cambiar esto.`
     }
   } else if (result.interpretation) {
@@ -573,7 +573,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                       <Tooltip content={ChartTooltip} isAnimationActive={false} />
                       {visibleVariables.map((variable) => <Area key={`band_${variable.id}`} hide={!showConfidenceBands} yAxisId={variable.id} dataKey={`band_${variable.id}`} name={`IC 95% ${variable.name}`} unit={variable.unit} fill={getVariableColor(variable.id)} fillOpacity={0.08} stroke="none" isAnimationActive={false} />)}
                       {visibleVariables.map((variable) => <Line key={variable.id} yAxisId={variable.id} dataKey={variable.id} name={variable.name} unit={variable.unit} stroke={getVariableColor(variable.id)} dot={false} isAnimationActive={false} />)}
-                      {visibleVariables.map((variable) => <Line key={`trend_${variable.id}`} hide={!showTrendLines} yAxisId={variable.id} dataKey={`trend_${variable.id}`} name={`Tendencia: ${variable.name}`} unit={variable.unit} stroke={getVariableColor(variable.id)} strokeDasharray="6 4" dot={false} isAnimationActive={false} />)}
+                      {visibleVariables.map((variable) => <Line key={`trend_${variable.id}`} hide={!showTrendLines} yAxisId={variable.id} dataKey={`trend_${variable.id}`} name={`Trend: ${variable.name}`} unit={variable.unit} stroke={getVariableColor(variable.id)} strokeDasharray="6 4" dot={false} isAnimationActive={false} />)}
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
@@ -588,16 +588,16 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
           {(layout === 'separate' || selectedVariables.length < 2) && visibleVariables.map((variable) => {
             const result = results.find((item) => item.variable.id === variable.id)
             if (!result) return null
-              return <article key={variable.id} aria-label={`Panel de ${variable.name}`} className="mb-5 rounded-xl border border-line bg-canvas/35 p-3 shadow-sm">
+              return <article key={variable.id} aria-label={`Panel for ${variable.name}`} className="mb-5 rounded-xl border border-line bg-canvas/35 p-3 shadow-sm">
                <h3 className="font-semibold" style={{ color: getVariableColor(variable.id) }}>{variable.name} · {variable.unit}</h3>
                 <p className="mb-2 text-sm text-muted">Solid line: observed · dashed: trend · shaded: 95% CI of the estimated mean.</p>
                <ChartLegend variable={variable} />
-              {result.variable.aggregation === 'sum' && <p className="mb-2 text-xs text-muted">Observado: total mensual. Tendencia y banda: equivalente mensual del ajuste anual (÷12). Las tarjetas reportan el cambio del total anual.</p>}
+              {result.variable.aggregation === 'sum' && <p className="mb-2 text-xs text-muted">Observed: monthly total. Trend and band: monthly equivalent of the annual fit (÷12). Summary cards report the change in annual totals.</p>}
            <div className="flex min-w-0 items-stretch gap-2">
            <div
              className={`h-72 min-w-0 flex-1 select-none sm:h-96 ${zoomLevel > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`}
              style={{ ...(expanded ? { height: 700 } : {}), touchAction: zoomLevel > 0 ? 'none' : 'auto' }}
-             aria-label={`Gráfica de ${variable.name} en ${regionName}.`}
+             aria-label={`Chart of ${variable.name} in ${regionName}.`}
              onPointerDown={startPan}
              onPointerMove={movePan}
              onPointerUp={stopPan}
@@ -663,7 +663,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                       key={variable.id}
                       yAxisId={variable.id}
                       dataKey={variable.id}
-                      name={`Observado: ${variable.name}`}
+                      name={`Observed: ${variable.name}`}
                       unit={variable.unit}
                       type="linear"
                       stroke={color}
@@ -684,7 +684,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
                         key={`trend_${variable.id}`}
                         yAxisId={variable.id}
                         dataKey={`trend_${variable.id}`}
-                        name={`Tendencia: ${variable.name}`}
+                        name={`Trend: ${variable.name}`}
                         unit={variable.unit}
                         type="linear"
                         stroke={color}
@@ -702,7 +702,7 @@ export function TimeSeriesChart({ configuration, dataset, pendingChanges }: Time
            </div>
               <div
                 role="status"
-                aria-label={`Significancia estadística de ${variable.name}`}
+                aria-label={`Statistical significance of ${variable.name}`}
                 className={`mt-3 rounded-lg border px-3 py-2 text-xs ${
                   result.interpretation?.significant === true || (!result.interpretation && result.trend.significant === true)
                      ? 'border-signal/25 bg-signal-soft text-ink'

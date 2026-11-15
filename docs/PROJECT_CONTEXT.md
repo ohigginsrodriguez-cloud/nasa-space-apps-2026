@@ -333,3 +333,17 @@ Se comprobó además pregunta → revisión → resultados a 1440 y 390 px sin
 desbordamiento horizontal. Pendientes: evaluación con usuarios, auditoría
 completa de accesibilidad, despliegue público y video; estas mejoras de UX no
 constituyen una puntuación oficial de jueces.
+
+Revisión de inglés y selección: el proceso uvicorn activo conservaba código
+antiguo en memoria y devolvía catálogo y veredictos españoles. Se reinició con
+recarga del directorio backend/app. Se corrigieron además leyendas, tooltips,
+fechas, formato numérico, errores y unidades todavía españoles. Los valores
+muy pequeños en la gráfica principal usan notación científica para evitar
+mostrar pendientes no nulas o p-values pequeños como cero.
+
+El selector muestra las siete variables con descripciones visibles, selección
+por etiqueta y metadatos plegados; se retiraron buscador, chips duplicados y
+scroll interno. La comparación regional se conserva al final, plegada y con
+su alcance explícito. Ver challenge-requirements.md para fuentes y limitaciones
+de esta revisión del enunciado. El E2E comprueba ahora texto inglés de resultados
+y acceso al comparador opcional.

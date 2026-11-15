@@ -21,20 +21,17 @@ export function VariableCard({ variable, selected, onToggle, compact = false }: 
   if (compact) {
     return (
       <article className={`min-w-0 rounded-lg border p-3 transition-all duration-200 ${selected ? 'border-accent/55 bg-accent-soft/65 shadow-sm' : 'border-line bg-surface hover:border-accent/35 hover:shadow-sm'}`}>
-        <div className="flex items-start justify-between gap-2">
-           <h3 className="min-w-0 text-sm font-semibold leading-relaxed">{variable.name}</h3>
-           <label className={`flex shrink-0 items-center gap-1.5 text-xs ${pending ? 'cursor-not-allowed text-muted' : 'cursor-pointer text-ink'}`}>
-            <input type="checkbox" checked={selected} disabled={pending} onChange={onToggle} aria-label={`Select ${variable.name}`} className="size-4 accent-accent" />
-             {pending ? 'Coming soon' : 'Include'}
-          </label>
-        </div>
+        <label className={`flex min-h-11 items-center justify-between gap-3 ${pending ? 'cursor-not-allowed text-muted' : 'cursor-pointer text-ink'}`}>
+           <span className="text-sm font-bold">{variable.name}</span>
+             <input type="checkbox" checked={selected} disabled={pending} onChange={onToggle} aria-label={`Select ${variable.name}`} className="size-4 accent-accent" />
+        </label>
+        <p className="mt-1 text-sm leading-relaxed text-muted">{variable.description}</p>
         <div className="mt-2 flex items-center justify-between gap-2 text-[10px]">
           <span className="text-muted">{variable.unit}</span>
-           <span className={pending ? 'text-muted' : 'text-accent'}>{pending ? 'Integration pending' : 'Available'}</span>
+           <span className={pending ? 'text-muted' : 'text-accent'}>{pending ? 'Integration pending' : selected ? 'Selected' : ''}</span>
         </div>
         <details className="mt-1.5">
-           <summary className="w-fit cursor-pointer text-xs text-muted hover:text-accent">Details</summary>
-           <p className="mt-2 text-sm leading-relaxed text-muted">{variable.description}</p>
+           <summary className="min-h-9 w-fit cursor-pointer py-2 text-xs text-muted hover:text-accent">Data source and details</summary>
            <dl className="mt-2 grid gap-2 border-t border-line pt-2 text-sm">
              <div><dt className="font-medium">Category · unit</dt><dd className="mt-0.5 text-muted">{category} · {variable.measurement}</dd></div>
              <div><dt className="font-medium">Temporal resolution</dt><dd className="mt-0.5 text-muted">{variable.temporalResolution ?? 'To be verified for the product'}</dd></div>

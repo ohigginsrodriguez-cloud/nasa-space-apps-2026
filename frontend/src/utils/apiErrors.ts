@@ -1,6 +1,6 @@
 /** Normalize FastAPI validation arrays and application/provider errors for the UI. */
 export function formatApiError(body: unknown, status: number): string {
-  const fallback = `No se pudo completar la solicitud (HTTP ${status}).`
+  const fallback = `The request could not be completed (HTTP ${status}).`
   if (!body || typeof body !== 'object' || !('detail' in body)) return fallback
   const detail = body.detail
   if (typeof detail === 'string') return detail

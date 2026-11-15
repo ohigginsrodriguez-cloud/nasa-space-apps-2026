@@ -10,12 +10,11 @@ export type RegionId = 'sonoran-desert' | 'lacandon-jungle' | 'tabasco-wetlands'
 export type TemporalInterval = 'monthly'
 export type SectionId = 'investigation' | 'analysis'
 export type VariableCategory =
-  | 'Todas'
-  | 'Atmósfera'
-  | 'Hidrología'
-  | 'Superficie terrestre'
-  | 'Energía'
-  | 'Océanos e Hidrología'
+  | 'Atmosphere'
+  | 'Hydrology'
+  | 'Land surface'
+  | 'Energy'
+  | 'Oceans and hydrology'
 export type IntegrationStatus = 'demo' | 'requires-configuration' | 'pending'
 
 export interface ScientificVariable {

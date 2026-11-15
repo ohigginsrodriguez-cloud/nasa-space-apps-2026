@@ -8,9 +8,9 @@ import { getLatestCompleteMonthEnd, validateConfiguration } from '../../utils/co
 import { centeredZoomPoints, variableChartPoints } from '../../utils/chartData'
 import { ChartZoomControls } from '../charts/ChartZoomControls'
 
-const shortDate = new Intl.DateTimeFormat('es', { month: 'short', year: '2-digit', timeZone: 'UTC' })
+const shortDate = new Intl.DateTimeFormat('en', { month: 'short', year: '2-digit', timeZone: 'UTC' })
 const formatDate = (date: string) => shortDate.format(new Date(`${date}T00:00:00Z`))
-const formatValue = (value: number | null | undefined, digits = 2) => (value === null || value === undefined ? '—' : new Intl.NumberFormat('es', { maximumFractionDigits: digits }).format(value))
+const formatValue = (value: number | null | undefined, digits = 2) => (value === null || value === undefined ? '—' : new Intl.NumberFormat('en', { maximumFractionDigits: digits }).format(value))
 
 export function RegionComparison() {
   const [variableId, setVariableId] = useState<VariableId>('precipitation')
@@ -227,7 +227,7 @@ export function RegionComparison() {
                 {formatValue(slopeA)} {selectedVar.unit}/decade
               </span>
             </div>
-            <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Leyenda de ${regionA.name}`}>
+            <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Legend for ${regionA.name}`}>
               <strong>Unit: {selectedVar.unit}</strong>
               <span className="text-muted">Solid line: observed · dashed: trend · shaded: 95% CI</span>
             </div>
@@ -240,12 +240,12 @@ export function RegionComparison() {
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} label={{ value: selectedVar.unit, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 10, fill: 'var(--color-muted)' } }} />
                   <Tooltip labelFormatter={(l) => formatDate(String(l))} />
                    <Area dataKey={`band_${variableId}`} stroke="none" fill="var(--color-chart-precipitation)" fillOpacity={0.12} isAnimationActive={false} />
-                   <Line dataKey={variableId} stroke="var(--color-chart-precipitation)" strokeWidth={1.3} dot={false} isAnimationActive={false} name={`Observado (${selectedVar.unit})`} />
-                   <Line dataKey={`trend_${variableId}`} stroke="var(--color-chart-precipitation)" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Tendencia (${selectedVar.unit})`} />
+                   <Line dataKey={variableId} stroke="var(--color-chart-precipitation)" strokeWidth={1.3} dot={false} isAnimationActive={false} name={`Observed (${selectedVar.unit})`} />
+                   <Line dataKey={`trend_${variableId}`} stroke="var(--color-chart-precipitation)" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Trend (${selectedVar.unit})`} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-            <ChartZoomControls level={zoomLevel} onChange={setZoomLevel} label="Controles de zoom de comparación" />
+            <ChartZoomControls level={zoomLevel} onChange={setZoomLevel} label="Comparison zoom controls" />
             </div>
             <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
               <span>OLS p = {formatValue(resultA?.trend.p_value, 4)} · MK p = {formatValue(resultA?.trend.mann_kendall?.p_value, 4)}</span>
@@ -266,7 +266,7 @@ export function RegionComparison() {
                 {formatValue(slopeB)} {selectedVar.unit}/decade
               </span>
             </div>
-            <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Leyenda de ${regionB.name}`}>
+            <div className="mb-2 flex flex-wrap items-center gap-3 rounded-md bg-canvas/60 px-2.5 py-2 text-[11px]" aria-label={`Legend for ${regionB.name}`}>
               <strong>Unit: {selectedVar.unit}</strong>
               <span className="text-muted">Solid line: observed · dashed: trend · shaded: 95% CI</span>
             </div>
@@ -279,12 +279,12 @@ export function RegionComparison() {
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--color-muted)' }} domain={['auto', 'auto']} label={{ value: selectedVar.unit, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 10, fill: 'var(--color-muted)' } }} />
                   <Tooltip labelFormatter={(l) => formatDate(String(l))} />
                    <Area dataKey={`band_${variableId}`} stroke="none" fill="var(--color-signal)" fillOpacity={0.12} isAnimationActive={false} />
-                   <Line dataKey={variableId} stroke="var(--color-signal)" strokeWidth={1.3} dot={false} isAnimationActive={false} name={`Observado (${selectedVar.unit})`} />
-                   <Line dataKey={`trend_${variableId}`} stroke="var(--color-signal)" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Tendencia (${selectedVar.unit})`} />
+                   <Line dataKey={variableId} stroke="var(--color-signal)" strokeWidth={1.3} dot={false} isAnimationActive={false} name={`Observed (${selectedVar.unit})`} />
+                   <Line dataKey={`trend_${variableId}`} stroke="var(--color-signal)" strokeWidth={2.2} strokeDasharray="5 3" dot={false} isAnimationActive={false} name={`Trend (${selectedVar.unit})`} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-            <ChartZoomControls level={zoomLevel} onChange={setZoomLevel} label="Controles de zoom de comparación" />
+            <ChartZoomControls level={zoomLevel} onChange={setZoomLevel} label="Comparison zoom controls" />
             </div>
             <div className="mt-2 text-[11px] text-muted flex justify-between border-t border-line/60 pt-2">
               <span>OLS p = {formatValue(resultB?.trend.p_value, 4)} · MK p = {formatValue(resultB?.trend.mann_kendall?.p_value, 4)}</span>

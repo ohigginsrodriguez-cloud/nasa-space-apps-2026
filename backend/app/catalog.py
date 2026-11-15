@@ -12,7 +12,7 @@ class Variable:
     aggregation: str
     product: str | None
     remote_parameter: str | None
-    category: str = "Atmósfera"
+    category: str = "Atmosphere"
     demo_available: bool = False
     nasa_power_available: bool = False
     status: str = "pending"
@@ -77,7 +77,7 @@ VARIABLES: dict[str, Variable] = {
         id="solar_radiation",
         name="Surface solar radiation",
         description="Incident solar radiation flux at the surface under all-sky conditions.",
-        unit="kW·h/m²/día",
+        unit="kW·h/m²/day",
         aggregation="mean",
         category="Energy",
         product="NASA POWER solar, ALLSKY_SFC_SW_DWN (CERES/SRB sources)",
@@ -114,12 +114,12 @@ VARIABLES: dict[str, Variable] = {
     ),
     "ndvi": Variable(
         id="ndvi",
-        name="Índice de vegetación (NDVI)",
-        description="Densidad y verdor de la cubierta vegetal terrestre calculada por reflectancia espectral.",
-        unit="Adimensional (-1 a 1)",
+        name="Vegetation index (NDVI)",
+        description="Vegetation density and greenness derived from spectral reflectance.",
+        unit="Dimensionless (-1 to 1)",
         aggregation="mean",
-        category="Superficie terrestre",
-        product="MODIS Terra/Aqua MOD13C2 (Earthdata Login requerido)",
+        category="Land surface",
+        product="MODIS Terra/Aqua MOD13C2 (Earthdata Login required)",
         remote_parameter=None,
         demo_available=False,
         nasa_power_available=False,
@@ -127,12 +127,12 @@ VARIABLES: dict[str, Variable] = {
     ),
     "evapotranspiration": Variable(
         id="evapotranspiration",
-        name="Evapotranspiración",
-        description="Pérdida combinada de agua por evaporación del suelo y transpiración vegetal.",
+        name="Evapotranspiration",
+        description="Combined water loss through soil evaporation and plant transpiration.",
         unit="mm",
         aggregation="sum",
-        category="Hidrología",
-        product="GLDAS Catchment Land Surface Model (Earthdata Login requerido)",
+        category="Hydrology",
+        product="GLDAS Catchment Land Surface Model (Earthdata Login required)",
         remote_parameter=None,
         demo_available=False,
         nasa_power_available=False,
@@ -140,12 +140,12 @@ VARIABLES: dict[str, Variable] = {
     ),
     "swot_water": Variable(
         id="swot_water",
-        name="Elevación de agua superficial (SWOT)",
-        description="Variación en la altura y extensión de ríos, lagos y reservorios monitoreados por radar interferométrico.",
+        name="Surface water elevation (SWOT)",
+        description="Changes in river, lake, and reservoir height and extent measured with interferometric radar.",
         unit="m",
         aggregation="mean",
-        category="Océanos e Hidrología",
-        product="Misión SWOT NASA/CNES/CSA (Earthdata Login requerido)",
+        category="Oceans and hydrology",
+        product="NASA/CNES/CSA SWOT mission (Earthdata Login required)",
         remote_parameter=None,
         demo_available=False,
         nasa_power_available=False,
